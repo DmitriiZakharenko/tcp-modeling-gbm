@@ -1,0 +1,265 @@
+patient_id,rt_dose_gy,n_fractions,eqd2_gy,survival_weeks,age,sex,who_status,has_rtdose,has_gtv,included,exclusion_reason
+1,40.05,15.0,42.286125,30,75,F,0.0,True,True,True,
+2,60.0,30.0,60.0,43,75,M,2.0,True,True,True,
+3,40.05,15.0,42.286125,29,75,F,2.0,True,True,True,
+4,60.0,30.0,60.0,40,70,M,1.0,True,True,True,
+5,60.0,30.0,60.0,70,70,F,1.0,True,True,True,
+6,60.0,30.0,60.0,130,60,M,1.0,True,True,True,
+7,60.0,30.0,60.0,109,75,M,1.0,True,True,True,
+8,60.0,30.0,60.0,66,60,F,1.0,True,True,True,
+9,40.05,15.0,42.286125,42,65,F,0.0,True,True,True,
+10,60.0,30.0,60.0,66,75,M,1.0,True,True,True,
+11,,,,22,80,F,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+12,,,,6,75,F,3.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+13,40.05,15.0,42.286125,82,75,F,0.0,True,True,True,
+14,,,,110,65,F,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+15,60.0,30.0,60.0,97,45,M,1.0,True,True,True,
+16,40.05,15.0,42.286125,16,65,F,1.0,True,True,True,
+17,,,,95,75,F,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+18,,,,71,65,F,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+19,60.0,30.0,60.0,26,60,M,1.0,True,True,True,
+20,,,,30,80,M,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+21,,,,10,70,F,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+22,60.0,30.0,60.0,76,80,M,0.0,True,True,True,
+23,40.05,15.0,42.286125,6,80,M,1.0,True,True,True,
+24,40.05,15.0,42.286125,24,70,F,1.0,True,True,True,
+25,40.05,15.0,42.286125,70,85,F,1.0,True,True,True,
+26,40.05,15.0,42.286125,121,75,M,1.0,True,True,True,
+27,,,,30,70,F,0.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+28,25.0,5.0,31.25,15,85,M,1.0,True,True,True,
+29,60.0,30.0,60.0,44,60,F,1.0,True,True,True,
+30,40.05,15.0,42.286125,93,80,F,1.0,True,True,True,
+31,60.0,30.0,60.0,114,35,M,0.0,True,True,True,
+32,60.0,30.0,60.0,13,60,F,1.0,True,True,True,
+33,60.0,30.0,60.0,22,70,F,1.0,True,True,True,
+34,,,,3,75,M,3.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+35,,,,30,60,M,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+36,,,,7,70,M,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+37,,,,8,35,F,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+38,40.05,15.0,42.286125,28,80,M,2.0,True,True,True,
+39,60.0,30.0,60.0,77,65,M,2.0,True,True,True,
+40,,,,127,70,F,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+41,,,,78,65,F,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+42,,,,81,60,F,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+43,59.4,33.0,58.410000000000004,17,65,M,2.0,True,True,True,
+44,59.4,33.0,58.410000000000004,35,65,M,2.0,True,True,True,
+45,60.0,30.0,60.0,233,60,F,1.0,True,True,True,
+46,40.05,15.0,,11,75,F,1.0,True,False,False,missing GTV
+47,60.0,30.0,60.0,36,55,M,1.0,True,True,True,
+48,60.0,30.0,60.0,111,55,M,0.0,True,True,True,
+49,,,,64,50,F,0.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+50,,,,120,55,M,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+51,,,,96,70,M,0.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+52,,,,55,65,M,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+53,,,,191,60,F,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+54,40.05,15.0,42.286125,75,80,F,2.0,True,True,True,
+55,,,,102,45,M,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+56,60.0,30.0,60.0,58,60,F,2.0,True,True,True,
+57,60.0,30.0,60.0,61,65,M,0.0,True,True,True,
+58,40.05,15.0,42.286125,45,80,M,0.0,True,True,True,
+59,60.0,30.0,60.0,73,70,M,1.0,True,True,True,
+60,40.05,15.0,42.286125,14,90,F,1.0,True,True,True,
+61,40.05,15.0,42.286125,6,75,F,1.0,True,True,True,
+62,,,,26,85,F,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+63,,,,60,80,M,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+64,,,,4,70,M,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+65,59.4,33.0,58.410000000000004,45,65,F,1.0,True,True,True,
+66,60.0,30.0,60.0,18,65,M,1.0,True,True,True,
+67,,,,17,90,M,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+68,40.05,15.0,42.286125,31,85,F,1.0,True,True,True,
+69,40.05,15.0,42.286125,71,70,M,0.0,True,True,True,
+70,59.4,33.0,58.410000000000004,155,60,F,0.0,True,True,True,
+71,40.05,15.0,42.286125,108,60,M,1.0,True,True,True,
+72,60.0,30.0,60.0,56,35,M,0.0,True,True,True,
+73,50.4,28.0,49.56,71,65,M,2.0,True,True,True,
+74,40.05,15.0,42.286125,34,80,F,2.0,True,True,True,
+75,,,,93,65,F,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+76,40.05,15.0,42.286125,72,80,F,2.0,True,True,True,
+78,60.0,30.0,60.0,95,60,M,1.0,True,True,True,
+79,60.0,30.0,60.0,48,75,F,2.0,True,True,True,
+80,,,,11,75,M,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+81,40.05,15.0,42.286125,16,75,M,3.0,True,True,True,
+82,,,,19,65,F,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+83,60.0,30.0,60.0,63,65,F,1.0,True,True,True,
+84,60.0,30.0,60.0,150,70,F,2.0,True,True,True,
+85,40.05,15.0,42.286125,49,80,M,1.0,True,True,True,
+86,40.05,15.0,42.286125,133,75,M,1.0,True,True,True,
+87,40.05,15.0,42.286125,19,80,F,3.0,True,True,True,
+88,,,,140,60,M,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+89,60.0,30.0,60.0,53,60,F,1.0,True,True,True,
+90,60.0,30.0,60.0,17,70,M,0.0,True,True,True,
+91,60.0,30.0,60.0,51,60,M,1.0,True,True,True,
+92,60.0,30.0,60.0,21,55,F,1.0,True,True,True,
+93,60.0,30.0,60.0,53,55,F,0.0,True,True,True,
+94,60.0,30.0,60.0,57,50,F,0.0,True,True,True,
+95,60.0,30.0,60.0,43,70,M,0.0,True,True,True,
+96,60.0,30.0,60.0,15,70,M,1.0,True,True,True,
+97,60.0,30.0,60.0,67,65,F,1.0,True,True,True,
+98,,,,16,70,F,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+99,40.05,15.0,42.286125,51,80,M,1.0,True,True,True,
+100,40.05,15.0,42.286125,9,80,F,0.0,True,True,True,
+101,60.0,30.0,60.0,63,70,M,1.0,True,True,True,
+102,40.05,15.0,42.286125,6,70,M,2.0,True,True,True,
+103,60.0,30.0,60.0,25,70,M,1.0,True,True,True,
+104,40.05,15.0,42.286125,28,80,F,1.0,True,True,True,
+105,60.0,30.0,60.0,51,70,M,0.0,True,True,True,
+106,60.0,30.0,60.0,28,60,M,1.0,True,True,True,
+107,60.0,30.0,60.0,53,70,F,1.0,True,True,True,
+108,60.0,30.0,60.0,74,65,M,1.0,True,True,True,
+109,40.05,15.0,42.286125,38,75,M,1.0,True,True,True,
+110,60.0,30.0,60.0,127,65,M,0.0,True,True,True,
+111,,,,23,65,M,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+112,60.0,30.0,60.0,228,55,M,1.0,True,True,True,
+113,,,,78,55,F,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+114,,,,98,60,F,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+115,,,,101,70,F,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+116,,,,3,45,M,0.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+117,,,,238,50,F,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+118,60.0,30.0,60.0,72,55,M,1.0,True,True,True,
+119,60.0,30.0,60.0,54,50,M,2.0,True,True,True,
+120,60.0,30.0,60.0,149,70,F,1.0,True,True,True,
+121,40.05,15.0,42.286125,73,70,F,0.0,True,True,True,
+122,60.0,30.0,60.0,22,70,M,3.0,True,True,True,
+123,60.0,30.0,60.0,57,50,F,0.0,True,True,True,
+124,60.0,30.0,60.0,40,70,F,1.0,True,True,True,
+125,40.05,15.0,42.286125,70,65,M,0.0,True,True,True,
+126,40.05,15.0,42.286125,47,80,F,1.0,True,True,True,
+127,60.0,30.0,60.0,77,65,M,1.0,True,True,True,
+128,40.05,15.0,42.286125,26,80,M,2.0,True,True,True,
+129,,,,3,55,M,0.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+130,,,,36,70,M,0.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+131,60.0,30.0,60.0,95,60,M,0.0,True,True,True,
+132,60.0,30.0,60.0,52,55,F,2.0,True,True,True,
+133,60.0,30.0,60.0,73,55,M,2.0,True,True,True,
+134,60.0,30.0,60.0,54,60,M,0.0,True,True,True,
+135,60.0,30.0,60.0,159,75,M,1.0,True,True,True,
+136,60.0,30.0,60.0,117,70,M,2.0,True,True,True,
+137,60.0,30.0,60.0,70,65,F,1.0,True,True,True,
+138,40.05,15.0,42.286125,139,75,M,1.0,True,True,True,
+139,60.0,30.0,60.0,76,60,F,0.0,True,True,True,
+140,60.0,30.0,60.0,54,75,M,1.0,True,True,True,
+141,40.05,15.0,42.286125,45,75,M,1.0,True,True,True,
+142,40.05,15.0,42.286125,37,70,M,3.0,True,True,True,
+143,60.0,30.0,60.0,61,55,M,1.0,True,True,True,
+144,60.0,30.0,60.0,54,65,F,0.0,True,True,True,
+145,60.0,30.0,60.0,118,60,M,0.0,True,True,True,
+146,60.0,30.0,60.0,49,55,M,1.0,True,True,True,
+147,40.05,15.0,42.286125,16,60,M,1.0,True,True,True,
+148,40.05,15.0,42.286125,18,85,F,1.0,True,True,True,
+149,40.05,15.0,42.286125,23,70,M,1.0,True,True,True,
+150,40.05,15.0,42.286125,9,80,M,2.0,True,True,True,
+151,60.0,30.0,60.0,40,55,F,1.0,True,True,True,
+152,40.05,15.0,42.286125,18,80,M,2.0,True,True,True,
+153,40.05,15.0,42.286125,10,80,F,2.0,True,True,True,
+154,60.0,30.0,60.0,47,55,F,3.0,True,True,True,
+155,60.0,30.0,60.0,103,70,F,2.0,True,True,True,
+156,40.05,15.0,42.286125,52,75,M,1.0,True,True,True,
+157,,,,55,60,M,3.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+158,60.0,30.0,60.0,61,75,M,1.0,True,True,True,
+159,,,,79,55,M,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+160,60.0,30.0,,115,75,F,2.0,True,False,False,missing GTV
+161,60.0,30.0,60.0,103,70,M,1.0,True,True,True,
+162,60.0,30.0,,58,60,M,2.0,True,False,False,missing GTV
+163,60.0,30.0,60.0,45,65,M,1.0,True,True,True,
+164,60.0,30.0,60.0,18,75,M,2.0,True,True,True,
+165,60.0,30.0,60.0,64,60,M,1.0,True,True,True,
+166,,,,121,60,M,3.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+167,60.0,30.0,60.0,95,50,M,1.0,True,True,True,
+168,,,,196,55,M,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+169,60.0,30.0,60.0,29,70,M,1.0,True,True,True,
+170,40.05,15.0,42.286125,9,75,M,2.0,True,True,True,
+171,,,,52,85,M,3.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+172,,,,36,80,M,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+173,60.0,30.0,60.0,129,40,F,1.0,True,True,True,
+174,,,,24,75,M,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+175,60.0,30.0,60.0,46,60,F,1.0,True,True,True,
+176,60.0,30.0,60.0,170,60,M,1.0,True,True,True,
+177,60.0,30.0,60.0,80,70,M,1.0,True,True,True,
+178,,,,62,75,M,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+179,40.05,15.0,42.286125,29,55,F,2.0,True,True,True,
+180,40.05,15.0,42.286125,47,80,F,1.0,True,True,True,
+181,60.0,30.0,60.0,94,55,M,1.0,True,True,True,
+182,,,,140,60,F,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+183,60.0,30.0,60.0,50,70,F,2.0,True,True,True,
+184,40.05,15.0,42.286125,15,75,F,2.0,True,True,True,
+185,60.0,30.0,60.0,60,45,F,1.0,True,True,True,
+186,,,,15,75,M,0.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+187,,,,50,60,F,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+188,60.0,30.0,60.0,67,75,F,1.0,True,True,True,
+189,40.05,15.0,42.286125,15,85,F,1.0,True,True,True,
+190,60.0,30.0,60.0,66,70,M,3.0,True,True,True,
+191,,,,12,80,F,3.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+192,60.0,30.0,60.0,139,60,M,1.0,True,True,True,
+193,60.0,30.0,60.0,158,65,M,1.0,True,True,True,
+194,60.0,30.0,60.0,55,70,M,1.0,True,True,True,
+195,,,,82,70,M,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+196,60.0,30.0,60.0,72,70,F,1.0,True,True,True,
+197,,,,80,85,M,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+198,60.0,30.0,60.0,70,55,F,1.0,True,True,True,
+199,60.0,30.0,60.0,69,65,F,1.0,True,True,True,
+200,60.0,30.0,60.0,56,55,M,2.0,True,True,True,
+201,60.0,30.0,60.0,137,60,F,2.0,True,True,True,
+202,60.0,30.0,60.0,90,50,M,0.0,True,True,True,
+203,60.0,30.0,60.0,79,55,M,1.0,True,True,True,
+204,,,,81,45,M,0.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+205,60.0,30.0,60.0,94,75,F,1.0,True,True,True,
+206,,,,7,75,M,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+207,40.05,15.0,42.286125,18,80,M,1.0,True,True,True,
+208,40.05,15.0,42.286125,24,80,M,2.0,True,True,True,
+209,60.0,30.0,60.0,29,70,M,2.0,True,True,True,
+210,60.0,30.0,60.0,10,70,F,0.0,True,True,True,
+211,60.0,30.0,60.0,34,50,M,3.0,True,True,True,
+212,40.05,15.0,42.286125,16,55,M,2.0,True,True,True,
+213,60.0,30.0,60.0,47,60,M,2.0,True,True,True,
+214,60.0,30.0,60.0,25,65,F,1.0,True,True,True,
+215,52.2,29.0,51.330000000000005,9,75,M,2.0,True,True,True,
+216,,,,78,55,M,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+217,60.0,30.0,60.0,32,60,M,1.0,True,True,True,
+218,,,,15,80,M,0.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+219,60.0,30.0,60.0,13,70,M,2.0,True,True,True,
+220,60.0,30.0,60.0,41,50,M,0.0,True,True,True,
+221,60.0,30.0,60.0,19,70,M,2.0,True,True,True,
+222,60.0,30.0,60.0,72,70,M,0.0,True,True,True,
+223,,,,7,75,M,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+224,60.0,30.0,60.0,114,65,F,2.0,True,True,True,
+225,60.0,30.0,60.0,42,75,M,0.0,True,True,True,
+226,,,,57,60,M,3.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+227,,,,9,30,F,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+228,,,,47,75,M,,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+229,60.0,30.0,60.0,67,70,M,0.0,True,True,True,
+230,,,,8,70,M,3.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+231,54.0,30.0,53.1,9,70,M,2.0,True,True,True,
+232,60.0,30.0,60.0,87,55,M,1.0,True,True,True,
+233,40.05,15.0,42.286125,23,70,M,1.0,True,True,True,
+234,40.05,15.0,42.286125,22,65,M,2.0,True,True,True,
+235,60.0,30.0,60.0,25,60,F,2.0,True,True,True,
+236,60.0,30.0,60.0,42,70,M,1.0,True,True,True,
+237,60.0,30.0,60.0,48,70,M,1.0,True,True,True,
+238,40.05,15.0,42.286125,9,70,M,2.0,True,True,True,
+239,40.05,15.0,42.286125,21,85,F,2.0,True,True,True,
+240,60.0,30.0,60.0,60,70,M,1.0,True,True,True,
+241,60.0,30.0,60.0,50,70,M,1.0,True,True,True,
+242,,,,25,50,F,0.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+243,,,,44,75,M,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+244,40.05,15.0,42.286125,8,80,M,1.0,True,True,True,
+245,60.0,30.0,60.0,34,65,F,1.0,True,True,True,
+246,40.05,15.0,42.286125,57,75,F,1.0,True,True,True,
+247,60.0,30.0,60.0,56,65,M,0.0,True,True,True,
+248,45.0,15.0,48.75,9,80,F,2.0,True,True,True,
+249,60.0,30.0,60.0,44,75,M,1.0,True,True,True,
+250,,,,3,75,F,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+251,60.0,30.0,60.0,21,25,F,1.0,True,True,True,
+252,60.0,30.0,60.0,17,65,F,2.0,True,True,True,
+253,40.05,15.0,42.286125,50,65,M,2.0,True,True,True,
+254,60.0,30.0,60.0,100,55,M,1.0,True,True,True,
+255,60.0,30.0,60.0,65,40,M,1.0,True,True,True,
+256,,,,69,60,M,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+257,60.0,30.0,60.0,71,75,M,1.0,True,True,True,
+258,40.05,15.0,42.286125,18,75,F,3.0,True,True,True,
+259,40.05,15.0,42.286125,80,80,M,0.0,True,True,True,
+260,40.05,15.0,42.286125,17,85,M,2.0,True,True,True,
+261,,,,45,70,F,0.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+262,,,,104,75,M,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+263,,,,34,65,F,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+264,,,,41,70,F,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
+265,,,,56,80,M,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions

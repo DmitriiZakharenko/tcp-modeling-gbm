@@ -2,25 +2,26 @@
 Cohort builder: merge CFB-GBM clinical and treatment TSV files, apply
 inclusion/exclusion criteria, and export a clean cohort table.
 
+Actual TSV column names (v02, 2026-01-29)
+------------------------------------------
+clinical_data    : id_patient, survival (weeks), age_at_t0 (years),
+                   who_performance_status, gender
+treatment_data   : id_patient, delay_t0_to_radiotherapy (weeks),
+                   dose (Gy), fractions_number
+imaging_avail    : id_patient, temporality, gtv, rtdose, treatment_machine, tps
+
 Inclusion criteria
 ------------------
-1. RTDOSE file available (has_rtdose == True in imaging availability TSV).
-2. GTV segmentation available (has_gtv == True in imaging availability TSV).
-3. Radiotherapy dose is known (rt_dose_gy is not NaN).
-4. Number of fractions is known (n_fractions is not NaN).
-
-Exclusion criteria (documented in cohort table as exclusion_reason)
--------------------------------------------------------------------
-- Missing RTDOSE
-- Missing GTV segmentation
-- Unknown radiotherapy dose
-- Unknown number of fractions
+1. RTDOSE available at t0 (rtdose == 1 in imaging availability TSV, temporality == t0).
+2. GTV segmentation available at t0 (gtv == 1, temporality == t0).
+3. Radiotherapy dose is known (dose not NaN).
+4. Number of fractions is known (fractions_number not NaN).
 
 Output
 ------
 data/processed/cohort.csv with columns:
     patient_id, rt_dose_gy, n_fractions, eqd2_gy, survival_weeks,
-    age, sex, who_status, included, exclusion_reason
+    age, sex, who_status, has_rtdose, has_gtv, included, exclusion_reason
 """
 
 import pandas as pd
@@ -35,7 +36,7 @@ from src.config import (
 )
 
 
-def compute_eqd2(total_dose_gy: float, n_fractions: int, alpha_beta: float = ALPHA_BETA_GBM) -> float:
+def compute_eqd2(total_dose_gy: float, n_fractions: float, alpha_beta: float = ALPHA_BETA_GBM) -> float:
     """
     Compute EQD2 (Equivalent Dose in 2 Gy fractions) using the LQ model.
 
@@ -45,7 +46,7 @@ def compute_eqd2(total_dose_gy: float, n_fractions: int, alpha_beta: float = ALP
     ----------
     total_dose_gy : float
         Total prescribed dose in Gy.
-    n_fractions : int
+    n_fractions : float
         Number of fractions.
     alpha_beta : float
         Alpha/beta ratio in Gy (default 10.0 for GBM).
@@ -55,153 +56,126 @@ def compute_eqd2(total_dose_gy: float, n_fractions: int, alpha_beta: float = ALP
     float
         EQD2 in Gy, or NaN if inputs are invalid.
     """
-    if n_fractions <= 0 or np.isnan(total_dose_gy) or np.isnan(n_fractions):
+    if pd.isna(total_dose_gy) or pd.isna(n_fractions) or n_fractions <= 0:
         return np.nan
     d_fraction = total_dose_gy / n_fractions
     return total_dose_gy * (d_fraction + alpha_beta) / (2.0 + alpha_beta)
 
 
-def load_clinical(path: str = CLINICAL_TSV) -> pd.DataFrame:
+def load_clinical(path=CLINICAL_TSV) -> pd.DataFrame:
     """
-    Load and minimally clean the clinical data TSV.
+    Load and clean the clinical data TSV.
 
     Parameters
     ----------
     path : str or Path
-        Path to CFB-GBM_clinical_data TSV file.
+        Path to CFB-GBM_clinical_data TSV.
 
     Returns
     -------
     pd.DataFrame
         Columns: patient_id, survival_weeks, age, sex, who_status.
-
-    Raises
-    ------
-    FileNotFoundError
-        If the TSV file does not exist at the given path.
     """
-    df = pd.read_csv(path, sep="\t", dtype=str)
-    df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
-
-    rename = {
-        "patient_id": "patient_id",
-        "overall_survival": "survival_weeks",
-        "age": "age",
-        "sex_at_birth": "sex",
-        "who_status_performance": "who_status",
-    }
-    # Keep only columns that exist; rename them
-    available = {k: v for k, v in rename.items() if k in df.columns}
-    df = df[list(available.keys())].rename(columns=available)
-
+    df = pd.read_csv(path, sep="\t")
+    df = df.rename(columns={
+        "id_patient": "patient_id",
+        "survival (weeks)": "survival_weeks",
+        "age_at_t0 (years)": "age",
+        "who_performance_status": "who_status",
+        "gender": "sex",
+    })
+    cols = [c for c in ["patient_id", "survival_weeks", "age", "sex", "who_status"] if c in df.columns]
+    df = df[cols].copy()
     df["survival_weeks"] = pd.to_numeric(df["survival_weeks"], errors="coerce")
     df["age"] = pd.to_numeric(df["age"], errors="coerce")
     df["who_status"] = pd.to_numeric(df["who_status"], errors="coerce")
-
     return df
 
 
-def load_treatment(path: str = TREATMENT_TSV) -> pd.DataFrame:
+def load_treatment(path=TREATMENT_TSV) -> pd.DataFrame:
     """
-    Load and minimally clean the treatment data TSV.
+    Load and clean the treatment data TSV.
 
     Parameters
     ----------
     path : str or Path
-        Path to CFB-GBM_treatment_data TSV file.
+        Path to CFB-GBM_treatment_data TSV.
 
     Returns
     -------
     pd.DataFrame
         Columns: patient_id, rt_dose_gy, n_fractions.
-
-    Raises
-    ------
-    FileNotFoundError
-        If the TSV file does not exist at the given path.
     """
-    df = pd.read_csv(path, sep="\t", dtype=str)
-    df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
-
-    rename = {
-        "patient_id": "patient_id",
-        "radiotherapy_dose": "rt_dose_gy",
+    df = pd.read_csv(path, sep="\t")
+    df = df.rename(columns={
+        "id_patient": "patient_id",
+        "dose (Gy)": "rt_dose_gy",
         "fractions_number": "n_fractions",
-    }
-    available = {k: v for k, v in rename.items() if k in df.columns}
-    df = df[list(available.keys())].rename(columns=available)
-
+    })
+    cols = [c for c in ["patient_id", "rt_dose_gy", "n_fractions"] if c in df.columns]
+    df = df[cols].copy()
     df["rt_dose_gy"] = pd.to_numeric(df["rt_dose_gy"], errors="coerce")
     df["n_fractions"] = pd.to_numeric(df["n_fractions"], errors="coerce")
-
     return df
 
 
-def load_imaging_availability(path: str = IMAGING_AVAILABILITY_TSV) -> pd.DataFrame:
+def load_imaging_availability(path=IMAGING_AVAILABILITY_TSV) -> pd.DataFrame:
     """
-    Load the treatment imaging availability TSV and extract RTDOSE and GTV flags.
+    Load imaging availability TSV and extract RTDOSE and GTV flags at t0.
+
+    Filters to temporality == 't0' before extracting flags.
 
     Parameters
     ----------
     path : str or Path
-        Path to CFB-GBM_treatment_imaging_availability TSV file.
+        Path to CFB-GBM_treatment_imaging_availability TSV.
 
     Returns
     -------
     pd.DataFrame
-        Columns: patient_id, has_rtdose, has_gtv.
-
-    Raises
-    ------
-    FileNotFoundError
-        If the TSV file does not exist at the given path.
+        Columns: patient_id, has_rtdose, has_gtv. One row per patient.
     """
-    df = pd.read_csv(path, sep="\t", dtype=str)
-    df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
+    df = pd.read_csv(path, sep="\t")
+    df.columns = df.columns.str.strip()
 
-    rename = {
-        "patient_id": "patient_id",
-        "rtdose": "has_rtdose",
-        "gtv": "has_gtv",
-    }
-    available = {k: v for k, v in rename.items() if k in df.columns}
-    df = df[list(available.keys())].rename(columns=available)
+    # Keep only t0 rows
+    if "temporality" in df.columns:
+        df = df[df["temporality"].str.strip().str.lower() == "t0"].copy()
+
+    df = df.rename(columns={"id_patient": "patient_id", "rtdose": "has_rtdose", "gtv": "has_gtv"})
+    cols = [c for c in ["patient_id", "has_rtdose", "has_gtv"] if c in df.columns]
+    df = df[cols].copy()
 
     for col in ("has_rtdose", "has_gtv"):
         if col in df.columns:
-            df[col] = df[col].str.strip().str.lower().map({"true": True, "1": True, "false": False, "0": False})
+            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0).astype(bool)
 
     return df
 
 
 def build_cohort(
-    clinical_path: str = CLINICAL_TSV,
-    treatment_path: str = TREATMENT_TSV,
-    imaging_path: str = IMAGING_AVAILABILITY_TSV,
-    output_path: str = None,
+    clinical_path=CLINICAL_TSV,
+    treatment_path=TREATMENT_TSV,
+    imaging_path=IMAGING_AVAILABILITY_TSV,
+    output_path=None,
 ) -> pd.DataFrame:
     """
-    Merge clinical, treatment, and imaging availability data; apply inclusion
-    criteria; add EQD2 column; export cohort table.
+    Merge clinical, treatment, and imaging data; apply inclusion criteria;
+    add EQD2; export cohort table.
 
     Parameters
     ----------
-    clinical_path : str or Path
-        Path to clinical data TSV.
-    treatment_path : str or Path
-        Path to treatment data TSV.
-    imaging_path : str or Path
-        Path to imaging availability TSV.
+    clinical_path, treatment_path, imaging_path : str or Path
+        Paths to the respective TSV files.
     output_path : str or Path, optional
-        If provided, export cohort table to this CSV path.
-        Defaults to data/processed/cohort.csv.
+        Export path for cohort CSV. Defaults to data/processed/cohort.csv.
 
     Returns
     -------
     pd.DataFrame
-        Full cohort table including excluded patients.
-        Column `included` (bool) flags eligible patients.
-        Column `exclusion_reason` is empty string for included patients.
+        Full cohort including excluded patients.
+        `included` column (bool) flags eligible patients.
+        `exclusion_reason` is empty string for included patients.
     """
     if output_path is None:
         output_path = DATA_PROCESSED / "cohort.csv"
@@ -210,18 +184,15 @@ def build_cohort(
     treatment = load_treatment(treatment_path)
     imaging = load_imaging_availability(imaging_path)
 
-    # Merge on patient_id; outer join to preserve all patients for transparency
     cohort = clinical.merge(treatment, on="patient_id", how="outer")
     cohort = cohort.merge(imaging, on="patient_id", how="outer")
 
-    # Fill missing availability flags as False
     for col in ("has_rtdose", "has_gtv"):
         if col not in cohort.columns:
             cohort[col] = False
         else:
             cohort[col] = cohort[col].fillna(False)
 
-    # Determine inclusion/exclusion
     reasons = []
     for _, row in cohort.iterrows():
         r = []
@@ -238,33 +209,28 @@ def build_cohort(
     cohort["exclusion_reason"] = reasons
     cohort["included"] = cohort["exclusion_reason"] == ""
 
-    # Add EQD2 for included patients
     cohort["eqd2_gy"] = cohort.apply(
-        lambda row: compute_eqd2(row["rt_dose_gy"], row["n_fractions"])
-        if row["included"]
-        else np.nan,
+        lambda row: compute_eqd2(row["rt_dose_gy"], row["n_fractions"]) if row["included"] else np.nan,
         axis=1,
     )
 
-    # Reorder columns
-    cols = [
+    col_order = [
         "patient_id", "rt_dose_gy", "n_fractions", "eqd2_gy",
         "survival_weeks", "age", "sex", "who_status",
         "has_rtdose", "has_gtv", "included", "exclusion_reason",
     ]
-    cols = [c for c in cols if c in cohort.columns]
-    cohort = cohort[cols].sort_values("patient_id").reset_index(drop=True)
+    col_order = [c for c in col_order if c in cohort.columns]
+    cohort = cohort[col_order].sort_values("patient_id").reset_index(drop=True)
 
     cohort.to_csv(output_path, index=False)
-    print(f"Cohort saved to {output_path}")
+
+    print(f"Cohort saved to: {output_path}")
     print(f"  Total patients : {len(cohort)}")
     print(f"  Included       : {cohort['included'].sum()}")
     print(f"  Excluded       : {(~cohort['included']).sum()}")
-
-    excl = cohort[~cohort["included"]]["exclusion_reason"].value_counts()
     print("\nExclusion reasons:")
-    for reason, count in excl.items():
-        print(f"  {reason}: {count}")
+    for reason, count in cohort[~cohort["included"]]["exclusion_reason"].value_counts().items():
+        print(f"  {count:3d}  {reason}")
 
     return cohort
 
