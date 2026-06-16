@@ -1,0 +1,10 @@
+nibabel
+numpy
+pandas
+scipy
+matplotlib
+seaborn
+scikit-learn
+lifelines
+tqdm
+notebook
