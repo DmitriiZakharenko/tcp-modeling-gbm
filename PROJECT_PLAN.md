@@ -158,18 +158,6 @@ Detailed task breakdown with status tracking: see `TASKS.md`.
 
 ---
 
-## Target Journals
-
-| Journal | IF (2024) | Quartile | Format |
-|---|---|---|---|
-| Physics in Medicine & Biology | 3.4 | Q1 | Technical Note |
-| Medical Physics | 3.5 | Q1 | Technical Note |
-| Radiotherapy and Oncology | 5.3 | Q1 | Short Communication |
-
-Publication requires going beyond course requirements: EUD-based TCP model, survival analysis with Cox regression, and honest uncertainty quantification are the key differentiators.
-
----
-
 ## References
 
 Okunieff, P., Morgan, D., Niemierko, A., & Suit, H. D. (1995). Radiation dose-response of human tumors. *IJROBP*, 32(4), 1227–1237.
