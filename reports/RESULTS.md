@@ -1,7 +1,7 @@
 # Current Results (auto-generated)
 
 **Last updated:** 2026-06-28  
-**Git commit:** `4bb2080`  
+**Git commit:** `3bb580c`  
 **Regenerate:** `python -m src.reporting.update_results`
 
 > **Outcome caveat:** CFB-GBM provides overall survival (weeks) only.
@@ -54,7 +54,7 @@ Outcome proxy: OS >= median (51 wk)
 | Metric | Value |
 |---|---|
 | D50 (Gy) | 53.200 |
-| γ50 | 3.3237 |
+| gamma50 | 3.3237 |
 | NLL (model / null) | 118.91 / 131.69 |
 | AIC (model / null) | 241.82 / 263.37 |
 | BIC (model / null) | 248.31 / 263.37 |
@@ -66,6 +66,25 @@ Outcome proxy: OS >= median (51 wk)
 | Accuracy @ TCP=0.5 | 0.6737 |
 | Sensitivity / Specificity | 0.823 / 0.521 |
 
+### logistic_tcp — dose = `eqd2_gy`
+
+Outcome proxy: OS >= median (51 wk)
+
+| Metric | Value |
+|---|---|
+| D50 (Gy) | 53.968 |
+| k | 0.0929 |
+| NLL (model / null) | 118.87 / 131.69 |
+| AIC (model / null) | 241.75 / 263.37 |
+| BIC (model / null) | 248.24 / 263.37 |
+| LR test p-value | 2.72e-06 |
+| McFadden pseudo-R² | 0.0973 |
+| ROC AUC (in-sample) | 0.6835 |
+| ROC AUC (5-fold CV) | 0.6848 ± 0.0978 |
+| Brier (model / null) | 0.2175 / 0.2500 |
+| Accuracy @ TCP=0.5 | 0.6737 |
+| Sensitivity / Specificity | 0.823 / 0.521 |
+
 ### poisson_tcp — dose = `Dmean_gy`
 
 Outcome proxy: OS >= median (51 wk)
@@ -73,7 +92,7 @@ Outcome proxy: OS >= median (51 wk)
 | Metric | Value |
 |---|---|
 | D50 (Gy) | 52.394 |
-| γ50 | 2.9042 |
+| gamma50 | 2.9042 |
 | NLL (model / null) | 118.87 / 131.69 |
 | AIC (model / null) | 241.73 / 263.37 |
 | BIC (model / null) | 248.23 / 263.37 |

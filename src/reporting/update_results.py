@@ -24,6 +24,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from src.config import DATA_PROCESSED, FIGURES_DIR, RANDOM_SEED, REPORTS_DIR
 from src.data.dvh_calculator import SCALAR_METRIC_KEYS
+from src.models.logistic_tcp import LogisticTCPModel
 from src.models.poisson_tcp import PoissonTCPModel
 
 METRICS_DIR = REPORTS_DIR / "metrics"
@@ -120,27 +121,30 @@ def association_metrics(frame: pd.DataFrame, outcomes: np.ndarray) -> pd.DataFra
     return pd.DataFrame(rows)
 
 
-def evaluate_poisson(
+def evaluate_tcp_model(
+    model_name: str,
+    model_factory,
     doses: np.ndarray,
     outcomes: np.ndarray,
     dose_label: str,
     median_os_wk: float,
+    k_params: int,
+    param2_name: str,
     n_folds: int = 5,
 ) -> Dict[str, Any]:
-    """Fit Poisson TCP and return quality metrics."""
+    """Fit any binary TCP model and return quality metrics."""
     n = len(outcomes)
     p0 = float(outcomes.mean())
     nll_null = float(-np.sum(outcomes * np.log(p0) + (1.0 - outcomes) * np.log(1.0 - p0)))
 
-    model = PoissonTCPModel(d50_init=55.0, gamma50_init=1.5)
+    model = model_factory()
     model.fit(doses, outcomes)
     preds = model.predict(doses)
     nll = model.nll_
-    k = 2
-    aic = 2 * k + 2 * nll
-    bic = k * np.log(n) + 2 * nll
+    aic = 2 * k_params + 2 * nll
+    bic = k_params * np.log(n) + 2 * nll
     lr_stat = 2 * ((-nll) - (-nll_null))
-    lr_p = float(1.0 - stats.chi2.cdf(lr_stat, k))
+    lr_p = float(1.0 - stats.chi2.cdf(lr_stat, k_params))
     mcfadden = 1.0 - nll / nll_null
 
     yhat = (preds >= 0.5).astype(int)
@@ -149,18 +153,19 @@ def evaluate_poisson(
     skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=RANDOM_SEED)
     cv_aucs = []
     for train_idx, test_idx in skf.split(doses, outcomes):
-        cv_model = PoissonTCPModel(d50_init=55.0, gamma50_init=1.5)
+        cv_model = model_factory()
         cv_model.fit(doses[train_idx], outcomes[train_idx])
         cv_preds = cv_model.predict(doses[test_idx])
         cv_aucs.append(float(roc_auc_score(outcomes[test_idx], cv_preds)))
 
     return {
-        "model": "poisson_tcp",
+        "model": model_name,
         "dose_variable": dose_label,
         "n": n,
         "outcome_definition": f"OS >= median ({median_os_wk:.0f} wk)",
-        "D50_gy": model.params_["D50_gy"],
-        "gamma50": model.params_["gamma50"],
+        "D50_gy": float(model.params_["D50_gy"]),
+        param2_name: float(model.params_[param2_name]),
+        "param2_name": param2_name,
         "nll": nll,
         "nll_null": nll_null,
         "aic": aic,
@@ -182,6 +187,48 @@ def evaluate_poisson(
         "pred_tcp_max": float(preds.max()),
         "cv_fold_aucs": cv_aucs,
     }
+
+
+def evaluate_poisson(
+    doses: np.ndarray,
+    outcomes: np.ndarray,
+    dose_label: str,
+    median_os_wk: float,
+    n_folds: int = 5,
+) -> Dict[str, Any]:
+    """Fit Poisson TCP and return quality metrics."""
+    return evaluate_tcp_model(
+        "poisson_tcp",
+        lambda: PoissonTCPModel(d50_init=55.0, gamma50_init=1.5),
+        doses,
+        outcomes,
+        dose_label,
+        median_os_wk,
+        k_params=2,
+        param2_name="gamma50",
+        n_folds=n_folds,
+    )
+
+
+def evaluate_logistic(
+    doses: np.ndarray,
+    outcomes: np.ndarray,
+    dose_label: str,
+    median_os_wk: float,
+    n_folds: int = 5,
+) -> Dict[str, Any]:
+    """Fit Logistic TCP and return quality metrics."""
+    return evaluate_tcp_model(
+        "logistic_tcp",
+        lambda: LogisticTCPModel(d50_init=53.0, k_init=0.1),
+        doses,
+        outcomes,
+        dose_label,
+        median_os_wk,
+        k_params=2,
+        param2_name="k",
+        n_folds=n_folds,
+    )
 
 
 def list_figures() -> List[str]:
@@ -287,7 +334,7 @@ def render_results_md(
             "| Metric | Value |",
             "|---|---|",
             f"| D50 (Gy) | {m['D50_gy']:.3f} |",
-            f"| γ50 | {m['gamma50']:.4f} |",
+            f"| {m.get('param2_name', 'gamma50')} | {m.get(m.get('param2_name', 'gamma50'), m.get('gamma50', float('nan'))):.4f} |",
             f"| NLL (model / null) | {m['nll']:.2f} / {m['nll_null']:.2f} |",
             f"| AIC (model / null) | {m['aic']:.2f} / {m['aic_null']:.2f} |",
             f"| BIC (model / null) | {m['bic']:.2f} / {m['bic_null']:.2f} |",
@@ -350,10 +397,13 @@ def update_results() -> Path:
     survival_df = survival_by_fractionation(frame)
     assoc_df = association_metrics(frame, outcomes)
 
-    model_eqd2 = evaluate_poisson(frame["eqd2_gy"].to_numpy(), outcomes, "eqd2_gy", median_os)
-    model_dmean = evaluate_poisson(frame["Dmean_gy"].to_numpy(), outcomes, "Dmean_gy", median_os)
-
-    model_csv_rows = [{k: v for k, v in m.items() if k != "cv_fold_aucs"} for m in (model_eqd2, model_dmean)]
+    doses = frame["eqd2_gy"].to_numpy()
+    model_rows = [
+        evaluate_poisson(doses, outcomes, "eqd2_gy", median_os),
+        evaluate_logistic(doses, outcomes, "eqd2_gy", median_os),
+        evaluate_poisson(frame["Dmean_gy"].to_numpy(), outcomes, "Dmean_gy", median_os),
+    ]
+    model_csv_rows = [{k: v for k, v in m.items() if k != "cv_fold_aucs"} for m in model_rows]
     model_df = pd.DataFrame(model_csv_rows)
 
     _save_csv(cohort_df, "cohort_summary.csv")
@@ -377,7 +427,7 @@ def update_results() -> Path:
     _save_csv(dvh_summary.reset_index().rename(columns={"index": "metric"}), "dvh_scalars_summary.csv")
 
     figures = list_figures()
-    md = render_results_md(cohort_df, survival_df, assoc_df, [model_eqd2, model_dmean], figures)
+    md = render_results_md(cohort_df, survival_df, assoc_df, model_rows, figures)
     RESULTS_MD.write_text(md)
     print(f"Wrote {RESULTS_MD}")
     print(f"Metrics CSVs in {METRICS_DIR}/")
