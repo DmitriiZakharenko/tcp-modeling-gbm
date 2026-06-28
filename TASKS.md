@@ -100,7 +100,7 @@ Do **not** download MRI sequences — they are not needed for this project.
 - [x] `[CODE]` Write `src/data/feature_builder.py`: iterate cohort, extract DVH features, merge, export `data/processed/features.csv` (191 rows; local/gitignored)
 - [x] `[CODE]` DVH quality control — `dvh_qc.py` (exclude Dmean < 1 Gy → patient 32)
 - [x] `[CODE]` Export modeling dataset — `export_modeling_dataset.py` → `modeling_table.csv` (190 × 33, in git)
-- [ ] `[CODE]` Write `src/utils/plot_dvh.py`: `plot_dvh_overlay(patient_ids, dvh_data, save_path)`, 300 dpi, publication style
+- [x] `[CODE]` Write `src/utils/plot_dvh.py`: `plot_dvh_overlay(patient_ids, dvh_data, save_path)`, 300 dpi, publication style
 - [ ] `[CODE]` Write `notebooks/02_feature_extraction.ipynb`: descriptive stats, DVH overlay plots, distribution figures
 
 ### Literature and Writing
