@@ -12,11 +12,25 @@ Roles: **[CODE]** · **[LIT]** literature & clinical review · **[WRITE]** repor
 
 ---
 
-## Dataset Facts (CFB-GBM, TCIA)
+## Dataset Facts (CFB-GBM, TCIA) — verified 2026-06-26
 
-- 264 patients total; 194 with RTDOSE; 191 with GTV segmentation
+| Metric | Value | Source |
+|---|---|---|
+| Total patients in TSV | 264 | `cohort.csv` |
+| Has RTDOSE (imaging flag) | 194 | `cohort.csv` |
+| Has GTV segmentation | 191 | `cohort.csv` |
+| Both RTDOSE + GTV on disk | 191 | `verify_raw_data.py` |
+| Unknown RT dose (excluded) | 70 | `cohort.csv` exclusion_reason |
+| **Included after cohort rules** | **190** | `cohort.csv` (`included=True`) |
+| **Modeling table (post DVH QC)** | **190 × 33** | `modeling_table.csv` |
+| DVH QC exclusion | 1 (patient 32, Dmean=0 Gy) | `dvh_qc.py` |
+| Primary fractionation | 120 × 60 Gy/30 fr; 61 × 40.05 Gy/15 fr | `modeling_table.csv` |
+| Median age (modeling) | 70 yr | `modeling_table.csv` |
+| Sex M/F (modeling) | 117 / 73 | `modeling_table.csv` |
+| Median OS (modeling) | 51 wk | `modeling_table.csv` |
+
 - Format: **NIfTI (.nii.gz)**, pre-processed (skull-stripped, co-registered) — not DICOM
-- Two fractionation schemes: 60 Gy / 30 fr (standard Stupp) and 40.05 Gy / 15 fr (elderly / poor PS)
+- Two fractionation schemes dominate: 60 Gy / 30 fr (standard Stupp) and 40.05 Gy / 15 fr (elderly / poor PS)
 - ~26.5% of patients have unknown dose → excluded from TCP modeling
 - Clinical outcome: overall survival in weeks, available for all 264 patients in TSV
 
@@ -33,15 +47,13 @@ Save all files to `data/processed/`:
 | Imaging availability | 5.47 KB | https://www.cancerimagingarchive.net/wp-content/uploads/CFB-GBM_treatment_imaging_availability_v02_20260129.tsv |
 | Data dictionary | 4.09 KB | https://www.cancerimagingarchive.net/wp-content/uploads/CFB-GBM_columns_description_new_v02_20260129.tsv |
 
-**Step 2 — RTDOSE and GTV NIfTI files (~1–1.5 GB, requires IBM Aspera Connect)**
+**Step 2 — RTDOSE and GTV NIfTI files (~52 GB on disk for 191 patients, requires IBM Aspera Connect)**
 
 1. Install [IBM Aspera Connect](https://www.ibm.com/products/aspera/downloads)
 2. Go to [CFB-GBM on TCIA](https://www.cancerimagingarchive.net/collection/cfb-gbm/)
-3. Click **Download (208 GB)**
-4. In the Aspera dialog, deselect all folders; select only:
-   - `*/rtdose*` or the RTDOSE subfolder
-   - `*/gtv*` or the GTV subfolder
-5. Download to `data/raw/`
+3. Use `python -m src.data.download_rt_connect` (Faspex OAuth + Connect API) or manual Aspera dialog
+4. Select only RTDOSE and GTV subfolders
+5. Download to `data/raw/`; verify with `python -m src.data.verify_raw_data`
 
 Do **not** download MRI sequences — they are not needed for this project.
 
@@ -59,9 +71,12 @@ Do **not** download MRI sequences — they are not needed for this project.
 - [x] `[INFRA]` Write `src/models/base_model.py` — abstract `TCPModel` base class
 - [x] `[CODE]` Write `src/data/cohort_builder.py` — merge TSVs, apply inclusion criteria, EQD2, export `cohort.csv`
 - [x] `[CODE]` Write stubs with docstrings: `src/data/nifti_loader.py`, `src/data/dvh_calculator.py`
-- [ ] `[CODE]` Download clinical TSVs → `data/processed/` (see download table above)
-- [ ] `[CODE]` Run `python -m src.data.cohort_builder` → verify cohort size and exclusion breakdown
-- [ ] `[CODE]` Write `notebooks/01_cohort_overview.ipynb`: cohort demographics, dose scheme breakdown, exclusion summary
+- [x] `[CODE]` Download clinical TSVs → `data/processed/` (4 files; `download_clinical_data.py`)
+- [x] `[CODE]` Run `python -m src.data.cohort_builder` → 264 total, 190 included, 74 excluded
+- [x] `[CODE]` Write `notebooks/01_cohort_overview.ipynb`: demographics, fractionation, exclusion summary
+- [x] `[CODE]` Download RT NIfTI (191 patients) — `download_rt_connect.py`, `organize_raw_data.py`
+- [x] `[CODE]` Verify raw data completeness — `verify_raw_data.py`
+- [x] `[CODE]` One-command setup — `setup_data.py`, `Makefile`
 
 ### Literature and Writing (start now, independent of coding)
 
@@ -80,9 +95,11 @@ Do **not** download MRI sequences — they are not needed for this project.
 
 ### Coding
 
-- [ ] `[CODE]` Implement `src/data/nifti_loader.py`: `load_rtdose()` and `load_gtv_mask()` using `nibabel`
-- [ ] `[CODE]` Implement `src/data/dvh_calculator.py`: `compute_dvh()` and `extract_dvh_metrics()` (D95, D98, D50, D2, Dmean, Dmax, volume)
-- [ ] `[CODE]` Write `src/data/feature_builder.py`: iterate cohort, extract DVH features, merge, export `data/processed/features.csv`
+- [x] `[CODE]` Implement `src/data/nifti_loader.py`: `load_rtdose()` and `load_gtv_mask()` using `nibabel`
+- [x] `[CODE]` Implement `src/data/dvh_calculator.py`: `compute_dvh()` and `extract_dvh_metrics()` (D95, D98, D50, D2, Dmean, Dmax, volume, Vx, gEUD, HI)
+- [x] `[CODE]` Write `src/data/feature_builder.py`: iterate cohort, extract DVH features, merge, export `data/processed/features.csv` (191 rows; local/gitignored)
+- [x] `[CODE]` DVH quality control — `dvh_qc.py` (exclude Dmean < 1 Gy → patient 32)
+- [x] `[CODE]` Export modeling dataset — `export_modeling_dataset.py` → `modeling_table.csv` (190 × 33, in git)
 - [ ] `[CODE]` Write `src/utils/plot_dvh.py`: `plot_dvh_overlay(patient_ids, dvh_data, save_path)`, 300 dpi, publication style
 - [ ] `[CODE]` Write `notebooks/02_feature_extraction.ipynb`: descriptive stats, DVH overlay plots, distribution figures
 
@@ -143,11 +160,15 @@ Do **not** download MRI sequences — they are not needed for this project.
 
 ```
 INFRA (repo, config) ✓
-  └── DATA (clinical TSVs → cohort_builder)
-        └── EXTRACT (nifti_loader → dvh_calculator → feature_builder)
-              ├── MODEL-01..05 (TCP models)
-              │     └── STATS (bootstrap CI, model comparison)
-              └── STATS (survival analysis)
+  └── DATA (clinical TSVs → cohort_builder) ✓
+        └── DOWNLOAD (RT NIfTI, verify) ✓
+              └── EXTRACT (nifti_loader → dvh_calculator → feature_builder) ✓
+                    └── QC + EXPORT (dvh_qc → modeling_table.csv) ✓
+                          ├── PLOT (plot_dvh.py) — in progress
+                          ├── NOTEBOOK 02 — next
+                          ├── MODEL-01..05 (TCP models)
+                          │     └── STATS (bootstrap CI, model comparison)
+                          └── STATS (survival analysis)
 
 LIT tasks ── independent, start Week 1
 WRITE 1–4 ── independent, start Week 1
