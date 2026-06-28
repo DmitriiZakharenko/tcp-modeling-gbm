@@ -6,7 +6,7 @@ The pipeline covers DICOM-free NIfTI data curation, DVH feature extraction, Pois
 
 **Dataset:** Moreau et al. 2025, *The Cancer Imaging Archive* — [doi:10.7937/V9PN-2F72](https://doi.org/10.7937/V9PN-2F72)  
 **Cohort:** 190 / 264 patients for modeling after DVH QC (191 with RTDOSE + GTV; 1 excluded for invalid RTDOSE)  
-**Task board:** [GitHub Issues #1](https://github.com/DmitriiZakharenko/tcp-modeling-gbm/issues/1)
+**Task board:** [TASKS.md](TASKS.md) · [GitHub Issue #1](https://github.com/DmitriiZakharenko/tcp-modeling-gbm/issues/1) (sync: `bash scripts/sync_github_issue_1.sh`)
 
 ---
 

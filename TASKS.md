@@ -5,14 +5,15 @@
 Checkboxes below are **clickable directly on GitHub** (no terminal needed):
 - Open this file on [github.com/DmitriiZakharenko/tcp-modeling-gbm](https://github.com/DmitriiZakharenko/tcp-modeling-gbm/blob/main/TASKS.md)
 - Click any `[ ]` to mark it done — GitHub saves automatically
-- **Coders:** check off tasks as you push the code
-- **Literature / Writing team:** check off your tasks as you complete each section
+- **Mirror issue:** [GitHub Issue #1](https://github.com/DmitriiZakharenko/tcp-modeling-gbm/issues/1) — sync via `bash scripts/sync_github_issue_1.sh` (requires `gh auth login`)
 
 Roles: **[CODE]** · **[LIT]** literature & clinical review · **[WRITE]** report writing
 
+**Last synced:** 2026-06-28 · **Git:** `14e985e` · **Report:** `make report` → `reports/RESULTS.md`
+
 ---
 
-## Dataset Facts (CFB-GBM, TCIA) — verified 2026-06-26
+## Dataset Facts (CFB-GBM v3, TCIA) — verified 2026-06-28
 
 | Metric | Value | Source |
 |---|---|---|
@@ -22,40 +23,46 @@ Roles: **[CODE]** · **[LIT]** literature & clinical review · **[WRITE]** repor
 | Both RTDOSE + GTV on disk | 191 | `verify_raw_data.py` |
 | Unknown RT dose (excluded) | 70 | `cohort.csv` exclusion_reason |
 | **Included after cohort rules** | **190** | `cohort.csv` (`included=True`) |
-| **Modeling table (post DVH QC)** | **190 × 33** | `modeling_table.csv` |
+| **Modeling table (post DVH QC)** | **190 × 58** | `modeling_table.csv` (v3 RANO + clinical) |
 | DVH QC exclusion | 1 (patient 32, Dmean=0 Gy) | `dvh_qc.py` |
 | Primary fractionation | 120 × 60 Gy/30 fr; 61 × 40.05 Gy/15 fr | `modeling_table.csv` |
+| RANO t0→t1 labels | **137 / 190** | `modeling_table.csv` |
+| RANO in 40 Gy arm | **34** | `modeling_table.csv` |
 | Median age (modeling) | 70 yr | `modeling_table.csv` |
 | Sex M/F (modeling) | 117 / 73 | `modeling_table.csv` |
 | Median OS (modeling) | 51 wk | `modeling_table.csv` |
 
+### Key analysis results (auto-generated)
+
+| Analysis | Result |
+|---|---|
+| Pooled TCP OS proxy (EQD2, n=190) | AUC ≈ **0.68** |
+| Pooled EQD2 → RANO (n=137) | AUC ≈ **0.43** (confounded) |
+| Pooled volume + clinical + scheme → RANO | AUC ≈ **0.72**; LOOCV ≈ **0.64** |
+| 40 Gy volume → RANO (n=34) | in-sample AUC ≈ **0.90**; LOOCV ≈ **0.74** |
+| PyRadiomics top-5 → RANO (t1gd GTV t0) | AUC ≈ **0.78** vs DVH volume **0.71** |
+| Cox OS ~ RANO (n=137) | HR ≈ **0.48**, p ≈ 0.0009 |
+
 - Format: **NIfTI (.nii.gz)**, pre-processed (skull-stripped, co-registered) — not DICOM
-- Two fractionation schemes dominate: 60 Gy / 30 fr (standard Stupp) and 40.05 Gy / 15 fr (elderly / poor PS)
-- ~26.5% of patients have unknown dose → excluded from TCP modeling
-- Clinical outcome: overall survival in weeks, available for all 264 patients in TSV
+- Two fractionation schemes: 60 Gy / 30 fr (Stupp) and 40.05 Gy / 15 fr (elderly / poor PS)
+- v3 adds: RANO, MRI/CT availability, PyRadiomics TSV, RT delay, BMI
+- Clinical outcome: OS (weeks); RANO non-PD at t1 as secondary imaging endpoint
 
 ## Data Download Strategy
 
-**Step 1 — Clinical TSVs (~50 KB total, no login, no Aspera): download now**
+**Step 1 — Clinical TSVs (v3, ~200 KB, no Aspera):** `python -m src.data.download_clinical_data`
 
-Save all files to `data/processed/`:
+| File | Notes |
+|---|---|
+| `CFB-GBM_clinical_data_v03_*.tsv` | Demographics, OS |
+| `CFB-GBM_rano_criteria_v03_*.tsv` | RANO t0/t1/t2 |
+| `CFB_GBM_features_extraction_pyradiomics_v03_*.tsv` | Author radiomics |
+| Treatment / imaging availability / dictionary | v2 + v3 merged in `cohort_builder.py` |
 
-| File | Size | Direct URL |
-|---|---|---|
-| Clinical data | 12.4 KB | https://www.cancerimagingarchive.net/wp-content/uploads/CFB-GBM_clinical_data_v02_20260129.tsv |
-| Treatment data | 6.86 KB | https://www.cancerimagingarchive.net/wp-content/uploads/CFB-GBM_treatment_data_v02_20260129.tsv |
-| Imaging availability | 5.47 KB | https://www.cancerimagingarchive.net/wp-content/uploads/CFB-GBM_treatment_imaging_availability_v02_20260129.tsv |
-| Data dictionary | 4.09 KB | https://www.cancerimagingarchive.net/wp-content/uploads/CFB-GBM_columns_description_new_v02_20260129.tsv |
+**Step 2 — RTDOSE + GTV t0 NIfTI (~52 GB, IBM Aspera):** `make download-rt`
 
-**Step 2 — RTDOSE and GTV NIfTI files (~52 GB on disk for 191 patients, requires IBM Aspera Connect)**
-
-1. Install [IBM Aspera Connect](https://www.ibm.com/products/aspera/downloads)
-2. Go to [CFB-GBM on TCIA](https://www.cancerimagingarchive.net/collection/cfb-gbm/)
-3. Use `python -m src.data.download_rt_connect` (Faspex OAuth + Connect API) or manual Aspera dialog
-4. Select only RTDOSE and GTV subfolders
-5. Download to `data/raw/`; verify with `python -m src.data.verify_raw_data`
-
-Do **not** download MRI sequences — they are not needed for this project.
+**Step 3 — Follow-up GTV t1 NIfTI (optional, ~160 patients):** `make download-t1-gtv`  
+_Status: blocked in CI/sandbox (TCP 33001); run locally with Aspera Connect._
 
 ---
 
@@ -71,21 +78,19 @@ Do **not** download MRI sequences — they are not needed for this project.
 - [x] `[INFRA]` Write `src/models/base_model.py` — abstract `TCPModel` base class
 - [x] `[CODE]` Write `src/data/cohort_builder.py` — merge TSVs, apply inclusion criteria, EQD2, export `cohort.csv`
 - [x] `[CODE]` Write stubs with docstrings: `src/data/nifti_loader.py`, `src/data/dvh_calculator.py`
-- [x] `[CODE]` Download clinical TSVs → `data/processed/` (4 files; `download_clinical_data.py`)
+- [x] `[CODE]` Download clinical TSVs → `data/processed/` (`download_clinical_data.py`)
 - [x] `[CODE]` Run `python -m src.data.cohort_builder` → 264 total, 190 included, 74 excluded
 - [x] `[CODE]` Write `notebooks/01_cohort_overview.ipynb`: demographics, fractionation, exclusion summary
 - [x] `[CODE]` Download RT NIfTI (191 patients) — `download_rt_connect.py`, `organize_raw_data.py`
 - [x] `[CODE]` Verify raw data completeness — `verify_raw_data.py`
-- [x] `[CODE]` Results reporting — `src/reporting/update_results.py` → `reports/RESULTS.md` + `reports/metrics/*.csv` (run via `make report` before each analysis commit)
+- [x] `[CODE]` Results reporting — `src/reporting/update_results.py` → `reports/RESULTS.md` + `reports/metrics/*.csv` (`make report`)
 
-### Literature and Writing (start now, independent of coding)
+### Literature and Writing
 
-- [ ] `[LIT]` Search PubMed for TCP modeling in GBM.
-  Query: `("tumor control probability" OR "TCP model") AND ("glioblastoma" OR "brain tumor") AND "radiotherapy"`
-  Filter: after 2000, peer-reviewed, English. Target ≥8 papers.
-- [x] `[LIT]` Build `reports/literature_table.csv` (12 articles, PubMed IDs)
-- [x] `[LIT]` Read CFB-GBM data descriptor paper (Moreau et al. 2025, Frontiers in Oncology)
-- [ ] `[WRITE]` Write report section 1: Introduction and Clinical Background (~1 page)
+- [x] `[LIT]` Search PubMed for TCP modeling in GBM (≥8 papers; see `reports/literature_table.csv`, 12 entries)
+- [x] `[LIT]` Build `reports/literature_table.csv` (PubMed IDs + DOIs, 2010–2025)
+- [x] `[LIT]` Read CFB-GBM data descriptor (Moreau et al. 2025, Front Oncol; PMID 39949753)
+- [x] `[WRITE]` Draft Introduction — in `reports/manuscript_draft.md` §1 (full polish pending)
 
 ---
 
@@ -95,19 +100,18 @@ Do **not** download MRI sequences — they are not needed for this project.
 
 - [x] `[CODE]` Implement `src/data/nifti_loader.py`: `load_rtdose()` and `load_gtv_mask()` using `nibabel`
 - [x] `[CODE]` Implement `src/data/dvh_calculator.py`: `compute_dvh()` and `extract_dvh_metrics()` (D95, D98, D50, D2, Dmean, Dmax, volume, Vx, gEUD, HI)
-- [x] `[CODE]` Write `src/data/feature_builder.py`: iterate cohort, extract DVH features, merge, export `data/processed/features.csv` (191 rows; local/gitignored)
+- [x] `[CODE]` Write `src/data/feature_builder.py`: iterate cohort, extract DVH features, merge, export `features.csv` (191 rows; gitignored)
 - [x] `[CODE]` DVH quality control — `dvh_qc.py` (exclude Dmean < 1 Gy → patient 32)
-- [x] `[CODE]` Export modeling dataset — `export_modeling_dataset.py` → `modeling_table.csv` (190 × 33, in git)
-- [x] `[CODE]` Write `src/utils/plot_dvh.py`: `plot_dvh_overlay(patient_ids, dvh_data, save_path)`, 300 dpi, publication style
+- [x] `[CODE]` Export modeling dataset — `export_modeling_dataset.py` → `modeling_table.csv` (190 × 58 after v3)
+- [x] `[CODE]` Write `src/utils/plot_dvh.py`: `plot_dvh_overlay()`, 300 dpi, publication style
 - [x] `[CODE]` Write `notebooks/02_feature_extraction.ipynb`: descriptive stats, DVH overlay plots, distribution figures
 
 ### Literature and Writing
 
-- [ ] `[LIT]` Identify how outcome is defined across papers (local control vs. OS vs. PFS);
-  flag mismatches with CFB-GBM (OS in weeks only — no local control endpoint)
-- [ ] `[WRITE]` Write report section 2: Dataset Description and Patient Cohort (~1 page)
-- [ ] `[WRITE]` Write report section 3: Data Acquisition and Curation Methodology (~0.5 page)
-- [ ] `[WRITE]` Write report section 4: Dosimetric and Clinical Feature Extraction (~1 page)
+- [x] `[LIT]` Identify outcome definitions across papers vs CFB-GBM (OS / LC / PFS / RANO); documented in manuscript §4.1 and confounding audit
+- [x] `[WRITE]` Draft Dataset Description — `manuscript_draft.md` §2.1 + `RESULTS.md` §1
+- [x] `[WRITE]` Draft Data Acquisition — `manuscript_draft.md` §2.1 + README Data section
+- [x] `[WRITE]` Draft Feature Extraction — `manuscript_draft.md` §2.2 + `RESULTS.md` DVH metrics
 
 ---
 
@@ -125,15 +129,24 @@ Do **not** download MRI sequences — they are not needed for this project.
 - [x] `[CODE]` Write `notebooks/03_tcp_models.ipynb`: OS proxy + RANO v3, within-arm analysis
 - [x] `[CODE]` Write `notebooks/04_parameter_estimation.ipynb`: bootstrap CI, model comparison table
 - [x] `[CODE]` Write `notebooks/05_survival_analysis.ipynb`: KM curves, Cox, clinical stratification
-- [x] `[CODE]` `src/analysis/within_arm_rano_tcp.py` — per-scheme DVH → RANO TCP + Cox OS~RANO
-- [x] `[CODE]` Write `notebooks/06_rano_multivariable_40gy.ipynb`: multivariable logistic 40 Gy arm
-- [x] `[WRITE]` Draft `reports/manuscript_draft.md` + expanded Discussion + `manuscript_equations.tex`
-- [x] `[CODE]` Pooled RANO models, LOOCV, PyRadiomics comparison (`rano_prediction_suite.py`)
+- [x] `[CODE]` `src/analysis/confounding_audit.py` — dose heterogeneity, confounding correlations
+- [x] `[CODE]` `src/analysis/stratified_analysis.py` — clinical prognosis, within-arm Spearman
+- [x] `[CODE]` `src/analysis/within_arm_rano_tcp.py` — per-scheme DVH → RANO + Cox OS~RANO
+- [x] `[CODE]` `src/analysis/rano_tcp_comparison.py` — OS vs RANO endpoint comparison
+- [x] `[CODE]` `src/analysis/rano_multivariable.py` — 40 Gy multivariable logistic + volume validation
+- [x] `[CODE]` `src/analysis/rano_prediction_suite.py` — pooled RANO, LOOCV, PyRadiomics comparison
+- [x] `[CODE]` `src/data/rano_loader.py` + v3 cohort merge in `cohort_builder.py`
+- [x] `[CODE]` Write `notebooks/06_rano_multivariable_40gy.ipynb`
+- [x] `[CODE]` `scripts/build_analysis_notebooks.py` — regenerate notebooks 03–06
 
 ### Literature and Writing
 
-- [ ] `[WRITE]` Write report section 5: Mathematical Description of TCP Models (~1.5 pages, include equations)
-- [ ] `[WRITE]` Write report section 6: Parameter Estimation Methodology (~1 page)
+- [x] `[WRITE]` Draft TCP equations — `manuscript_draft.md` §2.3 + `reports/manuscript_equations.tex`
+- [x] `[WRITE]` Draft Parameter Estimation — `manuscript_draft.md` §2.3–2.5
+- [x] `[WRITE]` Draft Results — `manuscript_draft.md` §3 + `reports/RESULTS.md`
+- [x] `[WRITE]` Draft Discussion — `manuscript_draft.md` §4 (expanded 2026-06-28)
+- [x] `[WRITE]` Draft Conclusion — `manuscript_draft.md` §5
+- [x] `[WRITE]` Manuscript skeleton + presentation outline — `reports/manuscript_draft.md`
 
 ---
 
@@ -141,20 +154,29 @@ Do **not** download MRI sequences — they are not needed for this project.
 
 ### Coding
 
-- [ ] `[CODE]` Export all figures: 300 dpi PNG + PDF, consistent style, save to `figures/`
-- [ ] `[CODE]` Final check: all notebooks run top-to-bottom without errors (`Kernel → Restart & Run All`)
+- [x] `[CODE]` Export analysis figures to `figures/` (22 PNG, 300 dpi; PDF export pending)
+- [ ] `[CODE]` Download t1 GTV NIfTI + validate `size_t1_cm3` (`make download-t1-gtv`; Aspera required)
+- [ ] `[CODE]` Final check: all notebooks 01–06 run top-to-bottom without errors
 - [ ] `[CODE]` Pin package versions: `pip freeze > requirements.txt`
+- [ ] `[CODE]` Nested CV for PyRadiomics feature selection (reduce optimism vs in-sample top-5)
 
 ### Literature and Writing
 
-- [ ] `[LIT]` Write report section 9: Literature Review and Comparison
-  (compare D50/γ50 estimates with literature table; ~2 pages)
-- [ ] `[LIT]` Write report section 10: Critical Discussion
-  (dataset limitations, model assumptions, fractionation heterogeneity, generalizability; ~2 pages)
-- [ ] `[WRITE]` Write report sections 7–8: Results and Visualizations, Model Comparison (~2 pages)
-- [ ] `[WRITE]` Write report section 11: Conclusion (~0.5 page)
-- [ ] `[WRITE]` Assemble full report (10–15 pages), format references (Vancouver style), export PDF
-- [ ] `[WRITE]` Build oral presentation (15 min, ~15 slides)
+- [x] `[LIT]` Literature table with TCP/GBM/radiomics comparators — `reports/literature_table.csv`
+- [x] `[LIT]` Critical Discussion draft — `manuscript_draft.md` §4 (limitations, confounding, Moreau comparison)
+- [x] `[LIT]` Literature comparison in Discussion — D50 bootstrap vs literature; feasibility framing vs Ohri/Maitre
+- [ ] `[WRITE]` Merge manuscript sections into single Word/LaTeX document (10–15 pages)
+- [ ] `[WRITE]` Format references Vancouver style in final document (draft refs in `manuscript_draft.md`)
+- [ ] `[WRITE]` Export manuscript PDF
+- [ ] `[WRITE]` Build oral presentation slides from outline (15 min; outline in `manuscript_draft.md`)
+
+---
+
+## Remaining / Optional
+
+- [ ] `[CODE]` External validation on second TCIA GBM cohort
+- [ ] `[CODE]` Δvolume (t0→t1 NIfTI) → RANO after t1 GTV download
+- [ ] `[WRITE]` Submit short paper / ESTRO poster (target: *Phys Med* or *Med Phys* technical note)
 
 ---
 
@@ -162,20 +184,26 @@ Do **not** download MRI sequences — they are not needed for this project.
 
 ```
 INFRA (repo, config) ✓
-  └── DATA (clinical TSVs → cohort_builder) ✓
-        └── DOWNLOAD (RT NIfTI, verify) ✓
+  └── DATA (clinical TSVs v3 → cohort_builder + rano_loader) ✓
+        └── DOWNLOAD (RT NIfTI t0, verify) ✓
               └── EXTRACT (nifti_loader → dvh_calculator → feature_builder) ✓
-                    └── QC + EXPORT (dvh_qc → modeling_table.csv) ✓
-                          ├── PLOT (plot_dvh.py) — in progress
-                          ├── NOTEBOOK 02 — next
-                          ├── MODEL-01..05 (TCP models)
-                          │     └── STATS (bootstrap CI, model comparison)
-                          └── STATS (survival analysis)
+                    └── QC + EXPORT (dvh_qc → modeling_table.csv 190×58) ✓
+                          ├── PLOT (plot_dvh.py) ✓
+                          ├── NOTEBOOK 01–02 ✓
+                          ├── MODEL-01..05 (TCP models) ✓
+                          │     └── STATS (bootstrap CI, model comparison) ✓
+                          ├── STATS (survival analysis) ✓
+                          ├── v3 RANO pipeline ✓
+                          │     ├── rano_tcp_comparison, within_arm_rano_tcp ✓
+                          │     ├── rano_multivariable (40 Gy) ✓
+                          │     └── rano_prediction_suite (pooled, LOOCV, PyRadiomics) ✓
+                          ├── NOTEBOOK 03–06 ✓
+                          └── REPORT (update_results → RESULTS.md) ✓
 
-LIT tasks ── independent, start Week 1
-WRITE 1–4 ── independent, start Week 1
-WRITE 5–6 ── after models are designed (Week 3 start)
-WRITE 7–11 ── after results available (Week 4)
+Optional: download t1 GTV → validate_rano_volumes (t1) — pending Aspera
+
+LIT tasks ── literature_table ✓; final Word/PDF pending
+WRITE ── manuscript_draft ✓; slides + PDF export pending
 ```
 
 ---
@@ -187,5 +215,5 @@ WRITE 7–11 ── after results available (Week 4)
 - No hardcoded paths — use `src/config.py` with `pathlib.Path`
 - Notebooks must run **top-to-bottom** (`Kernel → Restart & Run All`)
 - Commits: imperative, lowercase — e.g. `implement dvh_calculator with D95 D50 D2 extraction`
-- **After each analysis commit:** run `python -m src.reporting.update_results` (or `make report`) and include updated `reports/RESULTS.md` + `reports/metrics/*.csv` in the commit
+- **After each analysis commit:** run `make report` and include updated `reports/RESULTS.md` + `reports/metrics/*.csv`
 - One feature per branch; merge via pull request
