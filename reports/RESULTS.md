@@ -1,7 +1,7 @@
 # Current Results (auto-generated)
 
 **Last updated:** 2026-06-28  
-**Git commit:** `2113673`  
+**Git commit:** `8793672`  
 **Regenerate:** `python -m src.reporting.update_results`
 
 > **Outcome caveat:** CFB-GBM provides overall survival (weeks) only.
@@ -103,6 +103,26 @@ Outcome proxy: OS >= median (51 wk)
 | Brier (model / null) | 0.2175 / 0.2500 |
 | Accuracy @ TCP=0.5 | 0.6737 |
 | Sensitivity / Specificity | 0.823 / 0.521 |
+
+### eud_tcp — dose = `gEUD_a-10`
+
+Outcome proxy: OS >= median (51 wk)
+
+| Metric | Value |
+|---|---|
+| D50 (Gy) | 52.348 |
+| gamma50 | 2.9076 |
+| geud_a | -10.0 |
+| NLL (model / null) | 118.85 / 131.69 |
+| AIC (model / null) | 243.69 / 263.37 |
+| BIC (model / null) | 253.43 / 263.37 |
+| LR test p-value | 1.11e-05 |
+| McFadden pseudo-R² | 0.0975 |
+| ROC AUC (in-sample) | 0.6850 |
+| ROC AUC (5-fold CV) | 0.6818 ± 0.0860 |
+| Brier (model / null) | 0.2176 / 0.2500 |
+| Accuracy @ TCP=0.5 | 0.6684 |
+| Sensitivity / Specificity | 0.823 / 0.511 |
 
 ### poisson_tcp — dose = `Dmean_gy`
 

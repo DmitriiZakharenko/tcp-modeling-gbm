@@ -24,6 +24,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from src.config import DATA_PROCESSED, FIGURES_DIR, RANDOM_SEED, REPORTS_DIR
 from src.data.dvh_calculator import SCALAR_METRIC_KEYS
+from src.models.eud_tcp import EUDTCPModel
 from src.models.logistic_tcp import LogisticTCPModel
 from src.models.poisson_tcp import PoissonTCPModel
 from src.models.probit_tcp import ProbitTCPModel
@@ -253,6 +254,74 @@ def evaluate_logistic(
     )
 
 
+def evaluate_eud(
+    frame: pd.DataFrame,
+    outcomes: np.ndarray,
+    median_os_wk: float,
+    n_folds: int = 5,
+) -> Dict[str, Any]:
+    """Fit gEUD TCP with best-a selection and return quality metrics."""
+    geud_cols = EUDTCPModel.geud_columns_from_frame(frame)
+    n = len(outcomes)
+    p0 = float(outcomes.mean())
+    nll_null = float(-np.sum(outcomes * np.log(p0) + (1.0 - outcomes) * np.log(1.0 - p0)))
+
+    model = EUDTCPModel.fit_select_a(geud_cols, outcomes)
+    selected_a = float(model.params_["geud_a"])
+    doses = geud_cols[selected_a]
+    preds = model.predict(doses)
+    nll = model.nll_
+    k_params = 3
+    aic = 2 * k_params + 2 * nll
+    bic = k_params * np.log(n) + 2 * nll
+    lr_stat = 2 * ((-nll) - (-nll_null))
+    lr_p = float(1.0 - stats.chi2.cdf(lr_stat, k_params))
+    mcfadden = 1.0 - nll / nll_null
+
+    yhat = (preds >= 0.5).astype(int)
+    tn, fp, fn, tp = confusion_matrix(outcomes, yhat).ravel()
+
+    skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=RANDOM_SEED)
+    cv_aucs = []
+    for train_idx, test_idx in skf.split(doses, outcomes):
+        train_geud = {a: values[train_idx] for a, values in geud_cols.items()}
+        cv_model = EUDTCPModel.fit_select_a(train_geud, outcomes[train_idx])
+        test_doses = geud_cols[float(cv_model.params_["geud_a"])][test_idx]
+        cv_preds = cv_model.predict(test_doses)
+        cv_aucs.append(float(roc_auc_score(outcomes[test_idx], cv_preds)))
+
+    return {
+        "model": "eud_tcp",
+        "dose_variable": f"gEUD_a{int(selected_a)}",
+        "n": n,
+        "outcome_definition": f"OS >= median ({median_os_wk:.0f} wk)",
+        "D50_gy": float(model.params_["D50_gy"]),
+        "gamma50": float(model.params_["gamma50"]),
+        "geud_a": selected_a,
+        "param2_name": "gamma50",
+        "nll": nll,
+        "nll_null": nll_null,
+        "aic": aic,
+        "bic": bic,
+        "aic_null": 2 * nll_null,
+        "bic_null": 2 * nll_null,
+        "lr_chi2": lr_stat,
+        "lr_p_value": lr_p,
+        "mcfadden_pseudo_r2": mcfadden,
+        "roc_auc_insample": float(roc_auc_score(outcomes, preds)),
+        "roc_auc_cv_mean": float(np.mean(cv_aucs)),
+        "roc_auc_cv_std": float(np.std(cv_aucs)),
+        "brier_score": float(brier_score_loss(outcomes, preds)),
+        "brier_null": float(brier_score_loss(outcomes, np.full(n, p0))),
+        "accuracy_at_0p5": float(accuracy_score(outcomes, yhat)),
+        "sensitivity": float(tp / (tp + fn)),
+        "specificity": float(tn / (tn + fp)),
+        "pred_tcp_min": float(preds.min()),
+        "pred_tcp_max": float(preds.max()),
+        "cv_fold_aucs": cv_aucs,
+    }
+
+
 def list_figures() -> List[str]:
     """Return sorted figure filenames in figures/."""
     if not FIGURES_DIR.exists():
@@ -348,7 +417,8 @@ def render_results_md(
 
     lines.extend(["", "## 4. TCP model quality metrics", ""])
     for m in model_rows:
-        lines.extend([
+        param_row = f"| {m.get('param2_name', 'gamma50')} | {m.get(m.get('param2_name', 'gamma50'), m.get('gamma50', float('nan'))):.4f} |"
+        block = [
             f"### {m['model']} — dose = `{m['dose_variable']}`",
             "",
             f"Outcome proxy: {m['outcome_definition']}",
@@ -356,7 +426,11 @@ def render_results_md(
             "| Metric | Value |",
             "|---|---|",
             f"| D50 (Gy) | {m['D50_gy']:.3f} |",
-            f"| {m.get('param2_name', 'gamma50')} | {m.get(m.get('param2_name', 'gamma50'), m.get('gamma50', float('nan'))):.4f} |",
+            param_row,
+        ]
+        if m.get("model") == "eud_tcp":
+            block.append(f"| geud_a | {m['geud_a']:.1f} |")
+        block.extend([
             f"| NLL (model / null) | {m['nll']:.2f} / {m['nll_null']:.2f} |",
             f"| AIC (model / null) | {m['aic']:.2f} / {m['aic_null']:.2f} |",
             f"| BIC (model / null) | {m['bic']:.2f} / {m['bic_null']:.2f} |",
@@ -369,6 +443,7 @@ def render_results_md(
             f"| Sensitivity / Specificity | {m['sensitivity']:.3f} / {m['specificity']:.3f} |",
             "",
         ])
+        lines.extend(block)
 
     lines.extend(["## 5. Figures", ""])
     if figures:
@@ -424,6 +499,7 @@ def update_results() -> Path:
         evaluate_poisson(doses, outcomes, "eqd2_gy", median_os),
         evaluate_logistic(doses, outcomes, "eqd2_gy", median_os),
         evaluate_probit(doses, outcomes, "eqd2_gy", median_os),
+        evaluate_eud(frame, outcomes, median_os),
         evaluate_poisson(frame["Dmean_gy"].to_numpy(), outcomes, "Dmean_gy", median_os),
     ]
     model_csv_rows = [{k: v for k, v in m.items() if k != "cv_fold_aucs"} for m in model_rows]
