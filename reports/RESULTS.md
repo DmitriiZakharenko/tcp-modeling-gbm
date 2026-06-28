@@ -1,12 +1,13 @@
 # Current Results (auto-generated)
 
 **Last updated:** 2026-06-28  
-**Git commit:** `77c3b9f`  
+**Git commit:** `136525a`  
 **Regenerate:** `python -m src.reporting.update_results`
 
-> **Outcome caveat:** CFB-GBM provides overall survival (weeks) only.
-> TCP models below use an exploratory binary proxy (OS ≥ cohort median),
-> **not** true local tumour control. Interpret accordingly.
+> **Outcome caveat:** CFB-GBM provides overall survival (weeks) only — no local
+> control endpoint. TCP models use an exploratory binary proxy (OS ≥ cohort median).
+> **OS ≠ TCP.** Median-split outcome is for pipeline testing only, not clinical TCP
+> validation. Cox models use continuous OS (all events observed).
 
 ---
 
