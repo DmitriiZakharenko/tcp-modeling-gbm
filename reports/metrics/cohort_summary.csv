@@ -1,0 +1,13 @@
+metric,value,unit
+total_patients_tsv,264.0,n
+included_cohort_rules,190.0,n
+modeling_table_rows,190.0,n
+excluded,74.0,n
+fractionation_60gy_30fr,120.0,n
+fractionation_40gy_15fr,61.0,n
+age_median_yr,70.0,yr
+os_median_wk,51.0,wk
+sex_male,117.0,n
+sex_female,73.0,n
+dmean_median_gy,59.83511924743652,Gy
+gtv_volume_median_cc,36.18,cc

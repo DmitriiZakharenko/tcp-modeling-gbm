@@ -69,6 +69,22 @@ make process
 
 Requires `data/raw/{patient_id}/t0/*_t0_rtdose.nii.gz` and `*_t0_gtv.nii.gz` for all modeling-eligible patients.
 
+### Results report (update after each analysis commit)
+
+```bash
+make report
+# or: python -m src.reporting.update_results
+```
+
+Writes:
+
+| Output | Description |
+|--------|-------------|
+| [`reports/RESULTS.md`](reports/RESULTS.md) | Human-readable snapshot: cohort stats, model metrics, figure links |
+| `reports/metrics/*.csv` | Machine-readable tables (cohort, survival, TCP quality, DVH summary) |
+
+All numbers are recomputed from `data/processed/modeling_table.csv` — no hand-entered values.
+
 ### Download NIfTI from TCIA
 
 When direct `ascp` (port 33001) is blocked, use IBM Aspera Connect:

@@ -9,6 +9,7 @@ help:
 	@echo "  make verify-rt      Check NIfTI completeness against cohort.csv"
 	@echo "  make features       Extract DVH features (requires raw NIfTI data)"
 	@echo "  make export-modeling  Merge cohort + features → modeling_table.csv"
+	@echo "  make report           Regenerate reports/RESULTS.md and metrics CSVs"
 
 data:
 	python -m src.data.setup_data
@@ -35,3 +36,6 @@ export-modeling:
 	python -m src.data.export_modeling_dataset
 
 process: verify-rt features export-modeling
+
+report:
+	python -m src.reporting.update_results

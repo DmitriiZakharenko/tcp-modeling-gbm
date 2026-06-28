@@ -1,0 +1,4 @@
+scheme,rt_dose_gy,n,os_median_wk,os_q25_wk,os_q75_wk,p_value
+60Gy_30fr,60.0,120.0,60.0,43.0,79.25,
+40Gy_15fr,40.05,61.0,28.0,16.0,51.0,
+mann_whitney_p,,,,,,1.1343991951167393e-07

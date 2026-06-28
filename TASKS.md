@@ -76,7 +76,7 @@ Do **not** download MRI sequences — they are not needed for this project.
 - [x] `[CODE]` Write `notebooks/01_cohort_overview.ipynb`: demographics, fractionation, exclusion summary
 - [x] `[CODE]` Download RT NIfTI (191 patients) — `download_rt_connect.py`, `organize_raw_data.py`
 - [x] `[CODE]` Verify raw data completeness — `verify_raw_data.py`
-- [x] `[CODE]` One-command setup — `setup_data.py`, `Makefile`
+- [x] `[CODE]` Results reporting — `src/reporting/update_results.py` → `reports/RESULTS.md` + `reports/metrics/*.csv` (run via `make report` before each analysis commit)
 
 ### Literature and Writing (start now, independent of coding)
 
@@ -185,4 +185,5 @@ WRITE 7–11 ── after results available (Week 4)
 - No hardcoded paths — use `src/config.py` with `pathlib.Path`
 - Notebooks must run **top-to-bottom** (`Kernel → Restart & Run All`)
 - Commits: imperative, lowercase — e.g. `implement dvh_calculator with D95 D50 D2 extraction`
+- **After each analysis commit:** run `python -m src.reporting.update_results` (or `make report`) and include updated `reports/RESULTS.md` + `reports/metrics/*.csv` in the commit
 - One feature per branch; merge via pull request
