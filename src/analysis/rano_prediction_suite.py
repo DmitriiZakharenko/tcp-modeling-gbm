@@ -15,7 +15,7 @@ import pandas as pd
 from scipy import stats
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import brier_score_loss, roc_auc_score
-from sklearn.model_selection import LeaveOneOut
+from sklearn.model_selection import LeaveOneOut, StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 
 from src.analysis.rano_multivariable import (
@@ -170,6 +170,147 @@ def _top_radiomics_features(
     return [s[0] for s in scores[:top_n]]
 
 
+def _select_top_features_on_train(
+    x_train: np.ndarray,
+    y_train: np.ndarray,
+    feature_names: List[str],
+    top_n: int = PYRO_TOP_N,
+) -> List[str]:
+    """Univariate AUC feature ranking on training fold only."""
+    scores: List[Tuple[str, float]] = []
+    for j, name in enumerate(feature_names):
+        col = x_train[:, j]
+        if len(np.unique(y_train)) < 2:
+            continue
+        try:
+            auc = float(roc_auc_score(y_train, col))
+            scores.append((name, max(auc, 1 - auc)))
+        except ValueError:
+            continue
+    scores.sort(key=lambda t: t[1], reverse=True)
+    return [s[0] for s in scores[:top_n]]
+
+
+def nested_cv_pyradiomics_rano(
+    frame: pd.DataFrame,
+    n_splits: int = 5,
+    top_n: int = PYRO_TOP_N,
+) -> pd.DataFrame:
+    """
+    Nested stratified CV for PyRadiomics vs DVH models (RANO endpoint).
+
+    Feature selection (top-N radiomics by univariate AUC) is performed on each
+    training fold only; AUC is computed on held-out predictions.
+    """
+    pyro = load_pyradiomics_t1gd()
+    merged = _with_scheme(rano_cohort(frame).merge(pyro, on="patient_id", how="inner"))
+    feature_cols = [c for c in pyro.columns if c.startswith("original_")]
+    clinical = ["age", "who_status", "scheme_60gy"]
+
+    data = merged[["volume_cc", "rano_controlled_t1"] + clinical + feature_cols].dropna()
+    y = data["rano_controlled_t1"].astype(float).to_numpy()
+    n = len(y)
+    if n < 20 or len(np.unique(y)) < 2:
+        return pd.DataFrame()
+
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=RANDOM_SEED)
+    x_radiomics = data[feature_cols].astype(float).to_numpy()
+
+    specs = [
+        ("dvh_volume_only", "fixed", ["volume_cc"]),
+        ("dvh_volume_clinical", "fixed", ["volume_cc"] + clinical),
+        ("pyro_top5_nested", "nested_pyro", feature_cols),
+        ("pyro_top5_clinical_nested", "nested_pyro_clinical", feature_cols),
+    ]
+
+    # In-sample reference (same as compare_pyradiomics_vs_volume)
+    insample_cmp, top_table = compare_pyradiomics_vs_volume(frame)
+    insample_rano = insample_cmp[insample_cmp["endpoint"] == "RANO_non_PD"].set_index("model")
+
+    insample_key = {
+        "pyro_top5_nested": f"pyro_top{top_n}",
+        "pyro_top5_clinical_nested": f"pyro_top{top_n}_clinical",
+    }
+
+    rows: List[Dict[str, object]] = []
+    for model_name, mode, spec in specs:
+        probs = np.zeros(n)
+        for train_idx, test_idx in skf.split(data, y):
+            y_tr, y_te = y[train_idx], y[test_idx]
+            if mode == "fixed":
+                x_mat = data[spec].astype(float).to_numpy()
+                x_tr = x_mat[train_idx]
+                x_te = x_mat[test_idx]
+            else:
+                selected = _select_top_features_on_train(
+                    x_radiomics[train_idx], y_tr, feature_cols, top_n=top_n
+                )
+                if not selected:
+                    continue
+                sel_j = [feature_cols.index(s) for s in selected]
+                if mode == "nested_pyro_clinical":
+                    x_clin = data[clinical].astype(float).to_numpy()
+                    x_tr = np.hstack([x_radiomics[train_idx][:, sel_j], x_clin[train_idx]])
+                    x_te = np.hstack([x_radiomics[test_idx][:, sel_j], x_clin[test_idx]])
+                else:
+                    x_tr = x_radiomics[train_idx][:, sel_j]
+                    x_te = x_radiomics[test_idx][:, sel_j]
+
+            scaler = StandardScaler()
+            xs_tr = scaler.fit_transform(x_tr)
+            xs_te = scaler.transform(x_te)
+            model = LogisticRegression(max_iter=2000, random_state=RANDOM_SEED)
+            model.fit(xs_tr, y_tr)
+            probs[test_idx] = model.predict_proba(xs_te)[:, 1]
+
+        nested_auc = float(roc_auc_score(y, probs))
+        nested_brier = float(brier_score_loss(y, probs))
+        lookup = insample_key.get(model_name, model_name)
+        insample_auc = float(insample_rano.loc[lookup, "auc_insample"]) if lookup in insample_rano.index else np.nan
+        rows.append(
+            {
+                "model": model_name,
+                "n": n,
+                "n_folds": n_splits,
+                "top_n_features": top_n if "nested" in model_name else np.nan,
+                "auc_insample": insample_auc,
+                "nested_cv_auc": nested_auc,
+                "nested_cv_brier": nested_brier,
+                "optimism_delta": float(insample_auc - nested_auc) if pd.notna(insample_auc) else np.nan,
+            }
+        )
+
+    out = pd.DataFrame(rows)
+    out.attrs["top_features_insample"] = top_table
+    return out
+
+
+def plot_pyradiomics_nested_cv(
+    nested: pd.DataFrame,
+    save_path: Optional[Path] = None,
+) -> plt.Figure:
+    """Grouped bar chart: in-sample vs nested CV AUC."""
+    with plt.rc_context(DEFAULT_RC_PARAMS):
+        fig, ax = plt.subplots(figsize=(8, 4.5))
+        labels = nested["model"].str.replace("_", " ")
+        x_pos = np.arange(len(nested))
+        w = 0.35
+        ax.bar(x_pos - w / 2, nested["auc_insample"], w, label="In-sample", color="#4575b4", alpha=0.85)
+        ax.bar(x_pos + w / 2, nested["nested_cv_auc"], w, label="Nested 5-fold CV", color="#d73027", alpha=0.85)
+        ax.set_xticks(x_pos)
+        ax.set_xticklabels(labels, rotation=25, ha="right", fontsize=8)
+        ax.set_ylim(0, 1)
+        ax.set_ylabel("ROC AUC (RANO non-PD)")
+        ax.set_title("PyRadiomics vs DVH: in-sample vs nested CV")
+        ax.axhline(0.5, color="k", ls="--", lw=0.6, alpha=0.4)
+        ax.legend(frameon=False, fontsize=9)
+        plt.tight_layout()
+        if save_path is not None:
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+            fig.savefig(save_path)
+    return fig
+
+
 def compare_pyradiomics_vs_volume(frame: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Compare DVH volume vs PyRadiomics for RANO and OS median-split endpoints.
@@ -310,6 +451,7 @@ def run_rano_prediction_suite(
     loocv_pooled = pd.concat(loocv_rows, ignore_index=True)
 
     pyro_cmp, pyro_top = compare_pyradiomics_vs_volume(frame)
+    pyro_nested = nested_cv_pyradiomics_rano(frame)
 
     pooled.to_csv(metrics_dir / "rano_pooled_logistic_comparison.csv", index=False)
     loocv_40.to_csv(metrics_dir / "rano_loocv_40gy.csv", index=False)
@@ -317,9 +459,15 @@ def run_rano_prediction_suite(
     pyro_cmp.to_csv(metrics_dir / "pyradiomics_vs_volume_comparison.csv", index=False)
     pyro_top.to_csv(metrics_dir / "pyradiomics_top_features_rano.csv", index=False)
 
+    pyro_top.to_csv(metrics_dir / "pyradiomics_top_features_rano.csv", index=False)
+    if not pyro_nested.empty:
+        pyro_nested.to_csv(metrics_dir / "pyradiomics_nested_cv_rano.csv", index=False)
+
     plot_pooled_rano_roc(frame, fig_dir / "08_pooled_rano_roc.png")
     if not pyro_cmp.empty:
         plot_pyradiomics_comparison(pyro_cmp, fig_dir / "08_pyradiomics_vs_volume_auc.png")
+    if not pyro_nested.empty:
+        plot_pyradiomics_nested_cv(pyro_nested, fig_dir / "08_pyradiomics_nested_cv_auc.png")
 
     return {
         "pooled": pooled,
@@ -327,6 +475,7 @@ def run_rano_prediction_suite(
         "loocv_pooled": loocv_pooled,
         "pyro_comparison": pyro_cmp,
         "pyro_top": pyro_top,
+        "pyro_nested_cv": pyro_nested,
     }
 
 
@@ -339,6 +488,8 @@ def main() -> None:
     print("\nLOOCV 40 Gy:\n", out["loocv_40"].to_string(index=False))
     print("\nLOOCV pooled:\n", out["loocv_pooled"].to_string(index=False))
     print("\nPyRadiomics comparison:\n", out["pyro_comparison"].to_string(index=False))
+    if not out["pyro_nested_cv"].empty:
+        print("\nPyRadiomics nested CV:\n", out["pyro_nested_cv"].to_string(index=False))
 
 
 if __name__ == "__main__":

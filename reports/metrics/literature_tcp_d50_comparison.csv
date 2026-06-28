@@ -1,0 +1,7 @@
+source,ref_id,model,endpoint,n,D50_gy,D50_ci_95,gamma50,gamma50_ci_95,comparable_to_ours,notes
+This study (CFB-GBM),—,Poisson TCP (EQD2),OS ≥ median (exploratory proxy),190,53.2,"[49.5, 56.7]",3.32,"[2.06, 4.69]",reference,Confounded by fractionation scheme; not formal LC
+Maitre et al. 2020,4,Poisson / LQ TCP (review),"Various (LC, NTCP)",review,40–80,—,1–5,—,partial,Site-specific; GBM LC data sparse in routine cohorts
+Ohri et al. 2017,7,TCP/NTCP (review),LC preferred over OS,review,—,—,—,—,no,Highlights need for dose heterogeneity ≥1 Gy and LC endpoints
+Embring et al. 2020,16,DVH metrics (not TCP fit),OS,120,—,—,—,—,partial,GTV Dmean/volume prognostic; no Poisson D50 reported
+Gardner et al. 2024,5,Radiobiology review,Multi-scale modelling,review,context-dependent,—,context-dependent,—,partial,Modern TCP modelling requires appropriate endpoints and dose spread
+Okunieff et al. 1995,assignment,Poisson TCP (meta-analysis),Tumour control (mixed sites),review,~50–70,—,~1–4,—,partial,Course reference; not GBM-specific; LC-based trials

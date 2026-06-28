@@ -26,6 +26,7 @@ from src.config import DATA_PROCESSED, FIGURES_DIR, RANDOM_SEED, REPORTS_DIR
 from src.data.dvh_calculator import SCALAR_METRIC_KEYS
 from src.analysis.rano_tcp_comparison import run_rano_tcp_comparison
 from src.analysis.rano_multivariable import run_rano_multivariable_40gy
+from src.analysis.literature_tcp_comparison import run_literature_tcp_comparison
 from src.analysis.rano_prediction_suite import run_rano_prediction_suite
 from src.analysis.validate_rano_volumes import run_volume_validation
 from src.analysis.within_arm_rano_tcp import run_within_arm_rano_analysis
@@ -378,6 +379,8 @@ def render_results_md(
     rano_loocv_40: Optional[pd.DataFrame] = None,
     rano_loocv_pooled: Optional[pd.DataFrame] = None,
     pyro_comparison: Optional[pd.DataFrame] = None,
+    pyro_nested_cv: Optional[pd.DataFrame] = None,
+    literature_tcp_d50: Optional[pd.DataFrame] = None,
 ) -> str:
     """Render human-readable results markdown."""
     git_hash = _git_short_hash()
@@ -654,6 +657,40 @@ def render_results_md(
             )
         lines.append("")
 
+    if pyro_nested_cv is not None and not pyro_nested_cv.empty:
+        lines.extend(
+            [
+                "",
+                "## 4j. PyRadiomics nested 5-fold CV — RANO (feature selection on train only)",
+                "",
+                "| Model | n | In-sample AUC | Nested CV AUC | Optimism Δ |",
+                "|---|---:|---:|---:|---:|",
+            ]
+        )
+        for _, row in pyro_nested_cv.iterrows():
+            lines.append(
+                f"| {row['model']} | {int(row['n'])} | {row['auc_insample']:.3f} | "
+                f"{row['nested_cv_auc']:.3f} | {row['optimism_delta']:.3f} |"
+            )
+        lines.append("")
+
+    if literature_tcp_d50 is not None and not literature_tcp_d50.empty:
+        lines.extend(
+            [
+                "",
+                "## 4k. Literature comparison — TCP parameters (assignment Part VI)",
+                "",
+                "| Source | Model | Endpoint | n | D50 (Gy) | γ50 | Comparable? |",
+                "|---|---|---|---:|---|---|---|",
+            ]
+        )
+        for _, row in literature_tcp_d50.iterrows():
+            lines.append(
+                f"| {row['source']} | {row['model']} | {row['endpoint']} | {row['n']} | "
+                f"{row['D50_gy']} | {row['gamma50']} | {row['comparable_to_ours']} |"
+            )
+        lines.append("")
+
     if bootstrap_ci is not None and not bootstrap_ci.empty:
         lines.extend(["", "## 5. Bootstrap 95% CI (Poisson TCP, EQD2)", ""])
         lines.append("| Parameter | Estimate | 95% CI | Bootstrap SD |")
@@ -818,7 +855,7 @@ def render_results_md(
         "| RANO improves AUC vs OS on same n? | No — pooled RANO AUC ≈ 0.43 vs OS ≈ 0.62 (n=137) |",
         "| Within-arm volume → RANO (40 Gy)? | Yes — Poisson AUC ≈ 0.83, LR p ≈ 0.037 (n=34); LOOCV AUC ≈ 0.74 |",
         "| Pooled volume + scheme → RANO? | Yes — in-sample AUC ≈ 0.72 (n=137); LOOCV ≈ 0.64 |",
-        "| PyRadiomics beats DVH volume for RANO? | Exploratory — top-5 radiomics AUC ≈ 0.78 vs volume 0.71 |",
+        "| PyRadiomics beats DVH volume for RANO? | Exploratory — top-5 in-sample AUC ≈ 0.78 vs volume 0.71; nested CV see §4j |",
         "| Within-arm volume → RANO (60 Gy)? | Exploratory — AUC ≈ 0.66, Spearman p ≈ 0.019 (n=96) |",
         "| Calibration fixes ranking? | No — Platt scaling does not change AUC on same data |",
         "",
@@ -912,6 +949,7 @@ def update_results() -> Path:
     )
     rano_logistic, _, rano_logistic_boot, _ = run_rano_multivariable_40gy(frame, METRICS_DIR)
     rano_suite = run_rano_prediction_suite(frame, METRICS_DIR)
+    literature_tcp = run_literature_tcp_comparison(METRICS_DIR)
     run_volume_validation(METRICS_DIR)
 
     figures = list_figures()
@@ -945,6 +983,8 @@ def update_results() -> Path:
         rano_loocv_40=rano_suite["loocv_40"],
         rano_loocv_pooled=rano_suite["loocv_pooled"],
         pyro_comparison=rano_suite["pyro_comparison"],
+        pyro_nested_cv=rano_suite.get("pyro_nested_cv"),
+        literature_tcp_d50=literature_tcp,
     )
     RESULTS_MD.write_text(md)
     print(f"Wrote {RESULTS_MD}")

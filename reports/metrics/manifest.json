@@ -1,6 +1,6 @@
 {
   "generated": "2026-06-28",
-  "git_hash": "b7e1701",
+  "git_hash": "5c14e42",
   "n_modeling": 190,
   "median_os_wk": 51.0,
   "models": [
@@ -167,6 +167,7 @@
     "07_rano_logistic_roc_40gy.png",
     "07_rano_volume_validation_40gy.png",
     "08_pooled_rano_roc.png",
+    "08_pyradiomics_nested_cv_auc.png",
     "08_pyradiomics_vs_volume_auc.png"
   ]
 }
