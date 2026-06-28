@@ -27,6 +27,7 @@ from src.data.dvh_calculator import SCALAR_METRIC_KEYS
 from src.models.bootstrap_ci import bootstrap_tcp_params
 from src.models.eud_tcp import EUDTCPModel
 from src.models.model_comparison import run_model_comparison
+from src.models.survival_analysis import run_survival_analysis
 from src.models.logistic_tcp import LogisticTCPModel
 from src.models.poisson_tcp import PoissonTCPModel
 from src.models.probit_tcp import ProbitTCPModel
@@ -339,6 +340,9 @@ def render_results_md(
     figures: List[str],
     bootstrap_ci: Optional[pd.DataFrame] = None,
     model_comparison: Optional[pd.DataFrame] = None,
+    cox_summary: Optional[pd.DataFrame] = None,
+    km_logrank: Optional[pd.DataFrame] = None,
+    c_index: Optional[float] = None,
 ) -> str:
     """Render human-readable results markdown."""
     git_hash = _git_short_hash()
@@ -474,7 +478,31 @@ def render_results_md(
             )
         lines.append("")
 
-    fig_section = "## 7. Figures" if model_comparison is not None else "## 6. Figures"
+        lines.append("")
+
+    section_num = 7
+    if cox_summary is not None and not cox_summary.empty:
+        lines.extend(["", f"## {section_num}. Cox PH regression (OS ~ EQD2 + Dmean + age + sex)", ""])
+        if c_index is not None:
+            lines.append(f"**Concordance index:** {c_index:.4f}")
+        lines.append("")
+        lines.append("| Covariate | HR | 95% CI | p |")
+        lines.append("|---|---:|---|---:|")
+        for _, row in cox_summary.iterrows():
+            lines.append(
+                f"| {row['term']} | {row['hazard_ratio']:.3f} | "
+                f"[{row['hr_ci_lower']:.3f}, {row['hr_ci_upper']:.3f}] | {row['p']:.4f} |"
+            )
+        if km_logrank is not None and not km_logrank.empty:
+            lr = km_logrank.iloc[0]
+            lines.append(
+                f"\nKM log-rank ({lr['comparison']}): χ² = {lr['logrank_chi2']:.2f}, "
+                f"p = {lr['logrank_p_value']:.2e}"
+            )
+        lines.append("")
+        section_num += 1
+
+    fig_section = f"## {section_num}. Figures"
     lines.extend([fig_section, ""])
     if figures:
         for fig in figures:
@@ -543,6 +571,11 @@ def update_results() -> Path:
     comparison_df, _ = run_model_comparison(doses, outcomes, frame=frame)
     _save_csv(comparison_df, "tcp_model_comparison.csv")
 
+    km_logrank, cox_summary, _, _ = run_survival_analysis(frame)
+    _save_csv(km_logrank, "km_logrank_eqd2.csv")
+    _save_csv(cox_summary.drop(columns=["concordance_index"], errors="ignore"), "cox_ph_summary.csv")
+    c_index = float(cox_summary["concordance_index"].iloc[0])
+
     bootstrap_ci = bootstrap_tcp_params(
         PoissonTCPModel,
         doses,
@@ -569,7 +602,16 @@ def update_results() -> Path:
 
     figures = list_figures()
     md = render_results_md(
-        cohort_df, survival_df, assoc_df, model_rows, figures, bootstrap_ci, comparison_df
+        cohort_df,
+        survival_df,
+        assoc_df,
+        model_rows,
+        figures,
+        bootstrap_ci,
+        comparison_df,
+        cox_summary,
+        km_logrank,
+        c_index,
     )
     RESULTS_MD.write_text(md)
     print(f"Wrote {RESULTS_MD}")

@@ -1,7 +1,7 @@
 # Current Results (auto-generated)
 
 **Last updated:** 2026-06-28  
-**Git commit:** `f2aba20`  
+**Git commit:** `77c3b9f`  
 **Regenerate:** `python -m src.reporting.update_results`
 
 > **Outcome caveat:** CFB-GBM provides overall survival (weeks) only.
@@ -162,7 +162,22 @@ Outcome proxy: OS >= median (51 wk)
 | poisson_tcp | 2 | 241.82 | 248.31 | 0.6835 | 0.2176 | 0.1003 |
 | eud_tcp | 3 | 243.69 | 253.43 | 0.6850 | 0.2176 | 0.7842 |
 
-## 7. Figures
+
+
+## 7. Cox PH regression (OS ~ EQD2 + Dmean + age + sex)
+
+**Concordance index:** 0.6319
+
+| Covariate | HR | 95% CI | p |
+|---|---:|---|---:|
+| eqd2_gy | 1.121 | [0.724, 1.735] | 0.6083 |
+| Dmean_gy | 0.876 | [0.594, 1.292] | 0.5054 |
+| age | 1.012 | [0.994, 1.031] | 0.1776 |
+| sex_M | 0.949 | [0.705, 1.277] | 0.7304 |
+
+KM log-rank (EQD2>=50.0_vs_<50.0): χ² = 21.75, p = 3.10e-06
+
+## 8. Figures
 
 - [`figures/01_demographics.png`](../figures/01_demographics.png)
 - [`figures/01_exclusion_reasons.png`](../figures/01_exclusion_reasons.png)
@@ -174,6 +189,8 @@ Outcome proxy: OS >= median (51 wk)
 - [`figures/02_dvh_overlay_median.png`](../figures/02_dvh_overlay_median.png)
 - [`figures/02_dvh_overlay_sample.png`](../figures/02_dvh_overlay_sample.png)
 - [`figures/02_volume_hi.png`](../figures/02_volume_hi.png)
+- [`figures/03_cox_forest.png`](../figures/03_cox_forest.png)
+- [`figures/03_kaplan_meier_eqd2.png`](../figures/03_kaplan_meier_eqd2.png)
 - [`figures/03_model_calibration.png`](../figures/03_model_calibration.png)
 
 ---
