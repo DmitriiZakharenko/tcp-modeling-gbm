@@ -1,6 +1,6 @@
 {
   "generated": "2026-06-28",
-  "git_hash": "3bb580c",
+  "git_hash": "2113673",
   "n_modeling": 190,
   "median_os_wk": 51.0,
   "models": [
@@ -59,6 +59,34 @@
       "specificity": 0.5212765957446809,
       "pred_tcp_min": 0.10816388930116907,
       "pred_tcp_max": 0.6364796591853082
+    },
+    {
+      "model": "probit_tcp",
+      "dose_variable": "eqd2_gy",
+      "n": 190,
+      "outcome_definition": "OS >= median (51 wk)",
+      "D50_gy": 53.90317105380051,
+      "sigma_gy": 17.44792030832361,
+      "param2_name": "sigma_gy",
+      "nll": 118.86563275523179,
+      "nll_null": 131.68743779619973,
+      "aic": 241.73126551046357,
+      "bic": 248.22531365478454,
+      "aic_null": 263.37487559239946,
+      "bic_null": 263.37487559239946,
+      "lr_chi2": 25.64361008193589,
+      "lr_p_value": 2.7012253867031433e-06,
+      "mcfadden_pseudo_r2": 0.09736543785452834,
+      "roc_auc_insample": 0.683455230496454,
+      "roc_auc_cv_mean": 0.6848461064943059,
+      "roc_auc_cv_std": 0.09778655015699136,
+      "brier_score": 0.21745897048406562,
+      "brier_null": 0.24997229916897504,
+      "accuracy_at_0p5": 0.6736842105263158,
+      "sensitivity": 0.8229166666666666,
+      "specificity": 0.5212765957446809,
+      "pred_tcp_min": 0.09708685607162287,
+      "pred_tcp_max": 0.6366167891621549
     },
     {
       "model": "poisson_tcp",

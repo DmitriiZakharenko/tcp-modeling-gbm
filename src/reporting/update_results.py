@@ -26,6 +26,7 @@ from src.config import DATA_PROCESSED, FIGURES_DIR, RANDOM_SEED, REPORTS_DIR
 from src.data.dvh_calculator import SCALAR_METRIC_KEYS
 from src.models.logistic_tcp import LogisticTCPModel
 from src.models.poisson_tcp import PoissonTCPModel
+from src.models.probit_tcp import ProbitTCPModel
 
 METRICS_DIR = REPORTS_DIR / "metrics"
 RESULTS_MD = REPORTS_DIR / "RESULTS.md"
@@ -206,6 +207,27 @@ def evaluate_poisson(
         median_os_wk,
         k_params=2,
         param2_name="gamma50",
+        n_folds=n_folds,
+    )
+
+
+def evaluate_probit(
+    doses: np.ndarray,
+    outcomes: np.ndarray,
+    dose_label: str,
+    median_os_wk: float,
+    n_folds: int = 5,
+) -> Dict[str, Any]:
+    """Fit Probit TCP and return quality metrics."""
+    return evaluate_tcp_model(
+        "probit_tcp",
+        lambda: ProbitTCPModel(d50_init=53.0, sigma_init=10.0),
+        doses,
+        outcomes,
+        dose_label,
+        median_os_wk,
+        k_params=2,
+        param2_name="sigma_gy",
         n_folds=n_folds,
     )
 
@@ -401,6 +423,7 @@ def update_results() -> Path:
     model_rows = [
         evaluate_poisson(doses, outcomes, "eqd2_gy", median_os),
         evaluate_logistic(doses, outcomes, "eqd2_gy", median_os),
+        evaluate_probit(doses, outcomes, "eqd2_gy", median_os),
         evaluate_poisson(frame["Dmean_gy"].to_numpy(), outcomes, "Dmean_gy", median_os),
     ]
     model_csv_rows = [{k: v for k, v in m.items() if k != "cv_fold_aucs"} for m in model_rows]

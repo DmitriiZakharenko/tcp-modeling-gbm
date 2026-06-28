@@ -119,7 +119,7 @@ Do **not** download MRI sequences — they are not needed for this project.
 
 - [x] `[CODE]` Write `src/models/poisson_tcp.py` — Poisson TCP model, MLE via `scipy.optimize.minimize`
 - [x] `[CODE]` Write `src/models/logistic_tcp.py` — logistic dose-response, MLE
-- [ ] `[CODE]` Write `src/models/probit_tcp.py` — probit model, MLE
+- [x] `[CODE]` Write `src/models/probit_tcp.py` — probit model, MLE
 - [ ] `[CODE]` Write `src/models/eud_tcp.py` — gEUD-based TCP with volume effect parameter `a`
 - [ ] `[CODE]` Write `src/models/bootstrap_ci.py` — bootstrap resampling (n=1000, seed=42) for any `TCPModel`
 - [ ] `[CODE]` Write `src/models/model_comparison.py` — AIC, BIC, log-likelihood, ROC AUC, calibration plot
