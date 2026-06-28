@@ -88,7 +88,8 @@ _Status: blocked in CI/sandbox (TCP 33001); run locally with Aspera Connect._
 ### Literature and Writing
 
 - [x] `[LIT]` Search PubMed for TCP modeling in GBM (≥8 papers; see `reports/literature_table.csv`, 12 entries)
-- [x] `[LIT]` Build `reports/literature_table.csv` (PubMed IDs + DOIs, 2010–2025)
+- [x] `[LIT]` Build `reports/literature_table.csv` (18 refs, verified DOIs, ref_id 1–18)
+- [x] `[WRITE]` In-text citations throughout `manuscript_draft.md` (Abstract–Discussion–slides)
 - [x] `[LIT]` Read CFB-GBM data descriptor (Moreau et al. 2025, Front Oncol; PMID 39949753)
 - [x] `[WRITE]` Draft Introduction — in `reports/manuscript_draft.md` §1 (full polish pending)
 
