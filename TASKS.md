@@ -159,7 +159,10 @@ _Status: blocked in CI/sandbox (TCP 33001); run locally with Aspera Connect._
 - [ ] `[CODE]` Download t1 GTV NIfTI + validate `size_t1_cm3` (`make download-t1-gtv`; Aspera required)
 - [ ] `[CODE]` Final check: all notebooks 01–06 run top-to-bottom without errors
 - [ ] `[CODE]` Pin package versions: `pip freeze > requirements.txt`
-- [ ] `[CODE]` Nested CV for PyRadiomics feature selection (reduce optimism vs in-sample top-5)
+- [x] `[CODE]` Nested CV for PyRadiomics feature selection (`pyradiomics_nested_cv_rano.csv`)
+- [x] `[LIT]` Literature TCP D50 comparison table (`literature_tcp_d50_comparison.csv`)
+- [x] `[WRITE]` LaTeX/Word export (`scripts/export_manuscript.sh` → manuscript.tex/docx/pdf)
+- [ ] `[CODE]` Final check: all notebooks 01–06 run top-to-bottom without errors
 
 ### Literature and Writing
 
