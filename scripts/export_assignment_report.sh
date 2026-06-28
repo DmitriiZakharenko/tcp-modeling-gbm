@@ -23,6 +23,8 @@ fi
 # Stage figures next to LaTeX output (pdflatex/xelatex look in reports/figures/)
 mkdir -p "$FIG_STAGE"
 FIG_LIST=(
+  02_dvh_overlay_sample.png
+  03_model_calibration.png
   03_tcp_curves_os_proxy.png
   04_clinical_prognosis.png
   05_rano_vs_os_tcp_auc.png

@@ -1,3 +1,3 @@
 model,n,covariates,loocv_auc,loocv_brier
-volume_only,34,volume_cc,0.7448275862068966,0.12006271962170155
-volume_age_ps,34,volume_cc+age+who_status,0.696551724137931,0.1272263135813527
+volume_only,34,volume_cc,0.7448275862068966,0.12008947031252971
+volume_age_ps,34,volume_cc+age+who_status,0.696551724137931,0.1272377225913858

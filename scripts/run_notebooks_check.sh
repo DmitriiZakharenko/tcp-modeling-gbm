@@ -15,8 +15,12 @@ NOTEBOOKS=(
   "$ROOT/notebooks/06_rano_multivariable_40gy.ipynb"
 )
 
-# Optional: 02 needs local NIfTI (~52 GB)
+# Include 02 when local RTDOSE/GTV NIfTI is present (~52 GB), or when forced.
+RAW="$ROOT/data/raw"
 if [[ "${RUN_NOTEBOOK_02:-0}" == "1" ]]; then
+  NOTEBOOKS=("$ROOT/notebooks/02_feature_extraction.ipynb" "${NOTEBOOKS[@]}")
+elif [[ -d "$RAW" ]] && compgen -G "$RAW/**/RTDOSE*.nii.gz" >/dev/null 2>&1; then
+  echo "data/raw RTDOSE found — including notebook 02_feature_extraction.ipynb" | tee -a "$LOG"
   NOTEBOOKS=("$ROOT/notebooks/02_feature_extraction.ipynb" "${NOTEBOOKS[@]}")
 fi
 

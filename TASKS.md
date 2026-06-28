@@ -173,8 +173,8 @@ _Status: blocked in CI/sandbox (TCP 33001); run locally with Aspera Connect._
 - [x] `[WRITE]` Figure captions — `reports/figure_captions.md`
 - [x] `[WRITE]` Assignment-style formal report — `assignment_report.md` → `.docx`/`.pdf` (`make export-assignment`)
 - [x] `[LIT]` DOI/PubMed link verification — `scripts/verify_literature_dois.py` → `literature_doi_check.md`
-- [ ] `[WRITE]` Final polish of report document (10–15 pages; layout, figures embedded)
-- [ ] `[LIT]` Format references Vancouver style in `manuscript.docx`
+- [x] `[WRITE]` Final polish of report document (10–15 pages; layout, figures embedded)
+- [ ] `[LIT]` Format references Vancouver style in `manuscript.docx` (done in `assignment_report.pdf`)
 - [ ] `[WRITE]` Build oral presentation slides from outline (15 min; outline in `manuscript_draft.md`)
 
 ---
@@ -192,7 +192,7 @@ Shared resources: [`reports/RESULTS.md`](reports/RESULTS.md) (verified numbers) 
 
 ### `[LIT]` — literature & references
 
-- [ ] Format reference list Vancouver style in final Word document
+- [x] Format reference list Vancouver style in assignment report (`assignment_report.pdf` / `.docx`)
 - [x] `[LIT]` Verify PubMed / DOI links — `make verify-dois` → `literature_doi_check.md`
 - [ ] Draft one short paragraph per key reference for slides or appendix (optional)
 
@@ -234,7 +234,7 @@ INFRA (repo, config) ✓
 
 Optional: download t1 GTV → validate_rano_volumes (t1) — pending Aspera
 
-LIT tasks ── literature_table ✓; Vancouver refs + summaries pending
+LIT tasks ── literature_table ✓; Vancouver refs in assignment report ✓; manuscript.docx refs pending
 WRITE ── manuscript export ✓; final report polish + slides pending
 Group ── glossary guide ✓; presentation prep pending
 ```

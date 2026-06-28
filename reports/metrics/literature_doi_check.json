@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-28 17:33 UTC",
+  "generated": "2026-06-28 18:01 UTC",
   "rows": [
     {
       "ref_id": "1",
@@ -22,17 +22,17 @@
       "ref_id": "2",
       "first_author": "Minniti",
       "year": "2021",
-      "doi": "10.1080/14737140.2021.1919470",
-      "pubmed_id": "33807852",
+      "doi": "10.1186/s13014-021-01767-9",
+      "pubmed_id": "33602305",
       "doi_check": {
-        "status": "fail",
-        "http": 404,
-        "final_url": "https://doi.org/10.1080/14737140.2021.1919470"
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://doi.org/10.1186/s13014-021-01767-9"
       },
       "pubmed_check": {
         "status": "ok",
         "http": 200,
-        "final_url": "https://pubmed.ncbi.nlm.nih.gov/33807852/"
+        "final_url": "https://pubmed.ncbi.nlm.nih.gov/33602305/"
       }
     },
     {
@@ -175,34 +175,34 @@
       "ref_id": "11",
       "first_author": "Fowler",
       "year": "2010",
-      "doi": "10.1259/bjr/86359321",
-      "pubmed_id": "20351357",
+      "doi": "10.1259/bjr/31372149",
+      "pubmed_id": "20603408",
       "doi_check": {
-        "status": "fail",
-        "http": 404,
-        "final_url": "https://doi.org/10.1259/bjr/86359321"
+        "status": "ok",
+        "http": 403,
+        "final_url": "https://doi.org/10.1259/bjr/31372149"
       },
       "pubmed_check": {
         "status": "ok",
         "http": 200,
-        "final_url": "https://pubmed.ncbi.nlm.nih.gov/20351357/"
+        "final_url": "https://pubmed.ncbi.nlm.nih.gov/20603408/"
       }
     },
     {
       "ref_id": "12",
       "first_author": "Wen",
       "year": "2010",
-      "doi": "10.1200/JCO.2009.25.5874",
-      "pubmed_id": "20233806",
+      "doi": "10.1200/JCO.2009.26.3541",
+      "pubmed_id": "20231676",
       "doi_check": {
-        "status": "fail",
-        "http": 404,
-        "final_url": "https://doi.org/10.1200/JCO.2009.25.5874"
+        "status": "ok",
+        "http": 403,
+        "final_url": "https://doi.org/10.1200/JCO.2009.26.3541"
       },
       "pubmed_check": {
         "status": "ok",
         "http": 200,
-        "final_url": "https://pubmed.ncbi.nlm.nih.gov/20233806/"
+        "final_url": "https://pubmed.ncbi.nlm.nih.gov/20231676/"
       }
     },
     {
@@ -226,12 +226,12 @@
       "ref_id": "14",
       "first_author": "Cox",
       "year": "1972",
-      "doi": "10.1111/j.2517-6161.1972.tb00999.x",
+      "doi": "10.1111/j.2517-6161.1972.tb00899.x",
       "pubmed_id": "NA",
       "doi_check": {
-        "status": "fail",
-        "http": 404,
-        "final_url": "https://doi.org/10.1111/j.2517-6161.1972.tb00999.x"
+        "status": "ok",
+        "http": 403,
+        "final_url": "https://doi.org/10.1111/j.2517-6161.1972.tb00899.x"
       },
       "pubmed_check": {
         "status": "skipped",

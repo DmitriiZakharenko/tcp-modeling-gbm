@@ -1,7 +1,7 @@
 # Current Results (auto-generated)
 
 **Last updated:** 2026-06-28  
-**Git commit:** `5c14e42`  
+**Git commit:** `0300cf8`  
 **Regenerate:** `python -m src.reporting.update_results`
 
 > **Outcome caveat:** Primary TCP models still use an exploratory OS median-split proxy.
@@ -182,10 +182,10 @@ RANO categories (modeling subset):
 | 60Gy_30fr | 96 | volume_cc | 27.999 | 0.239 | 0.0188 | 0.655 | 0.100 |
 | 60Gy_30fr | 96 | gEUD_a10_gy | 0.284 | -0.037 | 0.7188 | 0.476 | 1.000 |
 | 60Gy_30fr | 96 | HI_gy (low variance) | 0.020 | -0.025 | 0.8061 | — | — |
-| 40Gy_15fr | 34 | Dmean_gy | 0.091 | 0.013 | 0.9432 | 0.510 | 0.973 |
+| 40Gy_15fr | 34 | Dmean_gy | 0.091 | 0.013 | 0.9432 | 0.510 | 0.971 |
 | 40Gy_15fr | 34 | D95_gy | 0.244 | -0.190 | 0.2806 | 0.345 | 1.000 |
 | 40Gy_15fr | 34 | volume_cc | 40.205 | 0.411 | 0.0159 | 0.834 | 0.037 |
-| 40Gy_15fr | 34 | gEUD_a10_gy | 0.094 | 0.072 | 0.6859 | 0.559 | 0.949 |
+| 40Gy_15fr | 34 | gEUD_a10_gy | 0.094 | 0.072 | 0.6859 | 0.559 | 0.953 |
 | 40Gy_15fr | 34 | HI_gy (low variance) | 0.015 | 0.300 | 0.0842 | — | — |
 
 
@@ -247,7 +247,7 @@ Bootstrap AUC (volume+age+PS): **0.927** [0.814, 1.000] (n=995 resamples)
 | dvh_volume_only | 137 | 0.707 | 0.162 |
 | dvh_volume_clinical | 137 | 0.716 | 0.160 |
 | pyro_mesh_volume | 137 | 0.707 | 0.162 |
-| pyro_top5 | 137 | 0.783 | 0.143 |
+| pyro_top5 | 137 | 0.784 | 0.143 |
 | pyro_top5_clinical | 137 | 0.788 | 0.143 |
 | dvh_volume_plus_pyro_top1 | 137 | 0.774 | 0.147 |
 
@@ -258,7 +258,7 @@ Bootstrap AUC (volume+age+PS): **0.927** [0.814, 1.000] (n=995 resamples)
 |---|---:|---:|---:|---:|
 | dvh_volume_only | 137 | 0.707 | 0.697 | 0.010 |
 | dvh_volume_clinical | 137 | 0.716 | 0.674 | 0.042 |
-| pyro_top5_nested | 137 | 0.783 | 0.738 | 0.045 |
+| pyro_top5_nested | 137 | 0.784 | 0.739 | 0.045 |
 | pyro_top5_clinical_nested | 137 | 0.788 | 0.715 | 0.073 |
 
 
@@ -281,6 +281,25 @@ Bootstrap AUC (volume+age+PS): **0.927** [0.814, 1.000] (n=995 resamples)
 | D50_gy | 53.200 | [49.540, 56.749] | 1.870 |
 | gamma50 | 3.324 | [2.058, 4.689] | 0.668 |
 
+
+## 5b. Profile-likelihood 95% CI (Poisson TCP, EQD2)
+
+| Parameter | Estimate | 95% CI (profile LI) |
+|---|---:|---|
+| D50_gy | 53.200 | [48.908, 58.151] |
+| gamma50 | 3.324 | [1.761, 4.849] |
+
+
+## 5c. MLE optimizer benchmark (Poisson TCP, production = L-BFGS-B)
+
+| Method | Success | D50 (Gy) | γ50 | NLL | ΔD50 vs L-BFGS-B | Seconds |
+|---|:---:|---:|---:|---:|---:|---:|
+| L-BFGS-B | yes | 53.200 | 3.324 | 118.91 | 0.0000 | 0.001 |
+| TNC | no | 53.200 | 3.324 | 118.91 | 0.0001 | 0.007 |
+| SLSQP | yes | 53.201 | 3.324 | 118.91 | 0.0001 | 0.004 |
+| Powell | yes | 53.200 | 3.324 | 118.91 | 0.0000 | 0.001 |
+| Nelder-Mead | yes | 53.200 | 3.324 | 118.91 | 0.0000 | 0.001 |
+| differential_evolution | yes | 53.199 | 3.324 | 118.91 | 0.0018 | 0.013 |
 
 
 ## 6. Four-model comparison (EQD2 / gEUD, sorted by AIC)

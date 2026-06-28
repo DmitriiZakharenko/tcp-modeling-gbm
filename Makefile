@@ -11,7 +11,7 @@ help:
 	@echo "  make export-modeling  Merge cohort + features → modeling_table.csv"
 	@echo "  make report           Regenerate reports/RESULTS.md and metrics CSVs"
 	@echo "  make verify-dois      Check literature_table.csv DOI/PubMed links"
-	@echo "  make check-notebooks  Execute notebooks 01, 03–06 (log in reports/)"
+	@echo "  make check-notebooks  Execute notebooks 01–06 (02 if data/raw present)"
 	@echo "  make export-manuscript   manuscript_with_figures → docx/tex/pdf"
 	@echo "  make export-assignment   assignment_report → docx/tex/pdf"
 	@echo "  make export-all       report + verify-dois + both exports"

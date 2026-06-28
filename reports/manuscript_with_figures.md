@@ -209,9 +209,9 @@ We deliver an open, reproducible TCP modeling pipeline on CFB-GBM [8] and show t
 
 ## References
 
-1. Stupp R, Mason WP, van den Bent MJ, et al. Effects of radiotherapy with concomitant and adjuvant temozolomide versus radiotherapy alone on survival in glioblastoma. *Lancet Oncol*. 2009;10(5):459-466. https://doi.org/10.1016/S1470-2045(09)70025-7
+1. Stupp R, Mason WP, van den Bent MJ, et al. Effects of radiotherapy with concomitant and adjuvant temozolomide versus radiotherapy alone on survival in glioblastoma. *Lancet Oncol*. 2009;10(5):459-466. doi:10.1016/S1470-2045(09)70025-7
 
-2. Minniti G, De Sanctis V, Valeriani MC. Radiotherapy for glioblastoma: current standards and recent advances. *Expert Rev Anticancer Ther*. 2021;21(5):529-542. https://doi.org/10.1080/14737140.2021.1919470
+2. Minniti G, Niyazi M, Alongi F, Navarria P, Belka C. Current status and recent advances in reirradiation of glioblastoma. *Radiat Oncol*. 2021;16:36. doi:10.1186/s13014-021-01767-9
 
 3. Malmström A, Sørensen P, Grunnet K, et al. Temozolomide versus standard 6-week radiotherapy versus hypofractionated radiotherapy in patients older than 60 years with glioblastoma: the Nordic randomised, phase 3 trial. *Lancet Oncol*. 2012;13(9):916-926. https://doi.org/10.1016/S1470-2045(12)70265-6
 
@@ -229,13 +229,13 @@ We deliver an open, reproducible TCP modeling pipeline on CFB-GBM [8] and show t
 
 10. Moreau NN, Desmonts A, Jaudet C, et al. AI-Driven Prediction of Treatment Efficacy in Glioblastoma Using Medical Imaging. In: Rekik I, et al., eds. *PRIME 2025*, LNCS vol. 16164. Springer; 2025:24-33. https://doi.org/10.1007/978-3-032-07904-6_3
 
-11. Fowler JF. 21 years of biologically effective dose. *Br J Radiol*. 2010;83(991):554-568. https://doi.org/10.1259/bjr/86359321
+11. Fowler JF. 21 years of biologically effective dose. *Br J Radiol*. 2010;83(994):554-568. doi:10.1259/bjr/31372149
 
-12. Wen PY, Macdonald DR, Reardon DA, et al. Updated response assessment criteria for high-grade gliomas (RANO). *J Clin Oncol*. 2010;28(11):1963-1972. https://doi.org/10.1200/JCO.2009.25.5874
+12. Wen PY, Macdonald DR, Reardon DA, et al. Updated response assessment criteria for high-grade gliomas: response assessment in neuro-oncology working group. *J Clin Oncol*. 2010;28(11):1963-1972. doi:10.1200/JCO.2009.26.3541
 
 13. van Dijk WT, van Erp WG, Wesseling P, et al. RANO 2.0 update for response assessment in neuro-oncology. *Lancet Oncol*. 2021;22(12):e503-e508. https://doi.org/10.1016/S1470-2045(21)00489-7
 
-14. Cox DR. Regression models and life-tables. *J R Stat Soc Series B*. 1972;34(2):187-220. https://doi.org/10.1111/j.2517-6161.1972.tb00999.x
+14. Cox DR. Regression models and life-tables. *J R Stat Soc Series B*. 1972;34(2):187-220. doi:10.1111/j.2517-6161.1972.tb00899.x
 
 15. Perry JR, Laperriere N, O'Callaghan CJ, et al. Short-course radiation plus temozolomide in elderly patients with glioblastoma. *N Engl J Med*. 2017;376(11):1027-1037. https://doi.org/10.1056/NEJMoa1611977
 

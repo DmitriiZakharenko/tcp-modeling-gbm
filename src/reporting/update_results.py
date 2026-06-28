@@ -32,7 +32,9 @@ from src.analysis.validate_rano_volumes import run_volume_validation
 from src.analysis.within_arm_rano_tcp import run_within_arm_rano_analysis
 from src.analysis.confounding_audit import run_confounding_audit, tcp_feasibility_summary
 from src.analysis.stratified_analysis import run_stratified_analysis
+from src.analysis.mle_optimizer_benchmark import run_mle_optimizer_benchmark
 from src.models.bootstrap_ci import bootstrap_tcp_params
+from src.models.profile_likelihood_ci import profile_likelihood_ci_poisson
 from src.models.eud_tcp import EUDTCPModel
 from src.models.model_comparison import run_model_comparison
 from src.models.survival_analysis import run_survival_analysis
@@ -381,6 +383,8 @@ def render_results_md(
     pyro_comparison: Optional[pd.DataFrame] = None,
     pyro_nested_cv: Optional[pd.DataFrame] = None,
     literature_tcp_d50: Optional[pd.DataFrame] = None,
+    profile_likelihood_ci: Optional[pd.DataFrame] = None,
+    mle_optimizer_benchmark: Optional[pd.DataFrame] = None,
 ) -> str:
     """Render human-readable results markdown."""
     git_hash = _git_short_hash()
@@ -702,6 +706,33 @@ def render_results_md(
             )
         lines.append("")
 
+    if profile_likelihood_ci is not None and not profile_likelihood_ci.empty:
+        lines.extend(["", "## 5b. Profile-likelihood 95% CI (Poisson TCP, EQD2)", ""])
+        lines.append("| Parameter | Estimate | 95% CI (profile LI) |")
+        lines.append("|---|---:|---|")
+        for _, row in profile_likelihood_ci.iterrows():
+            lines.append(
+                f"| {row['parameter']} | {row['estimate']:.3f} | "
+                f"[{row['ci_lower']:.3f}, {row['ci_upper']:.3f}] |"
+            )
+        lines.append("")
+
+    if mle_optimizer_benchmark is not None and not mle_optimizer_benchmark.empty:
+        lines.extend(
+            [
+                "",
+                "## 5c. MLE optimizer benchmark (Poisson TCP, production = L-BFGS-B)",
+                "",
+                "| Method | Success | D50 (Gy) | γ50 | NLL | ΔD50 vs L-BFGS-B | Seconds |",
+                "|---|:---:|---:|---:|---:|---:|---:|",
+            ]
+        )
+        for _, row in mle_optimizer_benchmark.iterrows():
+            ok = "yes" if row["success"] else "no"
+            lines.append(
+                f"| {row['method']} | {ok} | {row['D50_gy']:.3f} | {row['gamma50']:.3f} | "
+                f"{row['nll']:.2f} | {row['delta_D50_vs_lbfgs']:.4f} | {row['seconds']:.3f} |"
+            )
         lines.append("")
 
     if model_comparison is not None and not model_comparison.empty:
@@ -921,6 +952,11 @@ def update_results() -> Path:
     )
     _save_csv(bootstrap_ci, "poisson_tcp_bootstrap_ci.csv")
 
+    profile_li = profile_likelihood_ci_poisson(doses, outcomes)
+    _save_csv(profile_li, "poisson_tcp_profile_likelihood_ci.csv")
+
+    mle_bench = run_mle_optimizer_benchmark(doses, outcomes, METRICS_DIR)
+
     manifest = {
         "generated": date.today().isoformat(),
         "git_hash": _git_short_hash(),
@@ -985,6 +1021,8 @@ def update_results() -> Path:
         pyro_comparison=rano_suite["pyro_comparison"],
         pyro_nested_cv=rano_suite.get("pyro_nested_cv"),
         literature_tcp_d50=literature_tcp,
+        profile_likelihood_ci=profile_li,
+        mle_optimizer_benchmark=mle_bench,
     )
     RESULTS_MD.write_text(md)
     print(f"Wrote {RESULTS_MD}")

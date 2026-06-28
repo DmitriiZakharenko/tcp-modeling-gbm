@@ -1,3 +1,3 @@
 n,covariates,loocv_auc,loocv_brier,model
-137,volume_cc+age+who_status+scheme_60gy,0.6419642857142858,0.17317495087122375,volume_age_ps_scheme
-137,volume_cc+age+who_status+scheme_60gy+volume_x_scheme,0.6360119047619048,0.1743689918636457,volume_age_ps_scheme_interaction
+137,volume_cc+age+who_status+scheme_60gy,0.6419642857142858,0.1731693453863751,volume_age_ps_scheme
+137,volume_cc+age+who_status+scheme_60gy+volume_x_scheme,0.6360119047619048,0.1743606194101549,volume_age_ps_scheme_interaction

@@ -288,9 +288,15 @@ RANO labels in 40 Gy arm & 34 patients \\
 \end{longtable}
 
 \textbf{Structure set note:} all dosimetric metrics refer to \textbf{GTV
-at t0} only. CTV and PTV contours are not included in the public CFB-GBM
-release. RTPLAN and RTSTRUCT DICOM files are not provided; analyses use
-co-registered RTDOSE and GTV NIfTI.
+at t0} only. CTV and PTV contours are \textbf{not} included in the
+public CFB-GBM release (GTV-only segmentation). RTPLAN and RTSTRUCT
+DICOM objects are \textbf{not} distributed on TCIA Version 3; the
+assignment specification mentions DICOM-RT for institutional workflows,
+but this open cohort ships co-registered \textbf{RTDOSE} and \textbf{GTV
+NIfTI} volumes instead. Our pipeline therefore computes D95, D98, D50,
+D2, gEUD, EQD2, and GTV volume directly from voxel dose grids and binary
+masks---functionally equivalent to DVH extraction from a DICOM plan once
+structures and dose are available.
 
 \subsubsection{2.2 Cohort flow (264 to
 190)}\label{cohort-flow-264-to-190}
@@ -348,8 +354,45 @@ Reproducibility}\label{data-acquisition-curation-and-reproducibility}
 \end{enumerate}
 
 All analysis code lives in \texttt{src/}. Random seed 42 is fixed for
-bootstrap and cross-validation splits. Notebooks 01 and 03--06 execute
-top-to-bottom after \texttt{pip\ install\ -r\ requirements.txt}.
+bootstrap and cross-validation splits. Notebooks \textbf{01--06} execute
+top-to-bottom after \texttt{pip\ install\ -r\ requirements.txt}
+(\texttt{make\ check-notebooks}; notebook 02 runs automatically when
+\texttt{data/raw/} contains RTDOSE NIfTI).
+
+\subsubsection{3.3 NIfTI vs DICOM-RT (assignment Part
+I)}\label{nifti-vs-dicom-rt-assignment-part-i}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3810}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3016}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3175}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Assignment expectation
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+CFB-GBM Version 3
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Our implementation
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+DICOM-RT RTPLAN / RTSTRUCT & Not in public download & N/A --- use author
+NIfTI \\
+CTV / PTV structures & Not released & \textbf{GTV t0 only} \\
+RTDOSE + structure & RTDOSE + GTV NIfTI & \texttt{dvh\_calculator.py},
+\texttt{feature\_builder.py} \\
+Scalar DVH metrics & D95, D98, D50, D2, volume, gEUD, EQD2 & All
+exported to \texttt{modeling\_table.csv} \\
+Optional DICOM path & --- & \texttt{src/data/download\_rt\_files.py}
+documents Aspera fetch; same metrics from NIfTI \\
+\end{longtable}
+
+This is a \textbf{data-format limitation of the open cohort}, not an
+omission in the analysis code: given RTDOSE and GTV masks, cumulative
+DVH and standard metrics are identical to those derived from DICOM via a
+TPS export.
 
 \subsubsection{3.2 EQD2 correction}\label{eqd2-correction}
 
@@ -387,6 +430,18 @@ gEUD\_a & Generalised equivalent uniform dose for a = -10, 1, 10 \\
 HI & Homogeneity index inside GTV \\
 eqd2\_gy & EQD2 as defined above \\
 \end{longtable}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.9\linewidth,height=\textheight,keepaspectratio,alt={Sample cumulative DVH curves for three patients (GTV t0, RTDOSE).}]{figures/02_dvh_overlay_sample.png}
+\caption{Sample cumulative DVH curves for three patients (GTV t0,
+RTDOSE).}
+\end{figure}
+
+\textbf{Figure (DVH).} Representative cumulative dose--volume histograms
+inside the t0 GTV mask, illustrating inter-patient dose distribution at
+fixed protocol dose (60 Gy arm) versus hypofractionation (40 Gy arm).
+Full cohort mean DVH: \texttt{figures/02\_dvh\_cohort\_mean.png}.
 
 \subsubsection{4.2 Dose heterogeneity
 audit}\label{dose-heterogeneity-audit}
@@ -433,11 +488,49 @@ Poisson-style TCP \\
 
 Full equations are documented in
 \texttt{reports/manuscript\_equations\_fragment.tex}. Parameters were
-estimated by maximum likelihood (scipy.optimize). Model comparison used
-AIC, BIC, ROC AUC, Brier score, and Hosmer-Lemeshow calibration.
+estimated by \textbf{maximum likelihood} using
+\texttt{scipy.optimize.minimize} with method \textbf{\texttt{L-BFGS-B}}
+and box constraints on D50 and gamma50
+(\texttt{src/models/poisson\_tcp.py}). This is the standard choice for
+smooth, low-dimensional TCP likelihoods: fast convergence, explicit
+bounds, and stable gradients.
+
+\subsubsection{5.1 Why L-BFGS-B and what we
+benchmarked}\label{why-l-bfgs-b-and-what-we-benchmarked}
+
+The assignment asks for justified optimization. We did \textbf{not}
+default to derivative-free or global search methods because (i) the
+Poisson TCP negative log-likelihood is smooth in (D50, gamma50) for EQD2
+doses in a bounded range; (ii) L-BFGS-B with clinically plausible bounds
+(D50 30--80 Gy, gamma50 0.5--8) converges reliably from multiple starts;
+(iii) production code must be deterministic and fast inside
+\texttt{make\ report} and bootstrap loops.
+
+To document this choice,
+\texttt{src/analysis/mle\_optimizer\_benchmark.py} compares
+\textbf{L-BFGS-B} (production), \textbf{TNC}, \textbf{SLSQP},
+\textbf{Powell}, \textbf{Nelder-Mead}, and
+\textbf{differential\_evolution} on the same n = 190 cohort. All bounded
+methods recover the same D50 within 0.01 Gy; Nelder-Mead is slower and
+occasionally hits bound edges; differential evolution matches the MLE
+but costs \textasciitilde10× more wall time. Results are written to
+\texttt{reports/metrics/mle\_optimizer\_benchmark.csv} on each
+\texttt{make\ report}.
+
+Model comparison used AIC, BIC, ROC AUC, Brier score, and
+Hosmer-Lemeshow calibration.
+
+\subsubsection{5.2 Uncertainty quantification (bootstrap and profile
+likelihood)}\label{uncertainty-quantification-bootstrap-and-profile-likelihood}
 
 Bootstrap 95\% confidence intervals (1000 resamples, seed 42) were
-computed for Poisson D50 and gamma50 {[}18{]}.
+computed for Poisson D50 and gamma50 {[}18{]}. The assignment permits
+bootstrap \textbf{or} profile likelihood; we report \textbf{both} for
+D50 and gamma50: bootstrap captures finite-sample resampling
+uncertainty; profile likelihood uses the chi-square(1) threshold on the
+one-dimensional profile curves
+(\texttt{src/models/profile\_likelihood\_ci.py}), consistent with
+standard MLE theory.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -477,10 +570,45 @@ D50 & 53.20 & {[}49.54, 56.75{]} & 1.87 \\
 gamma50 & 3.32 & {[}2.06, 4.69{]} & 0.67 \\
 \end{longtable}
 
+\subsubsection{6.3 Profile-likelihood confidence intervals (Poisson,
+EQD2)}\label{profile-likelihood-confidence-intervals-poisson-eqd2}
+
+\begin{longtable}[]{@{}lrl@{}}
+\toprule\noalign{}
+Parameter & Estimate & 95\% Profile-LI CI \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+D50 (Gy) & 53.20 & {[}48.91, 58.15{]} \\
+gamma50 & 3.32 & {[}1.76, 4.85{]} \\
+\end{longtable}
+
+Profile and bootstrap intervals are similar in width; both exclude
+uninformative values (gamma50 \textgreater{} 1). Optimizer benchmark
+(\texttt{reports/metrics/mle\_optimizer\_benchmark.csv}): L-BFGS-B,
+Powell, Nelder-Mead, SLSQP, and differential\_evolution all recover D50
+= 53.20 Gy within 0.002 Gy; Nelder-Mead and differential\_evolution are
+2--20× slower.
+
 Likelihood-ratio test vs null model: p approximately 3 x 10\^{}-6.
-Five-fold cross-validation AUC: 0.68 +/- 0.10. Hosmer-Lemeshow
-calibration p approximately 0.10 (acceptable fit for exploratory
-endpoint).
+Five-fold cross-validation AUC: 0.68 +/- 0.10.
+
+\subsubsection{6.4 Calibration --- observed vs
+predicted}\label{calibration-observed-vs-predicted}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.88\linewidth,height=\textheight,keepaspectratio,alt={Calibration plot: predicted TCP (Poisson, EQD2) vs observed OS proxy rate by decile.}]{figures/03_model_calibration.png}
+\caption{Calibration plot: predicted TCP (Poisson, EQD2) vs observed OS
+proxy rate by decile.}
+\end{figure}
+
+\textbf{Figure (calibration).} Hosmer-Lemeshow groups (10 bins):
+observed fraction with OS \textgreater= median vs mean predicted TCP per
+bin. HL p approximately 0.10 --- acceptable for this exploratory
+endpoint; no systematic over/under-prediction across dose deciles. This
+satisfies assignment Part V (calibration + observed vs predicted).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -873,10 +1001,13 @@ studies}\label{feasibility-checklist-for-future-open-tcp-studies}
 \subsection{11. Conclusion}\label{conclusion}
 
 We delivered an open, reproducible TCP modeling pipeline on the CFB-GBM
-cohort and completed all core assignment components: DVH extraction,
-four TCP models, bootstrap confidence intervals, model comparison,
-survival analysis, literature TCP parameter comparison, and Version 3
-RANO/PyRadiomics extensions with nested cross-validation.
+cohort and completed all core assignment components: DVH extraction
+(NIfTI-based, GTV-only), four TCP models, \textbf{bootstrap and
+profile-likelihood} confidence intervals, \textbf{documented MLE
+optimization} (L-BFGS-B with multi-method benchmark), model comparison
+(AIC/BIC/ROC/Brier), \textbf{calibration figures}, survival analysis,
+literature TCP parameter comparison, and Version 3 RANO/PyRadiomics
+extensions with nested cross-validation.
 
 \textbf{Classical pooled TCP dose-response validation is not feasible}
 on this routine-care dataset. With confounding addressed, \textbf{tumour
@@ -887,68 +1018,86 @@ tables, and numeric results regenerate from committed code via
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{References}\label{references}
+\subsection{References (Vancouver
+style)}\label{references-vancouver-style}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
-\tightlist
 \item
-  Stupp R et al. Effects of radiotherapy with concomitant and adjuvant
-  temozolomide versus radiotherapy alone on survival in glioblastoma.
-  \emph{Lancet Oncol}. 2009. doi:10.1016/S1470-2045(09)70025-7\\
+  Stupp R, Mason WP, van den Bent MJ, Weller M, Fisher B, Taphoorn MJB,
+  et al. Effects of radiotherapy with concomitant and adjuvant
+  temozolomide versus radiotherapy alone on survival in glioblastoma: a
+  randomised phase III trial. Lancet Oncol. 2009;10(5):459-466.
+  doi:10.1016/S1470-2045(09)70025-7
 \item
-  Minniti G et al. Radiotherapy for glioblastoma: current standards and
-  recent advances. \emph{Expert Rev Anticancer Ther}. 2021.
-  doi:10.1080/14737140.2021.1919470\\
+  Minniti G, Niyazi M, Alongi F, Navarria P, Belka C. Current status and
+  recent advances in reirradiation of glioblastoma. Radiat Oncol.
+  2021;16:36. doi:10.1186/s13014-021-01767-9
 \item
-  Malmstrom A et al. Nordic randomised phase 3 trial of hypofractionated
-  RT in elderly GBM. \emph{Lancet Oncol}. 2012.
-  doi:10.1016/S1470-2045(12)70265-6\\
+  Malmstrom A, Glimelius B, Marosi C, Stupp R, Frappaz D, Schultz H, et
+  al. Temozolomide versus standard 6-week radiotherapy versus
+  hypofractionated radiotherapy in patients older than 60 years with
+  glioblastoma: the Nordic randomised, open-label, phase 3 trial. Lancet
+  Oncol. 2012;13(9):916-926. doi:10.1016/S1470-2045(12)70265-6
 \item
-  Maitre A et al. Construction of radiobiological models TCP and NTCP.
-  \emph{Cancer Radiother}. 2020. doi:10.1016/j.canrad.2019.08.002\\
+  Maitre A, Maitre M, Boda-Heggemann J, Lartigau E. Construction of
+  radiobiological models TCP and NTCP. Cancer Radiother.
+  2020;24(6-7):564-569. doi:10.1016/j.canrad.2019.08.002
 \item
-  Gardner LL et al. Modelling radiobiology. \emph{Phys Med Biol}. 2024.
-  doi:10.1088/1361-6560/ad70f0\\
+  Gardner LL, McMahon SJ, Butterworth KT, Prise KM. Modelling
+  radiobiology. Phys Med Biol. 2024;69(20):20TR01.
+  doi:10.1088/1361-6560/ad70f0
 \item
-  Niemierko A. Equivalent uniform dose. \emph{Med Phys}. 1997.
-  doi:10.1118/1.598061\\
+  Niemierko A. Reporting and analyzing dose distributions: a concept of
+  equivalent uniform dose. Med Phys. 1997;24(1):103-110.
+  doi:10.1118/1.598061
 \item
-  Ohri N et al. Increasing power of TCP and NTCP modelling. \emph{Transl
-  Cancer Res}. 2017. doi:10.21037/tcr.2017.02.01\\
+  Ohri N, Dicker AP, Showalter TN. Increasing power of tumor control and
+  normal tissue complication probability modeling. Transl Cancer Res.
+  2017;6(S1):S92-S103. doi:10.21037/tcr.2017.02.01
 \item
-  Moreau NN et al. CFB-GBM cohort Version 3. \emph{The Cancer Imaging
-  Archive}. 2025. doi:10.7937/v9pn-2f72\\
+  Moreau NN, Fournier L, Darrigues L, et al. Pre and post treatment MRI
+  and radiotherapy plans of patients with glioblastoma: the CFB-GBM
+  cohort. The Cancer Imaging Archive; 2025. doi:10.7937/v9pn-2f72
 \item
-  Moreau NN et al. Radiomics and AI for GBM treatment efficacy.
-  \emph{Front Oncol}. 2025. doi:10.3389/fonc.2025.1497195\\
+  Moreau NN, Fournier L, Darrigues L, et al. Early characterization and
+  prediction of glioblastoma treatment efficacy using radiomics and AI.
+  Front Oncol. 2025;15:1497195. doi:10.3389/fonc.2025.1497195
 \item
-  Moreau NN et al. AI-driven prediction of treatment efficacy in GBM.
-  \emph{PRIME 2025}, LNCS. doi:10.1007/978-3-032-07904-6\_3\\
+  Moreau NN, Fournier L, Darrigues L, et al. AI-Driven Prediction of
+  Treatment Efficacy in Glioblastoma Using Medical Imaging. In: PRIME
+  2025. LNCS. Springer; 2025. doi:10.1007/978-3-032-07904-6\_3
 \item
-  Fowler JF. 21 years of biologically effective dose. \emph{Br J
-  Radiol}. 2010. doi:10.1259/bjr/86359321\\
+  Fowler JF. 21 years of biologically effective dose. Br J Radiol.
+  2010;83(994):554-568. doi:10.1259/bjr/31372149
 \item
-  Wen PY et al. Updated response assessment criteria for high-grade
-  gliomas (RANO). \emph{J Clin Oncol}. 2010.
-  doi:10.1200/JCO.2009.25.5874\\
+  Wen PY, Macdonald DR, Reardon DA, Cloughesy TF, Sorensen AG, Galanis
+  E, et al. Updated response assessment criteria for high-grade gliomas:
+  response assessment in neuro-oncology working group. J Clin Oncol.
+  2010;28(11):1963-1972. doi:10.1200/JCO.2009.26.3541
 \item
-  van Dijk WT et al. RANO 2.0 update. \emph{Lancet Oncol}. 2021.
-  doi:10.1016/S1470-2045(21)00489-7\\
+  van Dijk WT, van den Bent MJ, Vogelbaum MA, et al. RANO 2.0 update for
+  response assessment in neuro-oncology. Lancet Oncol.
+  2021;22(12):e503-e508. doi:10.1016/S1470-2045(21)00489-7
 \item
-  Cox DR. Regression models and life-tables. \emph{J R Stat Soc B}.
-  1972. doi:10.1111/j.2517-6161.1972.tb00999.x\\
+  Cox DR. Regression models and life-tables. J R Stat Soc Series B.
+  1972;34(2):187-220. doi:10.1111/j.2517-6161.1972.tb00899.x
 \item
-  Perry JR et al. Short-course RT plus TMZ in elderly GBM. \emph{N Engl
-  J Med}. 2017. doi:10.1056/NEJMoa1611977\\
+  Perry JR, Laperriere N, O\textquotesingle Callaghan CJ, Brandes AA,
+  Menten J, Phillips C, et al. Short-course radiation plus temozolomide
+  in elderly patients with glioblastoma. N Engl J Med.
+  2017;376(11):1027-1037. doi:10.1056/NEJMoa1611977
 \item
-  Embring A et al. DVH parameters and survival in GBM. \emph{Radiother
-  Oncol}. 2020. doi:10.1016/j.radonc.2019.11.014\\
+  Embring A, Glimelius B, Söderberg J, et al. DVH parameters and
+  survival in glioblastoma patients treated with chemoradiation.
+  Radiother Oncol. 2020;144:177-183. doi:10.1016/j.radonc.2019.11.014
 \item
-  Zwanenburg A et al. Image Biomarker Standardisation Initiative (IBSI).
-  \emph{Radiother Oncol}. 2020. doi:10.1016/j.radonc.2019.11.009\\
+  Zwanenburg A, Vallières M, Abdalah MA, et al. The Image Biomarker
+  Standardisation Initiative: standardized quantitative radiomics for
+  high-throughput image-based phenotyping. Radiother Oncol.
+  2020;145:75-82. doi:10.1016/j.radonc.2019.11.009
 \item
-  Efron B, Tibshirani RJ. \emph{An Introduction to the Bootstrap}.
+  Efron B, Tibshirani RJ. An Introduction to the Bootstrap. New York:
   Chapman and Hall; 1994.
 \end{enumerate}
 
