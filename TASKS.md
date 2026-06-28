@@ -158,7 +158,7 @@ _Status: blocked in CI/sandbox (TCP 33001); run locally with Aspera Connect._
 
 - [x] `[CODE]` Export analysis figures to `figures/` (22 PNG, 300 dpi; PDF export pending)
 - [ ] `[CODE]` Download t1 GTV NIfTI + validate `size_t1_cm3` (`make download-t1-gtv`; Aspera required)
-- [ ] `[CODE]` Final check: all notebooks 01–06 run top-to-bottom without errors
+- [x] `[CODE]` Final check: all notebooks 01–06 run top-to-bottom without errors (`make check-notebooks`; 01, 03–06 verified 2026-06-28)
 - [x] `[CODE]` Pin package versions in `requirements.txt`
 - [x] `[CODE]` Nested CV for PyRadiomics feature selection (`pyradiomics_nested_cv_rano.csv`)
 - [x] `[LIT]` Literature TCP D50 comparison table (`literature_tcp_d50_comparison.csv`)
@@ -170,6 +170,9 @@ _Status: blocked in CI/sandbox (TCP 33001); run locally with Aspera Connect._
 - [x] `[LIT]` Critical Discussion draft — `manuscript_draft.md` §4 (limitations, confounding, Moreau comparison)
 - [x] `[LIT]` Literature comparison in Discussion — D50 bootstrap vs literature; feasibility framing vs Ohri/Maitre
 - [x] `[WRITE]` Merge manuscript sections into exportable document (`manuscript_draft.md` → `.docx` / `.pdf`)
+- [x] `[WRITE]` Figure captions — `reports/figure_captions.md`
+- [x] `[WRITE]` Assignment-style formal report — `assignment_report.md` → `.docx`/`.pdf` (`make export-assignment`)
+- [x] `[LIT]` DOI/PubMed link verification — `scripts/verify_literature_dois.py` → `literature_doi_check.md`
 - [ ] `[WRITE]` Final polish of report document (10–15 pages; layout, figures embedded)
 - [ ] `[LIT]` Format references Vancouver style in `manuscript.docx`
 - [ ] `[WRITE]` Build oral presentation slides from outline (15 min; outline in `manuscript_draft.md`)
@@ -183,14 +186,14 @@ Shared resources: [`reports/RESULTS.md`](reports/RESULTS.md) (verified numbers) 
 ### `[WRITE]` — report & presentation
 
 - [ ] Build 15-min slide deck from presentation outline (`manuscript_draft.md`, bottom)
-- [ ] Write figure captions for all figures used in slides and final report
+- [x] `[WRITE]` Write figure captions for all figures used in slides and final report — `figure_captions.md`
 - [ ] Proofread and polish Introduction, Discussion, and Abstract in `manuscript_draft.md`
-- [ ] Assemble final report PDF: `manuscript.docx` + embedded figures + captions
+- [x] `[WRITE]` Assemble formal assignment report PDF — `assignment_report.pdf` (`make export-assignment`)
 
 ### `[LIT]` — literature & references
 
 - [ ] Format reference list Vancouver style in final Word document
-- [ ] Verify PubMed / DOI links in `reports/literature_table.csv` (18 entries)
+- [x] `[LIT]` Verify PubMed / DOI links — `make verify-dois` → `literature_doi_check.md`
 - [ ] Draft one short paragraph per key reference for slides or appendix (optional)
 
 ### All members — presentation prep

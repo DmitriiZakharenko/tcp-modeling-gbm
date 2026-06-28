@@ -1,0 +1,311 @@
+{
+  "generated": "2026-06-28 17:33 UTC",
+  "rows": [
+    {
+      "ref_id": "1",
+      "first_author": "Stupp",
+      "year": "2009",
+      "doi": "10.1016/S1470-2045(09)70025-7",
+      "pubmed_id": "19318585",
+      "doi_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://doi.org/10.1016/S1470-2045(09)70025-7"
+      },
+      "pubmed_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://pubmed.ncbi.nlm.nih.gov/19318585/"
+      }
+    },
+    {
+      "ref_id": "2",
+      "first_author": "Minniti",
+      "year": "2021",
+      "doi": "10.1080/14737140.2021.1919470",
+      "pubmed_id": "33807852",
+      "doi_check": {
+        "status": "fail",
+        "http": 404,
+        "final_url": "https://doi.org/10.1080/14737140.2021.1919470"
+      },
+      "pubmed_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://pubmed.ncbi.nlm.nih.gov/33807852/"
+      }
+    },
+    {
+      "ref_id": "3",
+      "first_author": "Malmstrom",
+      "year": "2012",
+      "doi": "10.1016/S1470-2045(12)70265-6",
+      "pubmed_id": "22877848",
+      "doi_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://doi.org/10.1016/S1470-2045(12)70265-6"
+      },
+      "pubmed_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://pubmed.ncbi.nlm.nih.gov/22877848/"
+      }
+    },
+    {
+      "ref_id": "4",
+      "first_author": "Maitre",
+      "year": "2020",
+      "doi": "10.1016/j.canrad.2019.08.002",
+      "pubmed_id": "32192557",
+      "doi_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://doi.org/10.1016/j.canrad.2019.08.002"
+      },
+      "pubmed_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://pubmed.ncbi.nlm.nih.gov/32192557/"
+      }
+    },
+    {
+      "ref_id": "5",
+      "first_author": "Gardner",
+      "year": "2024",
+      "doi": "10.1088/1361-6560/ad70f0",
+      "pubmed_id": "NA",
+      "doi_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://doi.org/10.1088/1361-6560/ad70f0"
+      },
+      "pubmed_check": {
+        "status": "skipped",
+        "http": null,
+        "final_url": ""
+      }
+    },
+    {
+      "ref_id": "6",
+      "first_author": "Niemierko",
+      "year": "1997",
+      "doi": "10.1118/1.598061",
+      "pubmed_id": "9055874",
+      "doi_check": {
+        "status": "ok",
+        "http": 403,
+        "final_url": "https://doi.org/10.1118/1.598061"
+      },
+      "pubmed_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://pubmed.ncbi.nlm.nih.gov/9055874/"
+      }
+    },
+    {
+      "ref_id": "7",
+      "first_author": "Ohri",
+      "year": "2017",
+      "doi": "10.21037/tcr.2017.02.01",
+      "pubmed_id": "28443297",
+      "doi_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://doi.org/10.21037/tcr.2017.02.01"
+      },
+      "pubmed_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://pubmed.ncbi.nlm.nih.gov/28443297/"
+      }
+    },
+    {
+      "ref_id": "8",
+      "first_author": "Moreau",
+      "year": "2025",
+      "doi": "10.7937/v9pn-2f72",
+      "pubmed_id": "NA",
+      "doi_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://doi.org/10.7937/v9pn-2f72"
+      },
+      "pubmed_check": {
+        "status": "skipped",
+        "http": null,
+        "final_url": ""
+      }
+    },
+    {
+      "ref_id": "9",
+      "first_author": "Moreau",
+      "year": "2025",
+      "doi": "10.3389/fonc.2025.1497195",
+      "pubmed_id": "39949753",
+      "doi_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://doi.org/10.3389/fonc.2025.1497195"
+      },
+      "pubmed_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://pubmed.ncbi.nlm.nih.gov/39949753/"
+      }
+    },
+    {
+      "ref_id": "10",
+      "first_author": "Moreau",
+      "year": "2025",
+      "doi": "10.1007/978-3-032-07904-6_3",
+      "pubmed_id": "NA",
+      "doi_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://doi.org/10.1007/978-3-032-07904-6_3"
+      },
+      "pubmed_check": {
+        "status": "skipped",
+        "http": null,
+        "final_url": ""
+      }
+    },
+    {
+      "ref_id": "11",
+      "first_author": "Fowler",
+      "year": "2010",
+      "doi": "10.1259/bjr/86359321",
+      "pubmed_id": "20351357",
+      "doi_check": {
+        "status": "fail",
+        "http": 404,
+        "final_url": "https://doi.org/10.1259/bjr/86359321"
+      },
+      "pubmed_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://pubmed.ncbi.nlm.nih.gov/20351357/"
+      }
+    },
+    {
+      "ref_id": "12",
+      "first_author": "Wen",
+      "year": "2010",
+      "doi": "10.1200/JCO.2009.25.5874",
+      "pubmed_id": "20233806",
+      "doi_check": {
+        "status": "fail",
+        "http": 404,
+        "final_url": "https://doi.org/10.1200/JCO.2009.25.5874"
+      },
+      "pubmed_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://pubmed.ncbi.nlm.nih.gov/20233806/"
+      }
+    },
+    {
+      "ref_id": "13",
+      "first_author": "van Dijk",
+      "year": "2021",
+      "doi": "10.1016/S1470-2045(21)00489-7",
+      "pubmed_id": "34774159",
+      "doi_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://doi.org/10.1016/S1470-2045(21)00489-7"
+      },
+      "pubmed_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://pubmed.ncbi.nlm.nih.gov/34774159/"
+      }
+    },
+    {
+      "ref_id": "14",
+      "first_author": "Cox",
+      "year": "1972",
+      "doi": "10.1111/j.2517-6161.1972.tb00999.x",
+      "pubmed_id": "NA",
+      "doi_check": {
+        "status": "fail",
+        "http": 404,
+        "final_url": "https://doi.org/10.1111/j.2517-6161.1972.tb00999.x"
+      },
+      "pubmed_check": {
+        "status": "skipped",
+        "http": null,
+        "final_url": ""
+      }
+    },
+    {
+      "ref_id": "15",
+      "first_author": "Perry",
+      "year": "2017",
+      "doi": "10.1056/NEJMoa1611977",
+      "pubmed_id": "28296600",
+      "doi_check": {
+        "status": "ok",
+        "http": 403,
+        "final_url": "https://doi.org/10.1056/NEJMoa1611977"
+      },
+      "pubmed_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://pubmed.ncbi.nlm.nih.gov/28296600/"
+      }
+    },
+    {
+      "ref_id": "16",
+      "first_author": "Embring",
+      "year": "2020",
+      "doi": "10.1016/j.radonc.2019.11.014",
+      "pubmed_id": "31836236",
+      "doi_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://doi.org/10.1016/j.radonc.2019.11.014"
+      },
+      "pubmed_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://pubmed.ncbi.nlm.nih.gov/31836236/"
+      }
+    },
+    {
+      "ref_id": "17",
+      "first_author": "Zwanenburg",
+      "year": "2020",
+      "doi": "10.1016/j.radonc.2019.11.009",
+      "pubmed_id": "31912224",
+      "doi_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://doi.org/10.1016/j.radonc.2019.11.009"
+      },
+      "pubmed_check": {
+        "status": "ok",
+        "http": 200,
+        "final_url": "https://pubmed.ncbi.nlm.nih.gov/31912224/"
+      }
+    },
+    {
+      "ref_id": "18",
+      "first_author": "Efron",
+      "year": "1994",
+      "doi": "NA",
+      "pubmed_id": "NA",
+      "doi_check": {
+        "status": "skipped",
+        "http": null,
+        "final_url": ""
+      },
+      "pubmed_check": {
+        "status": "skipped",
+        "http": null,
+        "final_url": ""
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-.PHONY: data data-clinical cohort verify-rt features export-modeling download-rt help
+.PHONY: data data-clinical cohort verify-rt features export-modeling download-rt help report export-manuscript export-assignment verify-dois check-notebooks export-all
 
 help:
 	@echo "Targets:"
@@ -10,6 +10,11 @@ help:
 	@echo "  make features       Extract DVH features (requires raw NIfTI data)"
 	@echo "  make export-modeling  Merge cohort + features → modeling_table.csv"
 	@echo "  make report           Regenerate reports/RESULTS.md and metrics CSVs"
+	@echo "  make verify-dois      Check literature_table.csv DOI/PubMed links"
+	@echo "  make check-notebooks  Execute notebooks 01, 03–06 (log in reports/)"
+	@echo "  make export-manuscript   manuscript_with_figures → docx/tex/pdf"
+	@echo "  make export-assignment   assignment_report → docx/tex/pdf"
+	@echo "  make export-all       report + verify-dois + both exports"
 
 data:
 	python -m src.data.setup_data
@@ -43,5 +48,16 @@ process: verify-rt features export-modeling
 report:
 	python -m src.reporting.update_results
 
+verify-dois:
+	python scripts/verify_literature_dois.py
+
+check-notebooks:
+	bash scripts/run_notebooks_check.sh
+
 export-manuscript:
 	bash scripts/export_manuscript.sh
+
+export-assignment:
+	bash scripts/export_assignment_report.sh
+
+export-all: report verify-dois export-manuscript export-assignment

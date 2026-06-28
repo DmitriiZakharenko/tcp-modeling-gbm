@@ -1,0 +1,22 @@
+Notebook run started 2026-06-28T17:30:22Z
+=== Executing 01_cohort_overview.ipynb ===
+[NbConvertApp] Converting notebook /Users/zahalae/Desktop/Projects_git/tcp-modeling-gbm/notebooks/01_cohort_overview.ipynb to notebook
+[NbConvertApp] Writing 304645 bytes to /Users/zahalae/Desktop/Projects_git/tcp-modeling-gbm/notebooks/01_cohort_overview.ipynb
+OK  01_cohort_overview.ipynb
+=== Executing 03_tcp_models.ipynb ===
+[NbConvertApp] Converting notebook /Users/zahalae/Desktop/Projects_git/tcp-modeling-gbm/notebooks/03_tcp_models.ipynb to notebook
+[NbConvertApp] Writing 19321 bytes to /Users/zahalae/Desktop/Projects_git/tcp-modeling-gbm/notebooks/03_tcp_models.ipynb
+OK  03_tcp_models.ipynb
+=== Executing 04_parameter_estimation.ipynb ===
+[NbConvertApp] Converting notebook /Users/zahalae/Desktop/Projects_git/tcp-modeling-gbm/notebooks/04_parameter_estimation.ipynb to notebook
+[NbConvertApp] Writing 146156 bytes to /Users/zahalae/Desktop/Projects_git/tcp-modeling-gbm/notebooks/04_parameter_estimation.ipynb
+OK  04_parameter_estimation.ipynb
+=== Executing 05_survival_analysis.ipynb ===
+[NbConvertApp] Converting notebook /Users/zahalae/Desktop/Projects_git/tcp-modeling-gbm/notebooks/05_survival_analysis.ipynb to notebook
+[NbConvertApp] Writing 262544 bytes to /Users/zahalae/Desktop/Projects_git/tcp-modeling-gbm/notebooks/05_survival_analysis.ipynb
+OK  05_survival_analysis.ipynb
+=== Executing 06_rano_multivariable_40gy.ipynb ===
+[NbConvertApp] Converting notebook /Users/zahalae/Desktop/Projects_git/tcp-modeling-gbm/notebooks/06_rano_multivariable_40gy.ipynb to notebook
+[NbConvertApp] Writing 14388 bytes to /Users/zahalae/Desktop/Projects_git/tcp-modeling-gbm/notebooks/06_rano_multivariable_40gy.ipynb
+OK  06_rano_multivariable_40gy.ipynb
+Finished 2026-06-28T17:30:48Z exit=0

@@ -6,7 +6,8 @@ The pipeline covers DICOM-free NIfTI data curation, DVH feature extraction, Pois
 
 **Dataset:** Moreau et al. 2025, *The Cancer Imaging Archive* — [doi:10.7937/V9PN-2F72](https://doi.org/10.7937/V9PN-2F72)  
 **Cohort:** 190 / 264 patients for modeling after DVH QC (191 with RTDOSE + GTV; 1 excluded for invalid RTDOSE)  
-**Task board:** [TASKS.md](TASKS.md) · [GitHub Issue #1](https://github.com/DmitriiZakharenko/tcp-modeling-gbm/issues/1) (sync: `bash scripts/sync_github_issue_1.sh`)
+**Task board:** [TASKS.md](TASKS.md) · [GitHub Issue #1](https://github.com/DmitriiZakharenko/tcp-modeling-gbm/issues/1) (sync: `bash scripts/sync_github_issue_1.sh`)  
+**Group guide:** [`reports/group_glossary_guide.md`](reports/group_glossary_guide.md) — plain-language terms, methods, and presentation FAQ
 
 ---
 
@@ -24,6 +25,25 @@ The pipeline covers DICOM-free NIfTI data curation, DVH feature extraction, Pois
 | **Cox + RANO (n=137)** | RANO non-PD HR≈**0.48** (**p≈0.0009**); EQD2 still significant after adjustment |
 
 Full tables: [`reports/RESULTS.md`](reports/RESULTS.md) · regenerate with `make report`
+
+### Regenerate results and exports
+
+```bash
+make report              # RESULTS.md + reports/metrics/*.csv from modeling_table.csv
+make verify-dois         # reports/literature_doi_check.md
+make check-notebooks     # notebooks 01, 03–06 → reports/notebook_run_log.txt
+make export-manuscript   # manuscript_with_figures → .docx / .tex / .pdf
+make export-assignment   # assignment_report → .docx / .tex / .pdf (formal submission)
+make export-all          # all of the above (except notebook check)
+```
+
+| Document | Source | Command |
+|----------|--------|---------|
+| Auto results | `modeling_table.csv` | `make report` |
+| Scientific manuscript | `manuscript_draft.md` + figures | `make export-manuscript` |
+| **Assignment report** | `assignment_report.md` + figures | `make export-assignment` |
+| Figure captions | — | `reports/figure_captions.md` |
+| Glossary | — | `reports/group_glossary_guide.md` |
 
 ---
 
@@ -129,6 +149,8 @@ Requires `data/raw/{patient_id}/t0/*_t0_rtdose.nii.gz` and `*_t0_gtv.nii.gz` for
 make report
 # or: python -m src.reporting.update_results
 ```
+
+See **Regenerate results and exports** above for manuscripts, assignment PDF, DOI check, and notebooks.
 
 Writes:
 
