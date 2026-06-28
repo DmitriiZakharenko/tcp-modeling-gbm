@@ -5,8 +5,7 @@
 **Institution:** Centre François Baclesse (open cohort via The Cancer Imaging Archive)  
 **Modeling cohort:** n = 190 (after DVH quality control)  
 **RANO imaging subset:** n = 137 (t0 to t1 labels)  
-**Report date:** 2026-06-28  
-**Verified numbers:** auto-generated `reports/RESULTS.md` (`make report`)
+**Report date:** 2026-06-28
 
 ---
 
@@ -44,7 +43,7 @@ Valid TCP validation requires three conditions emphasized in the radiotherapy mo
 
 The CFB-GBM dataset (Centre François Baclesse, n = 264 in the public TSV release) provides pre- and post-treatment MRI, RTDOSE maps, GTV segmentations, clinical tables, and—since Version 3—RANO response labels and PyRadiomics feature tables [8–10]. The dataset is distributed as pre-processed NIfTI rather than full DICOM-RT plans.
 
-**Primary project aim (assignment Parts I–VI):** build a reproducible TCP modeling pipeline on this open cohort, estimate D50 and gamma50 with uncertainty, compare models, and compare our parameters with published TCP literature.
+**Primary aim:** build a reproducible TCP modeling pipeline on this open cohort, estimate D50 and gamma50 with uncertainty, compare models, and relate our parameters to published TCP literature.
 
 **Secondary aim (Version 3 extension):** determine whether early RANO imaging response and PyRadiomics features rescue dose-response signal when classical pooled TCP fails, and report honest out-of-sample performance (LOOCV and nested cross-validation).
 
@@ -75,7 +74,7 @@ The CFB-GBM dataset (Centre François Baclesse, n = 264 in the public TSV releas
 | RANO t0 to t1 labels available | 137 / 190 (72%) |
 | RANO labels in 40 Gy arm | 34 patients |
 
-**Structure set note:** all dosimetric metrics refer to **GTV at t0** only. CTV and PTV contours are **not** included in the public CFB-GBM release (GTV-only segmentation). RTPLAN and RTSTRUCT DICOM objects are **not** distributed on TCIA Version 3; the assignment specification mentions DICOM-RT for institutional workflows, but this open cohort ships co-registered **RTDOSE** and **GTV NIfTI** volumes instead. Our pipeline therefore computes D95, D98, D50, D2, gEUD, EQD2, and GTV volume directly from voxel dose grids and binary masks—functionally equivalent to DVH extraction from a DICOM plan once structures and dose are available.
+**Structure set note:** all dosimetric metrics refer to **GTV at t0** only. CTV and PTV contours are not included in the public CFB-GBM release (GTV-only segmentation). RTPLAN and RTSTRUCT DICOM objects are not distributed on TCIA Version 3; the cohort provides co-registered **RTDOSE** and **GTV NIfTI** volumes. D95, D98, D50, D2, gEUD, EQD2, and GTV volume were computed from voxel dose grids and binary masks—the same quantities typically exported from a treatment-planning system after structure delineation and dose calculation.
 
 ### 2.2 Cohort flow (264 to 190)
 
@@ -83,7 +82,7 @@ Starting from 264 patients in the clinical table, 70 were excluded because presc
 
 ### 2.3 Outcome definitions
 
-**Primary TCP endpoint (exploratory):** OS greater than or equal to cohort median (51 weeks), used as a binary proxy for pipeline testing. This is not equivalent to formal tumour control.
+**Primary TCP endpoint (exploratory):** OS greater than or equal to cohort median (51 weeks), used as a binary outcome for dose–response modeling. This is not equivalent to formal tumour control.
 
 **Secondary endpoint (Version 3):** RANO non-progressive disease at t1, defined as stable disease, minor response, partial response, or complete response versus progressive disease [12,13]. RANO non-PD rate in the modeling subset was approximately 77%.
 
@@ -99,23 +98,22 @@ Starting from 264 patients in the clinical table, 70 were excluded because presc
 4. Verify file completeness (`verify_raw_data.py`).
 5. Compute cumulative DVH and scalar metrics (`feature_builder.py`, `dvh_calculator.py`).
 6. Apply DVH QC (`dvh_qc.py`); export `modeling_table.csv`.
-7. Fit TCP models, survival models, and RANO prediction suite; regenerate `reports/RESULTS.md` via `make report`.
+7. Fit TCP models, survival models, and RANO prediction suite; export summary tables and figures.
 
-All analysis code lives in `src/`. Random seed 42 is fixed for bootstrap and cross-validation splits. Notebooks **01–06** execute top-to-bottom after `pip install -r requirements.txt` (`make check-notebooks`; notebook 02 runs automatically when `data/raw/` contains RTDOSE NIfTI).
+All analysis code lives in `src/`. Random seed 42 is fixed for bootstrap and cross-validation splits. Notebooks 01–06 reproduce the analysis end-to-end after `pip install -r requirements.txt`.
 
-### 3.3 NIfTI vs DICOM-RT (assignment Part I)
+### 3.2 Imaging format and DVH inputs
 
-| Assignment expectation | CFB-GBM Version 3 | Our implementation |
-|:-----------------------|:------------------|:-------------------|
-| DICOM-RT RTPLAN / RTSTRUCT | Not in public download | N/A — use author NIfTI |
-| CTV / PTV structures | Not released | **GTV t0 only** |
+| Typical DICOM-RT workflow | CFB-GBM Version 3 | This study |
+|:--------------------------|:------------------|:-----------|
+| RTPLAN / RTSTRUCT | Not in public download | RTDOSE + GTV NIfTI |
+| CTV / PTV structures | Not released | GTV t0 only |
 | RTDOSE + structure | RTDOSE + GTV NIfTI | `dvh_calculator.py`, `feature_builder.py` |
-| Scalar DVH metrics | D95, D98, D50, D2, volume, gEUD, EQD2 | All exported to `modeling_table.csv` |
-| Optional DICOM path | — | `src/data/download_rt_files.py` documents Aspera fetch; same metrics from NIfTI |
+| Scalar DVH metrics | D95, D98, D50, D2, volume, gEUD, EQD2 | Exported to `modeling_table.csv` |
 
-This is a **data-format limitation of the open cohort**, not an omission in the analysis code: given RTDOSE and GTV masks, cumulative DVH and standard metrics are identical to those derived from DICOM via a TPS export.
+Given RTDOSE and GTV masks, cumulative DVH and standard metrics match those derived from a DICOM plan export.
 
-### 3.2 EQD2 correction
+### 3.3 EQD2 correction
 
 To compare the two fractionation schemes on a common biologically effective scale, we computed equivalent dose in 2 Gy fractions (EQD2) using the linear-quadratic model with alpha/beta = 10 Gy for GTV [6,11]:
 
@@ -163,17 +161,17 @@ We implemented four binary-outcome TCP formulations following standard radiobiol
 
 Full equations are documented in `reports/manuscript_equations_fragment.tex`. Parameters were estimated by **maximum likelihood** using `scipy.optimize.minimize` with method **`L-BFGS-B`** and box constraints on D50 and gamma50 (`src/models/poisson_tcp.py`). This is the standard choice for smooth, low-dimensional TCP likelihoods: fast convergence, explicit bounds, and stable gradients.
 
-### 5.1 Why L-BFGS-B and what we benchmarked
+### 5.1 Maximum-likelihood optimization
 
-The assignment asks for justified optimization. We did **not** default to derivative-free or global search methods because (i) the Poisson TCP negative log-likelihood is smooth in (D50, gamma50) for EQD2 doses in a bounded range; (ii) L-BFGS-B with clinically plausible bounds (D50 30–80 Gy, gamma50 0.5–8) converges reliably from multiple starts; (iii) production code must be deterministic and fast inside `make report` and bootstrap loops.
+Poisson TCP parameters were estimated by constrained maximum likelihood (`scipy.optimize.minimize`, method L-BFGS-B). For this smooth two-parameter likelihood, bounded quasi-Newton methods are appropriate: they converge quickly, respect clinically plausible bounds (D50 30–80 Gy, gamma50 0.5–8), and remain stable across bootstrap resamples.
 
-To document this choice, `src/analysis/mle_optimizer_benchmark.py` compares **L-BFGS-B** (production), **TNC**, **SLSQP**, **Powell**, **Nelder-Mead**, and **differential_evolution** on the same n = 190 cohort. All bounded methods recover the same D50 within 0.01 Gy; Nelder-Mead is slower and occasionally hits bound edges; differential evolution matches the MLE but costs ~10× more wall time. Results are written to `reports/metrics/mle_optimizer_benchmark.csv` on each `make report`.
+We cross-checked the MLE with TNC, SLSQP, Powell, Nelder-Mead, and differential evolution on the full cohort (n = 190). All methods recovered D50 = 53.20 Gy within 0.002 Gy; Nelder-Mead and differential evolution required 2–20× more computation time without improving the fit.
 
 Model comparison used AIC, BIC, ROC AUC, Brier score, and Hosmer-Lemeshow calibration.
 
 ### 5.2 Uncertainty quantification (bootstrap and profile likelihood)
 
-Bootstrap 95% confidence intervals (1000 resamples, seed 42) were computed for Poisson D50 and gamma50 [18]. The assignment permits bootstrap **or** profile likelihood; we report **both** for D50 and gamma50: bootstrap captures finite-sample resampling uncertainty; profile likelihood uses the chi-square(1) threshold on the one-dimensional profile curves (`src/models/profile_likelihood_ci.py`), consistent with standard MLE theory.
+Bootstrap 95% confidence intervals (1000 resamples, seed 42) and profile-likelihood 95% intervals were computed for Poisson D50 and gamma50 [18]. Bootstrap intervals reflect resampling uncertainty; profile likelihood uses the chi-square(1) threshold on one-dimensional profile curves, consistent with standard MLE theory.
 
 ---
 
@@ -204,7 +202,7 @@ All three two-parameter models are nearly identical on this cohort. The Poisson 
 | D50 (Gy) | 53.20 | [48.91, 58.15] |
 | gamma50 | 3.32 | [1.76, 4.85] |
 
-Profile and bootstrap intervals are similar in width; both exclude uninformative values (gamma50 > 1). Optimizer benchmark (`reports/metrics/mle_optimizer_benchmark.csv`): L-BFGS-B, Powell, Nelder-Mead, SLSQP, and differential_evolution all recover D50 = 53.20 Gy within 0.002 Gy; Nelder-Mead and differential_evolution are 2–20× slower.
+Profile and bootstrap intervals are similar in width; both exclude uninformative values (gamma50 > 1).
 
 Likelihood-ratio test vs null model: p approximately 3 x 10^-6. Five-fold cross-validation AUC: 0.68 +/- 0.10.
 
@@ -212,7 +210,7 @@ Likelihood-ratio test vs null model: p approximately 3 x 10^-6. Five-fold cross-
 
 ![Calibration plot: predicted TCP (Poisson, EQD2) vs observed OS proxy rate by decile.](figures/03_model_calibration.png){ width=88% }
 
-**Figure (calibration).** Hosmer-Lemeshow groups (10 bins): observed fraction with OS >= median vs mean predicted TCP per bin. HL p approximately 0.10 — acceptable for this exploratory endpoint; no systematic over/under-prediction across dose deciles. This satisfies assignment Part V (calibration + observed vs predicted).
+**Figure (calibration).** Hosmer-Lemeshow groups (10 bins): observed fraction with OS >= median vs mean predicted TCP per bin. HL p approximately 0.10; no systematic over- or under-prediction across dose deciles.
 
 ---
 
@@ -329,7 +327,7 @@ Concordance index: 0.667. RANO non-PD predicts longer OS independently of EQD2 a
 
 ---
 
-## 9. Literature Review and TCP Parameter Comparison (Assignment Part VI)
+## 9. Literature Review and TCP Parameter Comparison
 
 Literature sources are catalogued in `reports/literature_table.csv` (18 references). Link verification: `reports/literature_doi_check.md`.
 
@@ -388,13 +386,13 @@ When fractionation scheme and clinical covariates are included, **pre-treatment 
 
 ## 11. Conclusion
 
-We delivered an open, reproducible TCP modeling pipeline on the CFB-GBM cohort and completed all core assignment components: DVH extraction (NIfTI-based, GTV-only), four TCP models, **bootstrap and profile-likelihood** confidence intervals, **documented MLE optimization** (L-BFGS-B with multi-method benchmark), model comparison (AIC/BIC/ROC/Brier), **calibration figures**, survival analysis, literature TCP parameter comparison, and Version 3 RANO/PyRadiomics extensions with nested cross-validation.
+We implemented a reproducible TCP modeling workflow on the CFB-GBM cohort: NIfTI-based DVH extraction (GTV only), four TCP model families, bootstrap and profile-likelihood uncertainty intervals, model comparison (AIC, BIC, ROC, Brier), calibration assessment, survival analysis, literature comparison of D50 and gamma50, and RANO/PyRadiomics prediction with nested cross-validation.
 
-**Classical pooled TCP dose-response validation is not feasible** on this routine-care dataset. With confounding addressed, **tumour burden metrics** (GTV volume and selected PyRadiomics features) predict early RANO with moderate out-of-sample discrimination. All figures, tables, and numeric results regenerate from committed code via `make report`.
+**Classical pooled TCP dose-response validation is not feasible** on this routine-care dataset. With confounding addressed, **tumour burden metrics** (GTV volume and selected PyRadiomics features) predict early RANO with moderate out-of-sample discrimination.
 
 ---
 
-## References (Vancouver style)
+## References
 
 1. Stupp R, Mason WP, van den Bent MJ, Weller M, Fisher B, Taphoorn MJB, et al. Effects of radiotherapy with concomitant and adjuvant temozolomide versus radiotherapy alone on survival in glioblastoma: a randomised phase III trial. Lancet Oncol. 2009;10(5):459-466. doi:10.1016/S1470-2045(09)70025-7
 
@@ -446,13 +444,13 @@ make export-assignment
 
 Plain-language glossary for group presentations: `reports/group_glossary_guide.md`
 
-## Appendix B — Repository deliverables
+## Appendix B — Repository outputs
 
-| Deliverable | Path |
-|:------------|:-----|
+| Output | Path |
+|:-------|:-----|
 | Modeling table | data/processed/modeling_table.csv |
-| Auto results | reports/RESULTS.md |
-| Assignment report (this document) | reports/assignment_report.pdf |
+| Summary results | reports/RESULTS.md |
+| This report (PDF) | reports/assignment_report.pdf |
 | Scientific manuscript | reports/manuscript.pdf |
 | Figure captions | reports/figure_captions.md |
 | Literature table | reports/literature_table.csv |
