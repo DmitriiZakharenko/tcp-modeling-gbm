@@ -112,4 +112,4 @@ https://doi.org/10.7937/V9PN-2F72
 
 ## License
 
-Code: MIT. Dataset: CC BY 4.0 (see TCIA data usage policy).
+Code: [GPL-3.0](LICENSE). CFB-GBM dataset: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) (see [TCIA data usage policy](https://www.cancerimagingarchive.net/data-usage-policy-and-restrictions/)).
