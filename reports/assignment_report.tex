@@ -7,7 +7,7 @@
 \usepackage{xcolor}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\setcounter{secnumdepth}{5}
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
@@ -28,6 +28,7 @@
   \usepackage[]{microtype}
   \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 }{}
+\usepackage{setspace}
 \makeatletter
 \@ifundefined{KOMAClassName}{% if non-KOMA class
   \IfFileExists{parskip.sty}{%
@@ -104,6 +105,18 @@
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% Pandoc header for assignment_report PDF (XeLaTeX)
+\usepackage{float}
+\floatplacement{figure}{H}
+\graphicspath{{figures/}}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\setlength{\LTpre}{8pt plus 2pt minus 2pt}
+\setlength{\LTpost}{8pt plus 2pt minus 2pt}
+\renewcommand{\arraystretch}{1.25}
+\setkeys{Gin}{width=0.88\linewidth,keepaspectratio}
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
@@ -115,68 +128,137 @@
 
 \title{Final Project Report: TCP Modeling in Glioblastoma (CFB-GBM)}
 \author{TCP Modeling GBM Project Group}
-\date{}
+\date{2026-06-28}
 
 \begin{document}
 \maketitle
 
+{
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\setstretch{1.12}
 \section{Final Project Report: Tumor Control Probability Modeling in
 Glioblastoma}\label{final-project-report-tumor-control-probability-modeling-in-glioblastoma}
 
 \textbf{Course:} TCP Modeling in GBM --- Final Project\\
-\textbf{Dataset:} CFB-GBM (TCIA v3, DOI
-\href{https://doi.org/10.7937/v9pn-2f72}{10.7937/v9pn-2f72})\\
-\textbf{Modeling cohort:} n=190 (after DVH QC) · \textbf{RANO subset:}
-n=137\\
-\textbf{Report date:} 2026-06-28 · Numbers from
-\href{RESULTS.md}{\texttt{RESULTS.md}} (\texttt{make\ report})
+\textbf{Dataset:} CFB-GBM (TCIA Version 3, DOI 10.7937/v9pn-2f72)\\
+\textbf{Institution:} Centre François Baclesse (open cohort via The
+Cancer Imaging Archive)\\
+\textbf{Modeling cohort:} n = 190 (after DVH quality control)\\
+\textbf{RANO imaging subset:} n = 137 (t0 to t1 labels)\\
+\textbf{Report date:} 2026-06-28\\
+\textbf{Verified numbers:} auto-generated \texttt{reports/RESULTS.md}
+(\texttt{make\ report})
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{Abstract}\label{abstract}
 
 We implemented a reproducible Python pipeline for Tumor Control
-Probability (TCP) modeling on the open CFB-GBM glioblastoma cohort. Four
-TCP models (Poisson, logistic, probit, gEUD) were fitted with bootstrap
-confidence intervals. Version 3 supplementary data provided RANO imaging
-response labels and author PyRadiomics features. Pooled EQD2
-discriminated an OS median-split proxy (AUC≈0.68) but not RANO
-non-progressive disease (AUC≈0.43) when used as a dose-only predictor.
-After adjusting for fractionation scheme, GTV volume and radiomics
-features predicted early RANO with moderate cross-validated
-discrimination (LOOCV AUC≈0.64--0.74). Classical pooled TCP
-dose--response validation is not supported on this routine-care dataset;
-we provide a feasibility checklist for future open-cohort TCP studies.
+Probability (TCP) modeling on the open-access CFB-GBM glioblastoma
+radiotherapy cohort. The workflow covers clinical data curation,
+NIfTI-based DVH feature extraction, four TCP model families (Poisson,
+logistic, probit, gEUD-based), bootstrap confidence intervals, survival
+analysis, and Version 3 RANO imaging endpoints with PyRadiomics
+comparison.
 
-\textbf{Keywords:} glioblastoma; TCP; DVH; RANO; CFB-GBM; open data
+Pooled EQD2 discriminated an exploratory overall survival (OS)
+median-split proxy (ROC AUC approximately 0.68) but not RANO
+non-progressive disease when dose was the sole predictor (AUC
+approximately 0.43). After adjusting for fractionation scheme and
+clinical covariates, pre-treatment GTV volume and author-provided
+PyRadiomics features predicted early RANO with moderate cross-validated
+discrimination (pooled LOOCV AUC approximately 0.64; hypofractionated
+arm LOOCV approximately 0.74; PyRadiomics nested CV approximately 0.74).
+
+\textbf{Conclusion:} classical pooled TCP dose-response validation is
+not supported on routine CFB-GBM data because of limited within-protocol
+dose spread and endpoint confounding. The project delivers a complete
+open pipeline, formal negative result, and tumour-burden benchmarks for
+future TCP feasibility studies.
+
+\textbf{Keywords:} glioblastoma; tumor control probability; DVH; EQD2;
+RANO; PyRadiomics; CFB-GBM; open data
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{1. Introduction and Clinical
 Background}\label{introduction-and-clinical-background}
 
+\subsubsection{1.1 Glioblastoma and standard
+radiotherapy}\label{glioblastoma-and-standard-radiotherapy}
+
 Glioblastoma (GBM) is the most common malignant primary brain tumour in
-adults. Standard treatment includes maximal safe resection,
-radiotherapy, and concurrent temozolomide (Stupp protocol: 60 Gy in 30
-fractions) {[}1{]}. In elderly or poor-performance patients,
-hypofractionated schedules (e.g. 40 Gy in 15 fractions) are commonly
-used {[}2,3,15{]}.
+adults. Maximal safe resection followed by radiotherapy with concurrent
+temozolomide remains the standard of care for fit patients (Stupp
+protocol: 60 Gy delivered in 30 fractions of 2 Gy) {[}1{]}. Despite a
+uniform nominal protocol, observed outcomes vary widely because of age,
+performance status, molecular factors, and tumour burden at baseline
+{[}2{]}.
 
-\textbf{Tumor Control Probability (TCP)} models estimate the probability
-of sterilising clonogenic tumour cells as a function of dose and
-radiobiological parameters {[}4,5{]}. Valid TCP studies require (i) a
-well-defined tumour control endpoint, (ii) inter-patient dose variation,
-and (iii) adequate sample size {[}7{]}.
+In elderly or frail patients, shorter hypofractionated schedules are
+widely used. The CFB-GBM cohort includes 40.05 Gy in 15 fractions,
+consistent with pragmatic GBM management described in Nordic and
+short-course trials {[}3,15{]}. These two fractionation schemes differ
+not only in total dose and fraction size but also in patient selection:
+in our cohort, 60 Gy patients were younger (median age 65 vs 75 years)
+and had longer OS (median 60 vs 28 weeks).
 
-The CFB-GBM dataset (Centre François Baclesse, n=264) provides MRI,
-RTDOSE, GTV contours, clinical covariates, and RANO response labels
-{[}8--10{]}. \textbf{Project aim:} build a standard TCP pipeline on this
-open cohort and assess whether classical dose--response validation is
-feasible; if not, identify where prognostic signal remains.
+\subsubsection{1.2 Tumor Control Probability (TCP)
+modeling}\label{tumor-control-probability-tcp-modeling}
+
+TCP models estimate the probability that all clonogenic tumour cells are
+sterilised after radiotherapy, as a function of delivered dose and
+radiobiological parameters such as D50 (dose for 50\% control
+probability) and gamma50 (steepness of the dose-response curve)
+{[}4,5{]}. TCP models are used in treatment-planning research, protocol
+comparison, and hypothetical dose escalation studies.
+
+Valid TCP validation requires three conditions emphasized in the
+radiotherapy modeling literature {[}7{]}:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{A tumour-control endpoint} (local control or a validated
+  imaging surrogate), not a distant-survival proxy alone.
+\item
+  \textbf{Meaningful inter-patient dose heterogeneity} within the
+  structure of interest (typically GTV Dmean spread greater than
+  approximately 1 Gy in TCP audit workflows).
+\item
+  \textbf{Adequate sample size} and pre-specified cross-validation when
+  predictive models are reported.
+\end{enumerate}
+
+\subsubsection{1.3 CFB-GBM and project
+aims}\label{cfb-gbm-and-project-aims}
+
+The CFB-GBM dataset (Centre François Baclesse, n = 264 in the public TSV
+release) provides pre- and post-treatment MRI, RTDOSE maps, GTV
+segmentations, clinical tables, and---since Version 3---RANO response
+labels and PyRadiomics feature tables {[}8--10{]}. The dataset is
+distributed as pre-processed NIfTI rather than full DICOM-RT plans.
+
+\textbf{Primary project aim (assignment Parts I--VI):} build a
+reproducible TCP modeling pipeline on this open cohort, estimate D50 and
+gamma50 with uncertainty, compare models, and compare our parameters
+with published TCP literature.
+
+\textbf{Secondary aim (Version 3 extension):} determine whether early
+RANO imaging response and PyRadiomics features rescue dose-response
+signal when classical pooled TCP fails, and report honest out-of-sample
+performance (LOOCV and nested cross-validation).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{2. Dataset Description}\label{dataset-description}
+\subsection{2. Dataset Description and Cohort
+Construction}\label{dataset-description-and-cohort-construction}
+
+\subsubsection{2.1 Source data and imaging
+format}\label{source-data-and-imaging-format}
 
 \begin{longtable}[]{@{}ll@{}}
 \toprule\noalign{}
@@ -185,314 +267,623 @@ Item & Value \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Source & TCIA CFB-GBM Version 3 \\
-Total patients (TSV) & 264 \\
-Included for modeling & \textbf{190} \\
-Excluded & 74 (unknown dose, missing imaging, etc.) \\
-DVH QC exclusion & 1 (patient 32, Dmean=0 Gy) \\
-Fractionation & 120 × 60 Gy/30 fr; 61 × 40.05 Gy/15 fr \\
-Median age & 70 years \\
-Median OS & 51 weeks \\
-RANO t0→t1 labels & 137 / 190 \\
+Data repository & The Cancer Imaging Archive (TCIA) \\
+Collection & CFB-GBM Version 3 \\
+DOI & 10.7937/v9pn-2f72 \\
+Total patients in clinical TSV & 264 \\
+Patients with RTDOSE flag & 194 \\
+Patients with GTV segmentation & 191 \\
+\textbf{Included for TCP modeling} & \textbf{190} \\
+Primary exclusion & Unknown RT dose (70 patients) \\
+DVH QC exclusion & 1 (patient 32, GTV Dmean = 0 Gy) \\
+Fractionation scheme A & 120 patients: 60 Gy / 30 fractions \\
+Fractionation scheme B & 61 patients: 40.05 Gy / 15 fractions \\
+Median age (modeling cohort) & 70 years \\
+Median overall survival & 51 weeks \\
+Sex (M / F) & 117 / 73 \\
+Median GTV volume & 36.2 cc \\
+Median GTV Dmean & 59.84 Gy \\
+RANO t0 to t1 labels available & 137 / 190 (72\%) \\
+RANO labels in 40 Gy arm & 34 patients \\
 \end{longtable}
 
-\textbf{Imaging format:} Pre-processed \textbf{NIfTI} (skull-stripped,
-co-registered), not raw DICOM-RT. RTPLAN/RTSTRUCT DICOM are not in the
-public package. \textbf{GTV-only} contours at t0; CTV/PTV not provided.
+\textbf{Structure set note:} all dosimetric metrics refer to \textbf{GTV
+at t0} only. CTV and PTV contours are not included in the public CFB-GBM
+release. RTPLAN and RTSTRUCT DICOM files are not provided; analyses use
+co-registered RTDOSE and GTV NIfTI.
+
+\subsubsection{2.2 Cohort flow (264 to
+190)}\label{cohort-flow-264-to-190}
+
+Starting from 264 patients in the clinical table, 70 were excluded
+because prescribed RT dose was unknown or missing. Among
+imaging-eligible patients, one patient failed DVH quality control (zero
+dose to GTV on RTDOSE). The final modeling table contains 190 rows and
+58 columns (\texttt{modeling\_table.csv}), including clinical
+covariates, DVH scalars, EQD2, RANO categories, and PyRadiomics merge
+keys. Notebook 01 (\texttt{01\_cohort\_overview.ipynb}) documents the
+full exclusion breakdown and demographic tables.
+
+\subsubsection{2.3 Outcome definitions}\label{outcome-definitions}
+
+\textbf{Primary TCP endpoint (exploratory):} OS greater than or equal to
+cohort median (51 weeks), used as a binary proxy for pipeline testing.
+This is not equivalent to formal tumour control.
+
+\textbf{Secondary endpoint (Version 3):} RANO non-progressive disease at
+t1, defined as stable disease, minor response, partial response, or
+complete response versus progressive disease {[}12,13{]}. RANO non-PD
+rate in the modeling subset was approximately 77\%.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{3. Data Acquisition and
-Curation}\label{data-acquisition-and-curation}
+\subsection{3. Data Acquisition, Curation, and
+Reproducibility}\label{data-acquisition-curation-and-reproducibility}
+
+\subsubsection{3.1 Pipeline overview}\label{pipeline-overview}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  Downloaded clinical/treatment/RANO/PyRadiomics TSVs
+  Download clinical, treatment, RANO, and PyRadiomics TSV files
   (\texttt{python\ -m\ src.data.download\_clinical\_data}).
 \item
-  Built \texttt{cohort.csv} with inclusion rules
-  (\texttt{cohort\_builder.py}).
+  Merge tables and apply inclusion rules
+  (\texttt{src/data/cohort\_builder.py}); export \texttt{cohort.csv}.
 \item
-  Downloaded RTDOSE + GTV t0 NIfTI for 191 patients (IBM Aspera).
+  Download RTDOSE and GTV t0 NIfTI for 191 patients (IBM Aspera Connect;
+  approximately 52 GB local storage).
 \item
-  Verified completeness (\texttt{verify\_raw\_data.py}); extracted DVH
-  metrics (\texttt{feature\_builder.py}).
+  Verify file completeness (\texttt{verify\_raw\_data.py}).
 \item
-  Merged into \texttt{modeling\_table.csv} (190 × 58 columns).
+  Compute cumulative DVH and scalar metrics
+  (\texttt{feature\_builder.py}, \texttt{dvh\_calculator.py}).
+\item
+  Apply DVH QC (\texttt{dvh\_qc.py}); export
+  \texttt{modeling\_table.csv}.
+\item
+  Fit TCP models, survival models, and RANO prediction suite; regenerate
+  \texttt{reports/RESULTS.md} via \texttt{make\ report}.
 \end{enumerate}
 
-EQD2 computed with α/β = 10 Gy for GTV {[}6,11{]}.
+All analysis code lives in \texttt{src/}. Random seed 42 is fixed for
+bootstrap and cross-validation splits. Notebooks 01 and 03--06 execute
+top-to-bottom after \texttt{pip\ install\ -r\ requirements.txt}.
+
+\subsubsection{3.2 EQD2 correction}\label{eqd2-correction}
+
+To compare the two fractionation schemes on a common biologically
+effective scale, we computed equivalent dose in 2 Gy fractions (EQD2)
+using the linear-quadratic model with alpha/beta = 10 Gy for GTV
+{[}6,11{]}:
+
+\[\mathrm{EQD2} = D_{\mathrm{total}} \cdot \frac{d_{\mathrm{fx}} + \alpha/\beta}{2 + \alpha/\beta}\]
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{4. Dosimetric Feature
 Extraction}\label{dosimetric-feature-extraction}
 
-From registered RTDOSE and t0 GTV masks we computed:
+\subsubsection{4.1 DVH computation}\label{dvh-computation}
 
-\begin{itemize}
-\tightlist
-\item
-  Cumulative \textbf{DVH} and scalars: D95, D98, D50, D2, Dmean, Dmax,
-  GTV \textbf{volume\_cc}, Vx, \textbf{gEUD} (a = −10, 1, 10),
-  homogeneity index (HI).
-\item
-  \textbf{EQD2} for cross-scheme comparison.
-\end{itemize}
+For each patient, cumulative dose-volume histograms (DVH) were computed
+inside the t0 GTV mask from registered RTDOSE grids. Scalar metrics
+exported per patient include:
 
-Within the 60 Gy arm, GTV Dmean SD = \textbf{0.28 Gy} --- essentially no
-dose escalation within protocol.
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Metric & Description \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Dmean & Mean dose to GTV (Gy) \\
+D95, D98, D50, D2 & Dose received by at least x\% of GTV volume \\
+Dmax & Maximum dose to GTV \\
+volume\_cc & GTV volume (cm³) \\
+Vx & Percentage of GTV receiving at least x Gy \\
+gEUD\_a & Generalised equivalent uniform dose for a = -10, 1, 10 \\
+HI & Homogeneity index inside GTV \\
+eqd2\_gy & EQD2 as defined above \\
+\end{longtable}
+
+\subsubsection{4.2 Dose heterogeneity
+audit}\label{dose-heterogeneity-audit}
+
+A central feasibility finding is that \textbf{within-arm GTV Dmean
+variation is negligible}. In the 60 Gy arm, GTV Dmean standard deviation
+was only \textbf{0.28 Gy}. Therefore, classical dose-response fitting
+\emph{within} a single protocol arm lacks statistical power regardless
+of TCP model choice {[}7{]}. Between-arm dose differences reflect
+different fractionation schedules and patient selection, not planned
+dose escalation.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{5. Mathematical Description of TCP
 Models}\label{mathematical-description-of-tcp-models}
 
-Four binary-outcome TCP formulations {[}4--7{]}:
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{Poisson TCP:} clonogenic cell survival; parameters D50, γ50.
-\item
-  \textbf{Logistic TCP:} sigmoid dose--response; D50, k.
-\item
-  \textbf{Probit TCP:} normal CDF link; D50, σ.
-\item
-  \textbf{gEUD TCP:} dose metric from full DVH, then Poisson-style TCP;
-  extra parameter a.
-\end{itemize}
-
-Full equations: \texttt{reports/manuscript\_equations\_fragment.tex}.
-
-\textbf{Estimation:} maximum likelihood; \textbf{95\% CI:} bootstrap
-(1000 resamples, seed 42).
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{6. Parameter Estimation and Model
-Comparison}\label{parameter-estimation-and-model-comparison}
-
-\begin{longtable}[]{@{}lrrrl@{}}
-\toprule\noalign{}
-Model & AIC & ROC AUC & Brier & Notes \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Probit TCP & 241.73 & 0.684 & 0.218 & Best AIC (marginal) \\
-Logistic TCP & 241.75 & 0.684 & 0.218 & ≈ Poisson \\
-Poisson TCP & 241.82 & 0.684 & 0.218 & D50≈53 Gy, γ50≈3.3 \\
-gEUD TCP & 243.69 & 0.685 & 0.218 & 3 parameters \\
-\end{longtable}
-
-Bootstrap Poisson (EQD2, OS proxy): \textbf{D50 = 53.2 Gy}
-{[}49.5--56.7{]}; \textbf{γ50 = 3.32} {[}2.06--4.69{]}.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{7. Results}\label{results}
-
-\subsubsection{7.1 Clinical prognosis}\label{clinical-prognosis}
-
-\begin{figure}
-\centering
-\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 1}]{figures/04_clinical_prognosis.png}}
-\caption{Figure 1}
-\end{figure}
-
-\textbf{Figure 1.} Kaplan--Meier OS by fractionation scheme and WHO
-performance status. Sixty Gy patients had median OS 60 weeks vs 28 weeks
-for 40 Gy (log-rank p≈3×10⁻⁶). Cox model: scheme HR≈0.54 (p≈0.0007), WHO
-PS HR≈1.42 (p≈0.001).
-
-\subsubsection{7.2 Pooled TCP --- OS proxy}\label{pooled-tcp-os-proxy}
-
-\begin{figure}
-\centering
-\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 2}]{figures/03_tcp_curves_os_proxy.png}}
-\caption{Figure 2}
-\end{figure}
-
-\textbf{Figure 2.} TCP dose--response curves for EQD2 vs OS ≥ median (51
-weeks, n=190). AUC≈0.68; LR p≈3×10⁻⁶. Interpretation confounded by
-fractionation (r(age, EQD2)=−0.57).
-
-\subsubsection{7.3 Pooled TCP --- RANO
-endpoint}\label{pooled-tcp-rano-endpoint}
-
-\begin{figure}
-\centering
-\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 3}]{figures/05_rano_vs_os_tcp_auc.png}}
-\caption{Figure 3}
-\end{figure}
-
-\textbf{Figure 3.} Same Poisson TCP on 137 RANO-labelled patients: OS
-proxy AUC≈0.62; \textbf{RANO non-PD AUC≈0.43} (no signal). Higher EQD2
-associated with more early PD at t1 (27\% vs 15\% by scheme).
-
-\subsubsection{7.4 Within-arm analysis}\label{within-arm-analysis}
-
-\begin{figure}
-\centering
-\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 4}]{figures/06_within_arm_rano_tcp.png}}
-\caption{Figure 4}
-\end{figure}
-
-\textbf{Figure 4.} Stratified by fractionation: dose metrics flat within
-arm; \textbf{GTV volume} predicts RANO in 40 Gy arm (n=34; Poisson
-AUC=0.83, p≈0.037).
-
-\subsubsection{7.5 Multivariable and pooled RANO
-models}\label{multivariable-and-pooled-rano-models}
-
-\begin{figure}
-\centering
-\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 5}]{figures/07_rano_logistic_roc_40gy.png}}
-\caption{Figure 5}
-\end{figure}
-
-\textbf{Figure 5.} 40 Gy arm multivariable logistic ROC (volume + age +
-PS; in-sample AUC=0.90).
-
-\begin{figure}
-\centering
-\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 6}]{figures/07_rano_volume_validation_40gy.png}}
-\caption{Figure 6}
-\end{figure}
-
-\textbf{Figure 6.} DVH volume validation vs author RANO volumes (ρ=1.00,
-n=141).
-
-\begin{figure}
-\centering
-\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 7}]{figures/08_pooled_rano_roc.png}}
-\caption{Figure 7}
-\end{figure}
-
-\textbf{Figure 7.} Pooled models (n=137): volume + clinical + scheme
-AUC≈0.72; LOOCV≈0.64.
-
-\subsubsection{7.6 PyRadiomics comparison}\label{pyradiomics-comparison}
-
-\begin{figure}
-\centering
-\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 8}]{figures/08_pyradiomics_vs_volume_auc.png}}
-\caption{Figure 8}
-\end{figure}
-
-\textbf{Figure 8.} Author PyRadiomics (t1gd GTV t0) top-5 features vs
-DVH volume (in-sample AUC 0.78 vs 0.71).
-
-\begin{figure}
-\centering
-\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 9}]{figures/08_pyradiomics_nested_cv_auc.png}}
-\caption{Figure 9}
-\end{figure}
-
-\textbf{Figure 9.} Nested 5-fold CV reduces optimism: radiomics nested
-AUC≈0.74 vs volume 0.70.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{8. Survival Analysis}\label{survival-analysis}
-
-Kaplan--Meier and Cox proportional hazards models (lifelines) included
-EQD2, Dmean, age, sex, WHO PS, fractionation scheme, and RANO non-PD.
-
-\begin{longtable}[]{@{}lrr@{}}
-\toprule\noalign{}
-Covariate (Cox, n=137) & HR & p \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-RANO non-PD & 0.48 & 0.0009 \\
-WHO PS & 1.57 & 0.0005 \\
-EQD2 & 0.97 & 0.009 \\
-\end{longtable}
-
-RANO non-PD predicts OS independently of dose and performance status.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{9. Literature Review and TCP Parameter Comparison (Part
-VI)}\label{literature-review-and-tcp-parameter-comparison-part-vi}
-
-Literature table: \texttt{reports/literature\_table.csv} (18
-references). DOI verification:
-\texttt{reports/literature\_doi\_check.md}.
+We implemented four binary-outcome TCP formulations following standard
+radiobiology references {[}4--7{]}:
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1739}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2174}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1087}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2174}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2826}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.5000}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
-Source
+Model
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-D50 (Gy)
+Parameters
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-γ50
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Endpoint
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Comparable?
+Formula (conceptual)
 \end{minipage} \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\textbf{This study (CFB-GBM)} & \textbf{53.2} & \textbf{3.32} & OS ≥
-median (proxy) & reference \\
-Maitre et al. 2020 (review) & 40--80 & 1--5 & LC / NTCP & partial \\
-Okunieff et al. 1995 (meta) & \textasciitilde50--70 &
-\textasciitilde1--4 & Tumour control & partial \\
-Ohri et al. 2017 & --- & --- & LC preferred & design note \\
+Poisson TCP & D50, gamma50 & Clonogenic survival with exponential
+shoulder \\
+Logistic TCP & D50, k & Sigmoid dose-response \\
+Probit TCP & D50, sigma & Normal cumulative distribution link \\
+gEUD TCP & D50, gamma50, a & DVH-collapsed dose metric then
+Poisson-style TCP \\
 \end{longtable}
 
-Our D50 falls in published ranges but is \textbf{not interpretable as
-GBM tumour-control D50} without local control endpoint and
-single-protocol dose spread.
+Full equations are documented in
+\texttt{reports/manuscript\_equations\_fragment.tex}. Parameters were
+estimated by maximum likelihood (scipy.optimize). Model comparison used
+AIC, BIC, ROC AUC, Brier score, and Hosmer-Lemeshow calibration.
+
+Bootstrap 95\% confidence intervals (1000 resamples, seed 42) were
+computed for Poisson D50 and gamma50 {[}18{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{6. Parameter Estimation and Four-Model
+Comparison}\label{parameter-estimation-and-four-model-comparison}
+
+\subsubsection{6.1 Pooled TCP on OS proxy (EQD2, n =
+190)}\label{pooled-tcp-on-os-proxy-eqd2-n-190}
+
+\begin{longtable}[]{@{}lrrrrrr@{}}
+\toprule\noalign{}
+Model & k & AIC & BIC & ROC AUC & Brier & HL p-value \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+probit\_tcp & 2 & 241.73 & 248.23 & 0.684 & 0.218 & 0.101 \\
+logistic\_tcp & 2 & 241.75 & 248.24 & 0.684 & 0.218 & 0.101 \\
+poisson\_tcp & 2 & 241.82 & 248.31 & 0.684 & 0.218 & 0.100 \\
+eud\_tcp (gEUD) & 3 & 243.69 & 253.43 & 0.685 & 0.218 & 0.784 \\
+\end{longtable}
+
+All three two-parameter models are nearly identical on this cohort. The
+Poisson fit is reported for literature comparison.
+
+\subsubsection{6.2 Bootstrap confidence intervals (Poisson,
+EQD2)}\label{bootstrap-confidence-intervals-poisson-eqd2}
+
+\begin{longtable}[]{@{}lrlr@{}}
+\toprule\noalign{}
+Parameter & Estimate (Gy) & 95\% Bootstrap CI & Bootstrap SD \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+D50 & 53.20 & {[}49.54, 56.75{]} & 1.87 \\
+gamma50 & 3.32 & {[}2.06, 4.69{]} & 0.67 \\
+\end{longtable}
+
+Likelihood-ratio test vs null model: p approximately 3 x 10\^{}-6.
+Five-fold cross-validation AUC: 0.68 +/- 0.10. Hosmer-Lemeshow
+calibration p approximately 0.10 (acceptable fit for exploratory
+endpoint).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{7. Results}\label{results}
+
+\subsubsection{7.1 Clinical prognosis and
+confounding}\label{clinical-prognosis-and-confounding}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.92\linewidth,height=\textheight,keepaspectratio,alt={Figure 1. Kaplan-Meier overall survival by fractionation scheme and WHO performance status.}]{figures/04_clinical_prognosis.png}
+\caption{Figure 1. Kaplan-Meier overall survival by fractionation scheme
+and WHO performance status.}
+\end{figure}
+
+\textbf{Figure 1.} Kaplan-Meier OS by fractionation scheme and WHO
+performance status (n = 190). Sixty Gy patients had median OS 60 weeks
+vs 28 weeks for 40 Gy (log-rank p approximately 3 x 10\^{}-6). Cox model
+(age + sex + WHO PS + scheme): scheme HR approximately 0.54 (p
+approximately 0.0007), WHO PS HR approximately 1.42 (p approximately
+0.001).
+
+\begin{longtable}[]{@{}lrrr@{}}
+\toprule\noalign{}
+OS by WHO PS & n & Median OS (weeks) & IQR (weeks) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+PS 0 & 34 & 59 & 46--79 \\
+PS 1 & 101 & 54 & 32--77 \\
+PS 2 & 47 & 29 & 17--55 \\
+\end{longtable}
+
+Kruskal-Wallis across PS groups: p approximately 1.6 x 10\^{}-4.
+Confounding audit: Pearson r(age, EQD2) = -0.57; older patients
+disproportionately received hypofractionation.
+
+\subsubsection{7.2 Pooled TCP --- OS proxy}\label{pooled-tcp-os-proxy}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.88\linewidth,height=\textheight,keepaspectratio,alt={Figure 2. TCP dose-response curves for EQD2 vs OS median-split proxy.}]{figures/03_tcp_curves_os_proxy.png}
+\caption{Figure 2. TCP dose-response curves for EQD2 vs OS median-split
+proxy.}
+\end{figure}
+
+\textbf{Figure 2.} Fitted Poisson, logistic, probit, and gEUD TCP curves
+(EQD2 vs OS \textgreater= median, n = 190). In-sample AUC approximately
+0.68. Interpretation: association partly reflects fractionation and
+patient selection, not within-protocol dose escalation.
+
+\subsubsection{7.3 Pooled TCP --- RANO endpoint
+failure}\label{pooled-tcp-rano-endpoint-failure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.88\linewidth,height=\textheight,keepaspectratio,alt={Figure 3. OS vs RANO TCP endpoint comparison on the same patients.}]{figures/05_rano_vs_os_tcp_auc.png}
+\caption{Figure 3. OS vs RANO TCP endpoint comparison on the same
+patients.}
+\end{figure}
+
+\textbf{Figure 3.} Poisson TCP (EQD2) on 137 RANO-labelled patients: OS
+proxy AUC approximately 0.62; \textbf{RANO non-PD AUC approximately
+0.43} (LR p = 1.0 vs null). Higher EQD2 correlated with more early PD at
+t1 (27\% PD in 60 Gy arm vs 15\% in 40 Gy arm) despite better long-term
+OS.
+
+\begin{longtable}[]{@{}lrrr@{}}
+\toprule\noalign{}
+Endpoint & n & Poisson AUC & 5-fold CV AUC \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+OS median-split & 137 & 0.622 & 0.621 \\
+RANO non-PD & 137 & 0.426 & 0.422 \\
+\end{longtable}
+
+\subsubsection{7.4 Within-arm stratified
+analysis}\label{within-arm-stratified-analysis}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.92\linewidth,height=\textheight,keepaspectratio,alt={Figure 4. Within-arm DVH metrics predicting RANO non-PD.}]{figures/06_within_arm_rano_tcp.png}
+\caption{Figure 4. Within-arm DVH metrics predicting RANO non-PD.}
+\end{figure}
+
+\textbf{Figure 4.} Within-arm Spearman and Poisson TCP AUC by
+fractionation scheme. Sixty Gy arm (n = 96): GTV Dmean SD = 0.28 Gy; no
+dose-response. Forty Gy arm (n = 34): GTV volume predicted RANO
+(Spearman rho approximately 0.41, p approximately 0.016; Poisson AUC =
+0.83, LR p approximately 0.037).
+
+\subsubsection{7.5 Hypofractionated arm --- multivariable logistic
+regression}\label{hypofractionated-arm-multivariable-logistic-regression}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio,alt={Figure 5. ROC curves for 40 Gy arm RANO models.}]{figures/07_rano_logistic_roc_40gy.png}
+\caption{Figure 5. ROC curves for 40 Gy arm RANO models.}
+\end{figure}
+
+\textbf{Figure 5.} Multivariable logistic regression in the 40.05 Gy arm
+(n = 34): volume-only AUC = 0.83; volume + age + WHO PS AUC = 0.90
+in-sample.
+
+\begin{longtable}[]{@{}lrrr@{}}
+\toprule\noalign{}
+Model (40 Gy arm) & n & In-sample AUC & LOOCV AUC \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+volume only & 34 & 0.834 & 0.745 \\
+volume + age + PS & 34 & 0.903 & 0.697 \\
+\end{longtable}
+
+LOOCV confirms signal beyond chance but reduces optimism relative to
+in-sample AUC = 0.90.
+
+\subsubsection{7.6 Volume validation}\label{volume-validation}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio,alt={Figure 6. DVH GTV volume vs author RANO t0 volume.}]{figures/07_rano_volume_validation_40gy.png}
+\caption{Figure 6. DVH GTV volume vs author RANO t0 volume.}
+\end{figure}
+
+\textbf{Figure 6.} Agreement between DVH-derived GTV volume and
+author-reported RANO \texttt{size\_t0\_cm3} (Spearman rho = 1.00, n =
+141). Validates the feature extraction pipeline.
+
+\subsubsection{7.7 Pooled RANO models (volume + clinical +
+scheme)}\label{pooled-rano-models-volume-clinical-scheme}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.92\linewidth,height=\textheight,keepaspectratio,alt={Figure 7. Pooled logistic ROC for RANO non-PD.}]{figures/08_pooled_rano_roc.png}
+\caption{Figure 7. Pooled logistic ROC for RANO non-PD.}
+\end{figure}
+
+\textbf{Figure 7.} Pooled models on n = 137: EQD2 alone AUC
+approximately 0.57; GTV volume alone approximately 0.71; volume + age +
+WHO PS + scheme approximately 0.72.
+
+\begin{longtable}[]{@{}lrrr@{}}
+\toprule\noalign{}
+Pooled model & n & AUC & LOOCV AUC \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+volume + age + PS + scheme & 137 & 0.716 & 0.642 \\
+volume + age + PS + scheme + interaction & 137 & 0.722 & 0.636 \\
+\end{longtable}
+
+\subsubsection{7.8 PyRadiomics vs DVH
+volume}\label{pyradiomics-vs-dvh-volume}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.88\linewidth,height=\textheight,keepaspectratio,alt={Figure 8. In-sample AUC: PyRadiomics top-5 vs DVH volume.}]{figures/08_pyradiomics_vs_volume_auc.png}
+\caption{Figure 8. In-sample AUC: PyRadiomics top-5 vs DVH volume.}
+\end{figure}
+
+\textbf{Figure 8.} Author-provided PyRadiomics features (t1gd, GTV t0,
+Version 3 TSV) vs DVH GTV volume for RANO non-PD: top-5 radiomics AUC
+approximately 0.78 vs volume approximately 0.71 (n = 137).
+
+\begin{figure}
+\centering
+\includegraphics[width=0.88\linewidth,height=\textheight,keepaspectratio,alt={Figure 9. Nested cross-validation optimism check.}]{figures/08_pyradiomics_nested_cv_auc.png}
+\caption{Figure 9. Nested cross-validation optimism check.}
+\end{figure}
+
+\textbf{Figure 9.} Nested 5-fold CV (top-5 feature selection on training
+folds only): radiomics nested AUC approximately 0.74 vs volume
+approximately 0.70; optimism delta approximately 0.04--0.07.
+
+\begin{longtable}[]{@{}lrrr@{}}
+\toprule\noalign{}
+Model (nested CV) & In-sample AUC & Nested CV AUC & Optimism delta \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+DVH volume only & 0.707 & 0.697 & 0.010 \\
+PyRadiomics top-5 & 0.783 & 0.738 & 0.045 \\
+PyRadiomics top-5 + clinical & 0.788 & 0.715 & 0.073 \\
+\end{longtable}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{8. Survival Analysis}\label{survival-analysis}
+
+Kaplan-Meier and Cox proportional hazards models (lifelines) were fitted
+for overall survival.
+
+\subsubsection{8.1 Cox model with RANO (n =
+137)}\label{cox-model-with-rano-n-137}
+
+\begin{longtable}[]{@{}lrr@{}}
+\toprule\noalign{}
+Covariate & Hazard ratio & p-value \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+RANO non-PD at t1 & 0.48 & 0.0009 \\
+WHO performance status & 1.57 & 0.0005 \\
+EQD2 (per Gy) & 0.97 & 0.009 \\
+Age (per year) & 1.01 & 0.22 \\
+\end{longtable}
+
+Concordance index: 0.667. RANO non-PD predicts longer OS independently
+of EQD2 and performance status, supporting the clinical relevance of the
+imaging endpoint even when dose-only TCP fails.
+
+\subsubsection{8.2 Clinical prognosis model (n =
+190)}\label{clinical-prognosis-model-n-190}
+
+\begin{longtable}[]{@{}lrr@{}}
+\toprule\noalign{}
+Covariate & Hazard ratio & p-value \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+60 Gy scheme (vs 40 Gy) & 0.54 & 0.0007 \\
+WHO performance status & 1.43 & 0.001 \\
+Age & 1.01 & 0.23 \\
+Sex (male) & 1.03 & 0.83 \\
+\end{longtable}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{9. Literature Review and TCP Parameter Comparison
+(Assignment Part
+VI)}\label{literature-review-and-tcp-parameter-comparison-assignment-part-vi}
+
+Literature sources are catalogued in
+\texttt{reports/literature\_table.csv} (18 references). Link
+verification: \texttt{reports/literature\_doi\_check.md}.
+
+\subsubsection{9.1 Comparison of D50 and
+gamma50}\label{comparison-of-d50-and-gamma50}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1081}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.0946}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1351}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.0405}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1351}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1216}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.3649}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Source
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Endpoint
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+D50 (Gy)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+gamma50
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Comparable to this study?
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{This study (CFB-GBM)} & Poisson TCP (EQD2) & OS \textgreater=
+median (proxy) & 190 & \textbf{53.2} & \textbf{3.32} & reference \\
+Maitre et al. 2020 & TCP review & LC / NTCP (multiple) & review & 40--80
+& 1--5 & partial \\
+Okunieff et al. 1995 & Poisson meta-analysis & Tumour control (mixed
+sites) & review & 50--70 & 1--4 & partial \\
+Ohri et al. 2017 & TCP/NTCP review & LC preferred & review & --- & --- &
+design guidance \\
+Embring et al. 2020 & DVH prognostic & OS (GBM) & 120 & --- & --- &
+endpoint differs \\
+Gardner et al. 2024 & Radiobiology review & Multi-scale & review &
+context & context & partial \\
+\end{longtable}
+
+Our bootstrap D50 (53 Gy) falls within published broad ranges but
+\textbf{must not be interpreted as a GBM tumour-control D50} because (i)
+the endpoint is OS proxy, not local control; (ii) dose spread within
+protocol is less than 1 Gy; (iii) two fractionation schemes are pooled.
+
+\subsubsection{9.2 Relation to CFB-GBM author radiomics
+work}\label{relation-to-cfb-gbm-author-radiomics-work}
+
+Moreau et al. demonstrated imaging AI and PyRadiomics for treatment
+efficacy prediction on the same TCIA resource {[}9,10{]}. Our
+head-to-head comparison shows that author-provided t1gd GTV t0 radiomics
+modestly outperform scalar DVH volume for early RANO (nested CV AUC 0.74
+vs 0.70), while DVH volume remains fully reproducible from RTDOSE and
+GTV without MRI preprocessing {[}17{]}.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{10. Discussion}\label{discussion}
 
-\textbf{Why pooled dose--TCP fails:} CFB-GBM reflects routine practice,
-not dose escalation. Within-arm GTV Dmean variation \textless1 Gy. OS
-and early RANO capture different biology; fractionation is confounded
-with age and treatment intent {[}7,15{]}.
+\subsubsection{10.1 Why pooled dose-TCP fails on
+CFB-GBM}\label{why-pooled-dose-tcp-fails-on-cfb-gbm}
 
-\textbf{Where signal remains:} GTV volume and PyRadiomics predict RANO
-when scheme is adjusted (pooled LOOCV AUC≈0.64; 40 Gy LOOCV≈0.74;
-PyRadiomics nested CV≈0.74). This reframes the project from classical
-TCP to \textbf{tumour burden → imaging response} --- clinically
-interpretable and aligned with Moreau et al. radiomics work on the same
-dataset {[}9,10{]}.
+CFB-GBM documents routine clinical practice, not a dose-escalation
+trial. Within the 60 Gy arm, every patient received essentially the
+planned protocol dose (GTV Dmean SD = 0.28 Gy). TCP models
+mathematically require variation in the predictor; without it, fitted
+D50 and gamma50 reflect cohort mixing rather than a true dose-response
+law {[}7{]}.
 
-\textbf{Limitations:} No formal local control; single institution; small
-40 Gy RANO subset (n=34); t1 GTV NIfTI not validated locally.
+Using OS \textgreater= median as a TCP endpoint further confounds
+interpretation: higher EQD2 patients live longer primarily because they
+were younger and treated with curative-intent 60 Gy, not because
+incremental GTV dose within protocol controlled tumour. When RANO at t1
+is used instead, pooled EQD2 alone performs worse than random (AUC
+approximately 0.43) because early imaging PD was more frequent in the 60
+Gy arm despite better OS.
 
-\textbf{Feasibility checklist for future open TCP studies {[}7{]}:}
-report within-arm Dmean IQR; prefer LC or RANO over OS; adjust for
-fractionation; report LOOCV/nested CV; compare against author radiomics
-baselines.
+This negative result is scientifically valuable: it demonstrates that
+\textbf{endpoint and cohort design dominate model sophistication} in
+open-data TCP studies.
+
+\subsubsection{10.2 Where prognostic signal
+remains}\label{where-prognostic-signal-remains}
+
+When fractionation scheme and clinical covariates are included,
+\textbf{pre-treatment GTV volume} predicts RANO non-PD with moderate
+discrimination (pooled AUC approximately 0.72; LOOCV approximately
+0.64). In the hypofractionated subgroup, the effect is stronger but the
+sample is small (n = 34; LOOCV AUC approximately 0.74 for volume only).
+
+\textbf{PyRadiomics features} from the Version 3 TSV provide a modest
+incremental gain over volume (nested CV AUC approximately 0.74 vs 0.70).
+Optimism bias between in-sample and nested CV (delta approximately
+0.04--0.07) underscores the need for pre-specified validation in future
+work.
+
+\subsubsection{10.3 Limitations}\label{limitations}
+
+\begin{itemize}
+\tightlist
+\item
+  No formal local control labels; RANO at t1 is an imaging surrogate,
+  not pathological control {[}12,13{]}.
+\item
+  Single institution, retrospective, deceased-patients-only public
+  release {[}8{]}.
+\item
+  Small hypofractionated RANO subset (n = 34); wide bootstrap CIs in 40
+  Gy arm.
+\item
+  t1 GTV NIfTI masks not validated locally; t1 volumes taken from author
+  TSV.
+\item
+  PyRadiomics features were author-provided; we did not re-extract
+  locally (intentional parity with published baseline {[}9{]}).
+\end{itemize}
+
+\subsubsection{10.4 Feasibility checklist for future open TCP
+studies}\label{feasibility-checklist-for-future-open-tcp-studies}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Report within-arm GTV Dmean IQR before any TCP fit {[}7{]}.
+\item
+  Prefer local control or validated imaging response over OS alone
+  {[}12{]}.
+\item
+  Adjust for fractionation, age, and performance status {[}15{]}.
+\item
+  Report LOOCV or nested CV alongside in-sample AUC {[}18{]}.
+\item
+  Compare against author-provided radiomics baselines when available
+  {[}8,9,17{]}.
+\end{enumerate}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{11. Conclusion}\label{conclusion}
 
-We delivered an open, reproducible TCP modeling pipeline on CFB-GBM and
-demonstrated that \textbf{classical pooled TCP validation is not
-feasible} on this cohort. With confounding addressed, \textbf{GTV volume
-and PyRadiomics features predict early RANO} with moderate
-cross-validated discrimination. All code, figures, and auto-generated
-metrics regenerate via \texttt{make\ report}.
+We delivered an open, reproducible TCP modeling pipeline on the CFB-GBM
+cohort and completed all core assignment components: DVH extraction,
+four TCP models, bootstrap confidence intervals, model comparison,
+survival analysis, literature TCP parameter comparison, and Version 3
+RANO/PyRadiomics extensions with nested cross-validation.
+
+\textbf{Classical pooled TCP dose-response validation is not feasible}
+on this routine-care dataset. With confounding addressed, \textbf{tumour
+burden metrics} (GTV volume and selected PyRadiomics features) predict
+early RANO with moderate out-of-sample discrimination. All figures,
+tables, and numeric results regenerate from committed code via
+\texttt{make\ report}.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -502,67 +893,99 @@ metrics regenerate via \texttt{make\ report}.
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  Stupp R et al. Lancet Oncol. 2009. doi:10.1016/S1470-2045(09)70025-7\\
+  Stupp R et al. Effects of radiotherapy with concomitant and adjuvant
+  temozolomide versus radiotherapy alone on survival in glioblastoma.
+  \emph{Lancet Oncol}. 2009. doi:10.1016/S1470-2045(09)70025-7\\
 \item
-  Minniti G et al. Expert Rev Anticancer Ther. 2021.
+  Minniti G et al. Radiotherapy for glioblastoma: current standards and
+  recent advances. \emph{Expert Rev Anticancer Ther}. 2021.
   doi:10.1080/14737140.2021.1919470\\
 \item
-  Malmström A et al. Lancet Oncol. 2012.
+  Malmstrom A et al. Nordic randomised phase 3 trial of hypofractionated
+  RT in elderly GBM. \emph{Lancet Oncol}. 2012.
   doi:10.1016/S1470-2045(12)70265-6\\
 \item
-  Maitre A et al. Cancer Radiother. 2020.
-  doi:10.1016/j.canrad.2019.08.002\\
+  Maitre A et al. Construction of radiobiological models TCP and NTCP.
+  \emph{Cancer Radiother}. 2020. doi:10.1016/j.canrad.2019.08.002\\
 \item
-  Gardner LL et al. Phys Med Biol. 2024. doi:10.1088/1361-6560/ad70f0\\
+  Gardner LL et al. Modelling radiobiology. \emph{Phys Med Biol}. 2024.
+  doi:10.1088/1361-6560/ad70f0\\
 \item
-  Niemierko A. Med Phys. 1997. doi:10.1118/1.598061\\
+  Niemierko A. Equivalent uniform dose. \emph{Med Phys}. 1997.
+  doi:10.1118/1.598061\\
 \item
-  Ohri N et al. Transl Cancer Res. 2017. doi:10.21037/tcr.2017.02.01\\
+  Ohri N et al. Increasing power of TCP and NTCP modelling. \emph{Transl
+  Cancer Res}. 2017. doi:10.21037/tcr.2017.02.01\\
 \item
-  Moreau NN et al. TCIA. 2025. doi:10.7937/v9pn-2f72\\
+  Moreau NN et al. CFB-GBM cohort Version 3. \emph{The Cancer Imaging
+  Archive}. 2025. doi:10.7937/v9pn-2f72\\
 \item
-  Moreau NN et al. Front Oncol. 2025. doi:10.3389/fonc.2025.1497195\\
+  Moreau NN et al. Radiomics and AI for GBM treatment efficacy.
+  \emph{Front Oncol}. 2025. doi:10.3389/fonc.2025.1497195\\
 \item
-  Moreau NN et al. PRIME 2025 LNCS. doi:10.1007/978-3-032-07904-6\_3\\
+  Moreau NN et al. AI-driven prediction of treatment efficacy in GBM.
+  \emph{PRIME 2025}, LNCS. doi:10.1007/978-3-032-07904-6\_3\\
 \item
-  Fowler JF. Br J Radiol. 2010. doi:10.1259/bjr/86359321\\
+  Fowler JF. 21 years of biologically effective dose. \emph{Br J
+  Radiol}. 2010. doi:10.1259/bjr/86359321\\
 \item
-  Wen PY et al. J Clin Oncol. 2010. doi:10.1200/JCO.2009.25.5874\\
+  Wen PY et al. Updated response assessment criteria for high-grade
+  gliomas (RANO). \emph{J Clin Oncol}. 2010.
+  doi:10.1200/JCO.2009.25.5874\\
 \item
-  van Dijk WT et al. Lancet Oncol. 2021.
+  van Dijk WT et al. RANO 2.0 update. \emph{Lancet Oncol}. 2021.
   doi:10.1016/S1470-2045(21)00489-7\\
 \item
-  Cox DR. J R Stat Soc B. 1972. doi:10.1111/j.2517-6161.1972.tb00999.x\\
+  Cox DR. Regression models and life-tables. \emph{J R Stat Soc B}.
+  1972. doi:10.1111/j.2517-6161.1972.tb00999.x\\
 \item
-  Perry JR et al. N Engl J Med. 2017. doi:10.1056/NEJMoa1611977\\
+  Perry JR et al. Short-course RT plus TMZ in elderly GBM. \emph{N Engl
+  J Med}. 2017. doi:10.1056/NEJMoa1611977\\
 \item
-  Embring A et al. Radiother Oncol. 2020.
-  doi:10.1016/j.radonc.2019.11.014\\
+  Embring A et al. DVH parameters and survival in GBM. \emph{Radiother
+  Oncol}. 2020. doi:10.1016/j.radonc.2019.11.014\\
 \item
-  Zwanenburg A et al. Radiother Oncol. 2020.
-  doi:10.1016/j.radonc.2019.11.009\\
+  Zwanenburg A et al. Image Biomarker Standardisation Initiative (IBSI).
+  \emph{Radiother Oncol}. 2020. doi:10.1016/j.radonc.2019.11.009\\
 \item
-  Efron B, Tibshirani RJ. An Introduction to the Bootstrap. Chapman \&
-  Hall; 1994.
+  Efron B, Tibshirani RJ. \emph{An Introduction to the Bootstrap}.
+  Chapman and Hall; 1994.
 \end{enumerate}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Appendix ---
-Reproducibility}\label{appendix-reproducibility}
+\subsection{Appendix A --- Reproducibility
+commands}\label{appendix-a-reproducibility-commands}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\ExtensionTok{pip}\NormalTok{ install }\AttributeTok{{-}r}\NormalTok{ requirements.txt}
-\FunctionTok{make}\NormalTok{ report                              }\CommentTok{\# regenerate RESULTS.md}
-\ExtensionTok{python}\NormalTok{ scripts/verify\_literature\_dois.py }\CommentTok{\# check reference links}
-\FunctionTok{bash}\NormalTok{ scripts/run\_notebooks\_check.sh      }\CommentTok{\# execute notebooks 01, 03–06}
-\FunctionTok{bash}\NormalTok{ scripts/export\_assignment\_report.sh }\CommentTok{\# this document → DOCX/PDF}
-\FunctionTok{bash}\NormalTok{ scripts/export\_manuscript.sh        }\CommentTok{\# scientific manuscript export}
+\NormalTok{pip install {-}r requirements.txt}
+\NormalTok{make report}
+\NormalTok{make verify{-}dois}
+\NormalTok{make check{-}notebooks}
+\NormalTok{make export{-}assignment}
 \end{Highlighting}
 \end{Shaded}
 
-Group glossary (plain language):
-\href{group_glossary_guide.md}{\texttt{group\_glossary\_guide.md}}
+Plain-language glossary for group presentations:
+\texttt{reports/group\_glossary\_guide.md}
+
+\subsection{Appendix B --- Repository
+deliverables}\label{appendix-b-repository-deliverables}
+
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Deliverable & Path \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Modeling table & data/processed/modeling\_table.csv \\
+Auto results & reports/RESULTS.md \\
+Assignment report (this document) & reports/assignment\_report.pdf \\
+Scientific manuscript & reports/manuscript.pdf \\
+Figure captions & reports/figure\_captions.md \\
+Literature table & reports/literature\_table.csv \\
+\end{longtable}
 
 \end{document}
