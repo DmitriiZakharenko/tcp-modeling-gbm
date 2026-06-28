@@ -23,6 +23,9 @@ cohort:
 download-rt:
 	python -m src.data.download_rt_files
 
+download-t1-gtv:
+	python -m src.data.download_rt_files --include-t1-gtv --ascp-only
+
 download-rt-connect:
 	python -m src.data.download_rt_connect
 

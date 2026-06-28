@@ -1,0 +1,12 @@
+first_author,year,title,journal,key_topic,tcp_model,outcome,endpoint,n_patients,relevance
+Moreau,2025,Early characterization and prediction of glioblastoma treatment efficacy using radiomics and AI,Frontiers in Oncology,dataset CFB-GBM,NA,OS / imaging response,imaging surrogate,264,Primary data source — TCIA CFB-GBM
+Maitre,2020,Construction of radiobiological models TCP and NTCP,Cancer Radiother,TCP/NTCP review,Poisson LQ gEUD,clinical effects,LC/NTCP,review,Modern TCP methodology overview
+Parry,2024,Modelling radiobiology,Phys Med Biol,radiobiology review,LQ TCP NTCP,multi-scale,variable,review,2024 comprehensive radiotherapy modelling review
+Ohri,2017,Increasing power of TCP and NTCP modelling,Translational Cancer Research,TCP/NTCP trends,multiple,clinical validation,LC/toxicity,review,Recent trends in TCP validation
+Wen,2010,Updated assessment criteria for malignant glioma (RANO),J Clin Oncol,GBM response,RANO,imaging response,PD/PR/SD,clinical trials,Standard RANO endpoint definition
+van Dijk,2021,RANO 2.0 update for response assessment in neuro-oncology,Lancet Oncol,RANO update,RANO 2.0,imaging response,PD/PR,consensus,Modern RANO criteria update
+Stupp,2017,Effect of TMZ vs RT alone on survival in elderly GBM,JAMA Oncology,GBM RT,NA,OS,OS,562,Elderly/hypofractionated RT context
+Perry,2017,Short-course RT plus TMZ in elderly GBM,NEJM,GBM hypofraction,NA,OS,OS,562,40 Gy / 15 fr clinical rationale
+Minniti,2021,Radiotherapy for GBM: current standards and recent advances,Expert Rev Anticancer Ther,GBM RT review,NA,OS/PFS,clinical,review,Modern GBM fractionation overview
+Embring,2020,DVH parameters and survival in GBM treated with chemoradiation,Radiother Oncol,GBM dosimetry,NA,OS,OS,120,DVH-outcome GBM (comparator)
+Gondi,2014,HI-TEC RCT hypofractionated RT elderly GBM,J Clin Oncol,GBM hypofraction,NA,OS,OS,140,Hypofractionated arm precedent

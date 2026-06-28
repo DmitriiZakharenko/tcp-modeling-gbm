@@ -29,16 +29,20 @@ NOTEBOOKS_DIR: Path = ROOT_DIR / "notebooks"
 for _dir in (DATA_PROCESSED, FIGURES_DIR, REPORTS_DIR, DVH_CACHE_DIR, DVH_CURVES_DIR, DOSE_SLICES_DIR):
     _dir.mkdir(parents=True, exist_ok=True)
 
-# Clinical TSV filenames (stored in data/processed/ after download)
-CLINICAL_TSV: Path = DATA_PROCESSED / "CFB-GBM_clinical_data_v02_20260129.tsv"
+TCIA_BASE_URL = "https://www.cancerimagingarchive.net/wp-content/uploads"
+
+# Clinical / metadata TSV filenames (stored in data/processed/ after download)
+CLINICAL_TSV: Path = DATA_PROCESSED / "CFB-GBM_clinical_data_v03_20260619.tsv"
 TREATMENT_TSV: Path = DATA_PROCESSED / "CFB-GBM_treatment_data_v02_20260129.tsv"
-IMAGING_AVAILABILITY_TSV: Path = DATA_PROCESSED / "CFB-GBM_treatment_imaging_availability_v02_20260129.tsv"
-COLUMNS_DESCRIPTION_TSV: Path = DATA_PROCESSED / "CFB-GBM_columns_description_new_v02_20260129.tsv"
+IMAGING_AVAILABILITY_TSV: Path = DATA_PROCESSED / "CFB-GBM_treatment_imaging_availability_v03_20260619.tsv"
+MRI_AVAILABILITY_TSV: Path = DATA_PROCESSED / "CFB-GBM_mri_availability_v02_20260129.tsv"
+CT_AVAILABILITY_TSV: Path = DATA_PROCESSED / "CFB-GBM_ct_availability_v02_20260129.tsv"
+RANO_TSV: Path = DATA_PROCESSED / "CFB-GBM_rano_criteria_v03_20260619.tsv"
+COLUMNS_DESCRIPTION_TSV: Path = DATA_PROCESSED / "CFB-GBM_column_descriptions_v03_20260619.tsv"
+PYRADIOMICS_TSV: Path = DATA_PROCESSED / "CFB_GBM_features_extraction_pyradiomics_v03_20260619.tsv"
 COHORT_CSV: Path = DATA_PROCESSED / "cohort.csv"
 FEATURES_CSV: Path = DATA_PROCESSED / "features.csv"
 RAW_MANIFEST_CSV: Path = DATA_PROCESSED / "raw_data_manifest.csv"
-
-TCIA_BASE_URL = "https://www.cancerimagingarchive.net/wp-content/uploads"
 
 
 class ClinicalFile(NamedTuple):
@@ -46,18 +50,27 @@ class ClinicalFile(NamedTuple):
 
     path: Path
     url: str
+    required: bool = True
 
 
 CLINICAL_FILES: tuple[ClinicalFile, ...] = (
-    ClinicalFile(CLINICAL_TSV, f"{TCIA_BASE_URL}/CFB-GBM_clinical_data_v02_20260129.tsv"),
+    ClinicalFile(CLINICAL_TSV, f"{TCIA_BASE_URL}/CFB-GBM_clinical_data_v03_20260619.tsv"),
     ClinicalFile(TREATMENT_TSV, f"{TCIA_BASE_URL}/CFB-GBM_treatment_data_v02_20260129.tsv"),
     ClinicalFile(
         IMAGING_AVAILABILITY_TSV,
-        f"{TCIA_BASE_URL}/CFB-GBM_treatment_imaging_availability_v02_20260129.tsv",
+        f"{TCIA_BASE_URL}/CFB-GBM_treatment_imaging_availability_v03_20260619.tsv",
     ),
+    ClinicalFile(MRI_AVAILABILITY_TSV, f"{TCIA_BASE_URL}/CFB-GBM_mri_availability_v02_20260129.tsv"),
+    ClinicalFile(CT_AVAILABILITY_TSV, f"{TCIA_BASE_URL}/CFB-GBM_ct_availability_v02_20260129.tsv"),
+    ClinicalFile(RANO_TSV, f"{TCIA_BASE_URL}/CFB-GBM_rano_criteria_v03_20260619.tsv"),
     ClinicalFile(
         COLUMNS_DESCRIPTION_TSV,
-        f"{TCIA_BASE_URL}/CFB-GBM_columns_description_new_v02_20260129.tsv",
+        f"{TCIA_BASE_URL}/CFB-GBM_column_descriptions_v03_20260619.tsv",
+    ),
+    ClinicalFile(
+        PYRADIOMICS_TSV,
+        f"{TCIA_BASE_URL}/CFB_GBM_features_extraction_pyradiomics_v03_20260619.tsv",
+        required=False,
     ),
 )
 
@@ -78,6 +91,13 @@ ASPERA_MAX_RATE_MBPS = 200
 
 RTDOSE_GLOB = "**/*_t0_rtdose.nii.gz"
 GTV_GLOB = "**/*_t0_gtv.nii.gz"
+GTV_T1_GLOB = "**/*_t1_gtv.nii.gz"
+
+# TCIA Faspex v3 package (June 2026) — follow-up GTV / full imaging
+FASPEX_PACKAGE_ID_V3 = "1303"
+FASPEX_PACKAGE_SLUG_V3 = "CFB-GBM"
+FASPEX_PASSCODE_V3 = "757109fecdc9c7f35da8e99badb3b595bd120522"
+FASPEX_PACKAGE_PATH_V3 = f"/packages/{FASPEX_PACKAGE_ID_V3}/{FASPEX_PACKAGE_SLUG_V3}"
 
 # Radiobiological constants
 ALPHA_BETA_GBM: float = 10.0  # Gy; standard value for GBM (high alpha/beta tumor)

@@ -1,13 +1,12 @@
 # Current Results (auto-generated)
 
 **Last updated:** 2026-06-28  
-**Git commit:** `136525a`  
+**Git commit:** `30eff3d`  
 **Regenerate:** `python -m src.reporting.update_results`
 
-> **Outcome caveat:** CFB-GBM provides overall survival (weeks) only — no local
-> control endpoint. TCP models use an exploratory binary proxy (OS ≥ cohort median).
-> **OS ≠ TCP.** Median-split outcome is for pipeline testing only, not clinical TCP
-> validation. Cox models use continuous OS (all events observed).
+> **Outcome caveat:** Primary TCP models still use an exploratory OS median-split proxy.
+> **CFB-GBM v3** adds RANO imaging response (non-PD vs PD at t1) — see §4b below.
+> RANO ≠ formal local control but is closer to tumor response than OS alone.
 
 ---
 
@@ -145,6 +144,75 @@ Outcome proxy: OS >= median (51 wk)
 | Sensitivity / Specificity | 0.823 / 0.511 |
 
 
+## 4b. RANO endpoint vs OS proxy (same patients, EQD2 models)
+
+Subset with RANO t0→t1 labels: **n = 137**
+
+| Model | Endpoint | Event rate | AUC (in-sample) | AUC (5-fold CV) | LR p |
+|---|---|---:|---:|---:|---:|
+| poisson_tcp | OS median | 0.52 | 0.6222 | 0.6213 ± 0.0840 | 1.02e-02 |
+| poisson_tcp | RANO non-PD | 0.77 | 0.4257 | 0.4221 ± 0.0531 | 1.00e+00 |
+| logistic_tcp | OS median | 0.52 | 0.6222 | 0.6213 ± 0.0840 | 1.04e-02 |
+| logistic_tcp | RANO non-PD | 0.77 | 0.4257 | 0.4221 ± 0.0531 | 1.00e+00 |
+| probit_tcp | OS median | 0.52 | 0.6222 | 0.6213 ± 0.0840 | 1.04e-02 |
+| probit_tcp | RANO non-PD | 0.77 | 0.4257 | 0.4221 ± 0.0531 | 1.00e+00 |
+
+Dose–outcome on RANO subset:
+
+| Pair | r | p |
+|---|---:|---:|
+| EQD2_vs_os_median_proxy | 0.2555 | 0.0026 |
+| EQD2_vs_rano_non_pd | -0.1273 | 0.1384 |
+
+RANO categories (modeling subset):
+
+- Stable Disease (SD): 69
+- Progressive Disease (PD): 32
+- Minor Response (MR): 22
+- Partial Response (PR): 13
+- Complete Response (CR): 1
+
+
+## 4c. Within-arm DVH → RANO (Poisson TCP + Spearman)
+
+| Scheme | n | Metric | std | Spearman ρ | p | Poisson AUC | LR p |
+|---|---:|---|---:|---:|---:|---:|---:|
+| 60Gy_30fr | 96 | Dmean_gy | 0.287 | -0.041 | 0.6945 | 0.474 | 1.000 |
+| 60Gy_30fr | 96 | D95_gy | 0.615 | 0.068 | 0.5124 | 0.544 | 0.973 |
+| 60Gy_30fr | 96 | volume_cc | 27.999 | 0.239 | 0.0188 | 0.655 | 0.100 |
+| 60Gy_30fr | 96 | gEUD_a10_gy | 0.284 | -0.037 | 0.7188 | 0.476 | 1.000 |
+| 60Gy_30fr | 96 | HI_gy (low variance) | 0.020 | -0.025 | 0.8061 | — | — |
+| 40Gy_15fr | 34 | Dmean_gy | 0.091 | 0.013 | 0.9432 | 0.510 | 0.973 |
+| 40Gy_15fr | 34 | D95_gy | 0.244 | -0.190 | 0.2806 | 0.345 | 1.000 |
+| 40Gy_15fr | 34 | volume_cc | 40.205 | 0.411 | 0.0159 | 0.834 | 0.037 |
+| 40Gy_15fr | 34 | gEUD_a10_gy | 0.094 | 0.072 | 0.6859 | 0.559 | 0.949 |
+| 40Gy_15fr | 34 | HI_gy (low variance) | 0.015 | 0.300 | 0.0842 | — | — |
+
+
+## 4d. Cox OS ~ age + sex + WHO PS + EQD2 + RANO non-PD (n=137)
+
+**Concordance index:** 0.6669
+
+| Covariate | HR | p |
+|---|---:|---:|
+| age | 1.013 | 0.2244 |
+| sex_M | 1.014 | 0.9365 |
+| who_status | 1.574 | 0.0005 |
+| eqd2_gy | 0.965 | 0.0093 |
+| rano_controlled_t1 | 0.485 | 0.0009 |
+
+
+## 4e. Multivariable logistic — RANO non-PD (40 Gy arm)
+
+| Model | n | AUC | Brier |
+|---|---:|---:|---:|
+| intercept_only | 34 | — | 0.125 |
+| volume_only | 34 | 0.834 | 0.106 |
+| volume_age_ps | 34 | 0.903 | 0.093 |
+
+Bootstrap AUC (volume+age+PS): **0.927** [0.814, 1.000] (n=995 resamples)
+
+
 ## 5. Bootstrap 95% CI (Poisson TCP, EQD2)
 
 | Parameter | Estimate | 95% CI | Bootstrap SD |
@@ -178,7 +246,90 @@ Outcome proxy: OS >= median (51 wk)
 
 KM log-rank (EQD2>=50.0_vs_<50.0): χ² = 21.75, p = 3.10e-06
 
-## 8. Figures
+
+## 8. Clinical prognosis (Cox: OS ~ age + sex + WHO PS + scheme)
+
+**Concordance index:** 0.6560
+
+| Covariate | HR | p |
+|---|---:|---:|
+| age | 1.011 | 0.2349 |
+| sex_M | 1.033 | 0.8294 |
+| who_status | 1.425 | 0.0009 |
+| scheme_60gy | 0.541 | 0.0007 |
+
+
+## 9. OS by WHO performance status
+
+| WHO PS | n | Median OS (wk) | IQR (wk) |
+|---:|---:|---:|---:|
+| 0 | 34 | 59 | 46–79 |
+| 1 | 101 | 54 | 32–77 |
+| 2 | 47 | 29 | 17–55 |
+| 3 | 8 | 28 | 19–40 |
+
+Kruskal–Wallis: **p = 1.58e-04**
+
+
+## 10. Within-arm DVH vs OS (Spearman)
+
+| Scheme | n | Metric | ρ | p |
+|---|---:|---|---:|---:|
+| 60Gy_30fr | 120 | Dmean_gy | -0.091 | 0.3204 |
+| 60Gy_30fr | 120 | D95_gy | 0.028 | 0.7634 |
+| 60Gy_30fr | 120 | volume_cc | -0.123 | 0.1817 |
+| 60Gy_30fr | 120 | HI_gy | -0.086 | 0.3499 |
+| 60Gy_30fr | 120 | gEUD_a10_gy | -0.100 | 0.2756 |
+| 40Gy_15fr | 61 | Dmean_gy | 0.172 | 0.1839 |
+| 40Gy_15fr | 61 | D95_gy | -0.135 | 0.2994 |
+| 40Gy_15fr | 61 | volume_cc | -0.265 | 0.0392 |
+| 40Gy_15fr | 61 | HI_gy | 0.164 | 0.2071 |
+| 40Gy_15fr | 61 | gEUD_a10_gy | 0.209 | 0.1058 |
+
+
+## 11. Hypofractionated arm: Cox OS ~ volume + covariates
+
+n = 61, C-index = 0.641
+
+GTV volume HR = **1.0073**/cc, p = **0.0446** (exploratory)
+
+
+## 12. TCP feasibility: dose heterogeneity within arm
+
+| Scheme | n | Dmean SD (Gy) | min–max (Gy) | DVH-TCP feasible? |
+|---|---:|---:|---|---|
+| 60.00 Gy / 30 fr | 120 | 0.28 | 59.3–61.8 | no |
+| 40.05 Gy / 15 fr | 61 | 0.08 | 39.9–40.4 | no |
+
+
+## 13. Confounding correlations
+
+| Pair | r | p |
+|---|---:|---:|
+| eqd2_vs_os | 0.3389 | 1.72e-06 |
+| scheme60_vs_os | 0.3378 | 1.87e-06 |
+| age_vs_os | -0.2799 | 9.16e-05 |
+| age_vs_eqd2 | -0.5670 | 1.48e-17 |
+| age_vs_dmean | -0.5645 | 2.20e-17 |
+
+
+## 14. Unused TSV fields (association with OS)
+
+| Field | In modeling table? | ρ vs OS | p |
+|---|---|---:|---:|
+| rt_delay_wk | yes | 0.259 | 3.11e-04 |
+| bmi | yes | 0.117 | 1.09e-01 |
+| mri_t1_weeks | yes | 0.394 | 9.60e-07 |
+
+
+## 15. TCP feasibility verdict
+
+- **endpoint:** OS (weeks to death) always available. CFB-GBM v3 adds RANO response: 137/190 modeling patients with t0→t1 label. RANO is imaging response (non-PD vs PD), not formal local control.
+- **dose heterogeneity:** Within 60 Gy/30 fr, GTV Dmean SD = 0.28 Gy (threshold for DVH-TCP = 1.0 Gy). DVH-based TCP within standard arm is underpowered.
+- **pooled tcp:** Pooled EQD2–TCP on OS proxy is confounded: r(age, EQD2) ≈ −0.57; scheme and age drive OS. Compare §4b: RANO endpoint on same patients.
+- **recommendation:** RANO v3 enables tumor-response endpoint (137/190 with t0→t1). Pooled EQD2–RANO AUC ≈ 0.43 (worse than OS proxy 0.62 on same patients) because 60 Gy has higher PD rate than 40 Gy at t1 despite better OS. Within-arm dose-TCP still limited by Dmean homogeneity; exploratory signal: GTV volume vs RANO in 40 Gy arm only.
+
+## 16. Figures
 
 - [`figures/01_demographics.png`](../figures/01_demographics.png)
 - [`figures/01_exclusion_reasons.png`](../figures/01_exclusion_reasons.png)
@@ -193,6 +344,12 @@ KM log-rank (EQD2>=50.0_vs_<50.0): χ² = 21.75, p = 3.10e-06
 - [`figures/03_cox_forest.png`](../figures/03_cox_forest.png)
 - [`figures/03_kaplan_meier_eqd2.png`](../figures/03_kaplan_meier_eqd2.png)
 - [`figures/03_model_calibration.png`](../figures/03_model_calibration.png)
+- [`figures/03_tcp_curves_os_proxy.png`](../figures/03_tcp_curves_os_proxy.png)
+- [`figures/04_clinical_prognosis.png`](../figures/04_clinical_prognosis.png)
+- [`figures/05_rano_vs_os_tcp_auc.png`](../figures/05_rano_vs_os_tcp_auc.png)
+- [`figures/06_within_arm_rano_tcp.png`](../figures/06_within_arm_rano_tcp.png)
+- [`figures/07_rano_logistic_roc_40gy.png`](../figures/07_rano_logistic_roc_40gy.png)
+- [`figures/07_rano_volume_validation_40gy.png`](../figures/07_rano_volume_validation_40gy.png)
 
 ---
 
@@ -201,8 +358,13 @@ KM log-rank (EQD2>=50.0_vs_<50.0): χ² = 21.75, p = 3.10e-06
 | Question | Current answer |
 |---|---|
 | Data pipeline complete? | Yes — 190-patient modeling table with 21 DVH metrics |
-| Strong clinical signal? | Yes — OS differs by fractionation (p ≪ 0.001) |
-| TCP model beats null? | Yes — LR p ≈ 3×10⁻⁶ (Poisson, EQD2) |
+| Strong clinical signal? | Yes — 60 vs 40 Gy OS (p ≈ 3×10⁻⁶); WHO PS (p ≈ 1.6×10⁻⁴); Cox scheme HR≈0.54 |
+| DVH-TCP within standard arm? | No — 60 Gy Dmean SD = 0.28 Gy (below 1 Gy threshold) |
+| TCP model beats null? | Yes — LR p ≈ 3×10⁻⁶ (Poisson, EQD2) but confounded by scheme/age |
 | Good discrimination (AUC ≥ 0.7)? | No — in-sample AUC ≈ 0.68, CV ≈ 0.68 ± 0.10 |
-| True TCP validation? | No — OS proxy only; local control unavailable |
+| True TCP validation? | Partial — RANO non-PD available (v3); still not formal LC |
+| RANO improves AUC vs OS on same n? | No — pooled RANO AUC ≈ 0.43 vs OS ≈ 0.62 (n=137) |
+| Within-arm volume → RANO (40 Gy)? | Yes — Poisson AUC ≈ 0.83, LR p ≈ 0.037 (n=34) |
+| Within-arm volume → RANO (60 Gy)? | Exploratory — AUC ≈ 0.66, Spearman p ≈ 0.019 (n=96) |
+| Calibration fixes ranking? | No — Platt scaling does not change AUC on same data |
 

@@ -70,13 +70,19 @@ def download_clinical_data(
         dest = output_dir / clinical_file.path.name
         status = download_file(clinical_file.url, dest, force=force)
         counts[status] += 1
+        if status == "failed" and clinical_file.required:
+            pass  # counted; raise below if any required failed
 
     print(
         f"\nDone: {counts['downloaded']} downloaded, "
         f"{counts['skipped']} skipped, {counts['failed']} failed"
     )
     if counts["failed"]:
-        raise RuntimeError(f"{counts['failed']} file(s) failed to download")
+        failed_required = sum(
+            1 for f in CLINICAL_FILES if f.required and not (output_dir / f.path.name).exists()
+        )
+        if failed_required:
+            raise RuntimeError(f"{failed_required} required file(s) failed to download")
 
     return counts
 

@@ -34,11 +34,14 @@ from src.config import (
     FASPEX_FALLBACK_PORTS,
     FASPEX_HOST,
     FASPEX_PACKAGE_PATH,
+    FASPEX_PACKAGE_PATH_V3,
     FASPEX_PASSCODE,
+    FASPEX_PASSCODE_V3,
     FASPEX_PORT,
     FASPEX_UDP_PORT,
     FASPEX_USER,
     GTV_GLOB,
+    GTV_T1_GLOB,
     RTDOSE_GLOB,
 )
 
@@ -106,32 +109,34 @@ def build_ascp_command(
     udp_port: int = FASPEX_UDP_PORT,
     max_rate_mbps: int = ASPERA_MAX_RATE_MBPS,
     resume: bool = True,
+    include_globs: Optional[Iterable[str]] = None,
+    package_path: str = FASPEX_PACKAGE_PATH,
+    passcode: str = FASPEX_PASSCODE,
 ) -> list[str]:
     """Build the ascp command for selective RT NIfTI download."""
+    globs = list(include_globs) if include_globs else [RTDOSE_GLOB, GTV_GLOB]
     cmd = [
         str(ascp),
-        "-T",                        # Disable encryption (faster, data is public)
-        "-l", f"{max_rate_mbps}m",   # Max transfer rate
-        "-P", str(ssh_port),         # SSH / session initiation port
-        "-O", str(udp_port),         # FASP UDP data port
+        "-T",
+        "-l", f"{max_rate_mbps}m",
+        "-P", str(ssh_port),
+        "-O", str(udp_port),
         "--mode=recv",
         "--host", FASPEX_HOST,
-        "-N", RTDOSE_GLOB.replace("**/", "*"),  # Include RTDOSE files only
-        "-N", GTV_GLOB.replace("**/", "*"),     # Include GTV segmentation files only
-        "-E", "*",                   # Exclude everything else
-        f"{FASPEX_USER}@{FASPEX_HOST}:{FASPEX_PACKAGE_PATH}",
-        str(output_dir),
     ]
+    for pattern in globs:
+        cmd.extend(["-N", pattern.replace("**/", "*")])
+    cmd.extend(["-E", "*", f"{FASPEX_USER}@{FASPEX_HOST}:{package_path}", str(output_dir)])
     if resume:
-        cmd[1:1] = ["-k", "1"]  # Resume partially transferred files
+        cmd.insert(1, "-k")
+        cmd.insert(2, "1")
     return cmd
 
 
-def build_ascp_env() -> dict[str, str]:
+def build_ascp_env(passcode: str = FASPEX_PASSCODE) -> dict[str, str]:
     """Environment for TCIA Faspex anonymous package download."""
     env = os.environ.copy()
-    # TCIA embeds the Faspex passcode as the transfer password (not -W token).
-    env["ASPERA_SCP_PASS"] = FASPEX_PASSCODE
+    env["ASPERA_SCP_PASS"] = passcode
     return env
 
 
@@ -182,6 +187,8 @@ def download_rt_files(
     dry_run: bool = False,
     auto_port: bool = True,
     prefer_connect: bool = True,
+    include_t1_gtv: bool = False,
+    use_v3_package: bool = False,
 ) -> None:
     """
     Download only RTDOSE and GTV NIfTI files for all patients.
@@ -246,7 +253,12 @@ def download_rt_files(
         )
 
     resolved_port = resolve_ssh_port(ssh_port)
-    env = build_ascp_env()
+    include_globs = [RTDOSE_GLOB, GTV_GLOB]
+    if include_t1_gtv:
+        include_globs = [GTV_T1_GLOB]
+    package_path = FASPEX_PACKAGE_PATH_V3 if use_v3_package or include_t1_gtv else FASPEX_PACKAGE_PATH
+    passcode = FASPEX_PASSCODE_V3 if use_v3_package or include_t1_gtv else FASPEX_PASSCODE
+    env = build_ascp_env(passcode)
     ports_to_try = [resolved_port]
     if auto_port and ssh_port is None:
         ports_to_try = list(dict.fromkeys(FASPEX_FALLBACK_PORTS))
@@ -255,7 +267,15 @@ def download_rt_files(
 
     for attempt_port in ports_to_try:
         cmd = build_ascp_command(
-            ascp, output_dir, attempt_port, udp_port, max_rate_mbps, resume
+            ascp,
+            output_dir,
+            attempt_port,
+            udp_port,
+            max_rate_mbps,
+            resume,
+            include_globs=include_globs,
+            package_path=package_path,
+            passcode=passcode,
         )
 
         print("ascp command:")
@@ -347,6 +367,16 @@ def _parse_args() -> argparse.Namespace:
         help="Skip Connect/Desktop and use direct ascp only",
     )
     parser.add_argument(
+        "--include-t1-gtv",
+        action="store_true",
+        help="Download only *_t1_gtv.nii.gz from TCIA v3 package (~160 files)",
+    )
+    parser.add_argument(
+        "--v3-package",
+        action="store_true",
+        help="Use TCIA Faspex package v3 (June 2026)",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Print the ascp command without executing",
@@ -366,6 +396,8 @@ if __name__ == "__main__":
             dry_run=args.dry_run,
             auto_port=not args.no_auto_port,
             prefer_connect=not args.ascp_only,
+            include_t1_gtv=args.include_t1_gtv,
+            use_v3_package=args.v3_package,
         )
     except FileNotFoundError as exc:
         print(exc, file=sys.stderr)

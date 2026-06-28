@@ -1,6 +1,6 @@
 {
   "generated": "2026-06-28",
-  "git_hash": "77c3b9f",
+  "git_hash": "30eff3d",
   "n_modeling": 190,
   "median_os_wk": 51.0,
   "models": [
@@ -159,6 +159,12 @@
     "02_volume_hi.png",
     "03_cox_forest.png",
     "03_kaplan_meier_eqd2.png",
-    "03_model_calibration.png"
+    "03_model_calibration.png",
+    "03_tcp_curves_os_proxy.png",
+    "04_clinical_prognosis.png",
+    "05_rano_vs_os_tcp_auc.png",
+    "06_within_arm_rano_tcp.png",
+    "07_rano_logistic_roc_40gy.png",
+    "07_rano_volume_validation_40gy.png"
   ]
 }

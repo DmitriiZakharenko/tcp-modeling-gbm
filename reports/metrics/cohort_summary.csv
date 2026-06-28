@@ -11,3 +11,5 @@ sex_male,117.0,n
 sex_female,73.0,n
 dmean_median_gy,59.83511924743652,Gy
 gtv_volume_median_cc,36.18,cc
+with_rano_t0_t1,137.0,n
+rano_pd_rate_t1,0.23357664233576647,proportion

@@ -1,0 +1,537 @@
+id_patient	temporality	gtv	gtv_type	rtdose	treatment_machine	tps
+1	t0	1	humanSegmentation	1	T1	PRECISION
+2	t0	1	humanSegmentation	1	T1	PRECISION
+3	t0	1	humanSegmentation	1	RA2	ECLIPSE
+3	t1	1	genSegmentation	0		
+4	t0	1	humanSegmentation	1	T2	PRECISION
+5	t0	1	humanSegmentation	1	RA1	ECLIPSE
+5	t1	1	genSegmentation	0		
+5	t2	1	genSegmentation	0		
+6	t0	1	humanSegmentation	1	RA1	RS
+6	t1	1	genSegmentation	0		
+7	t0	1	humanSegmentation	1	T1	PRECISION
+7	t1	1	genSegmentation	0		
+8	t0	1	humanSegmentation	1	T1	PRECISION
+8	t1	1	genSegmentation	0		
+8	t2	1	genSegmentation	0		
+9	t0	1	humanSegmentation	1	T2	PRECISION
+10	t0	1	humanSegmentation	1	RA1	ECLIPSE
+11	t0	1	genSegmentation	0		
+12	t0	1	genSegmentation	0		
+13	t0	1	humanSegmentation	1	RA1	ECLIPSE
+13	t1	1	genSegmentation	0		
+13	t2	1	genSegmentation	0		
+14	t0	0		0		
+15	t0	1	humanSegmentation	1	RA1	ECLIPSE
+15	t1	1	genSegmentation	0		
+15	t2	1	genSegmentation	0		
+16	t0	1	humanSegmentation	1	T1	PRECISION
+17	t0	1	genSegmentation	0		
+17	t1	1	genSegmentation	0		
+18	t0	1	genSegmentation	0		
+18	t1	1	genSegmentation	0		
+18	t2	1	genSegmentation	0		
+19	t0	1	humanSegmentation	1	T2	PRECISION
+19	t1	1	genSegmentation	0		
+20	t0	1	genSegmentation	0		
+21	t0	1	genSegmentation	0		
+21	t1	1	genSegmentation	0		
+22	t0	1	humanSegmentation	1	RA2	ECLIPSE
+22	t1	1	genSegmentation	0		
+23	t0	1	humanSegmentation	1	RA1	ECLIPSE
+24	t0	1	humanSegmentation	1	T2	PRECISION
+25	t0	1	humanSegmentation	1	RA1	ECLIPSE
+25	t1	1	genSegmentation	0		
+25	t2	1	genSegmentation	0		
+26	t0	1	humanSegmentation	1	T1	PRECISION
+26	t1	1	genSegmentation	0		
+26	t2	1	genSegmentation	0		
+27	t0	1	genSegmentation	0		
+28	t0	1	humanSegmentation	1	RA1	ECLIPSE
+28	t1	1	genSegmentation	0		
+29	t0	1	humanSegmentation	1	RA1	ECLIPSE
+30	t0	1	humanSegmentation	1	RA2	ECLIPSE
+30	t1	1	genSegmentation	0		
+30	t2	1	genSegmentation	0		
+31	t0	1	humanSegmentation	1	RA1	ECLIPSE
+31	t1	1	genSegmentation	0		
+32	t0	1	humanSegmentation	1	RA2	ECLIPSE
+33	t0	1	humanSegmentation	1	T2	PRECISION
+33	t1	1	genSegmentation	0		
+34	t0	1	genSegmentation	0		
+35	t0	1	genSegmentation	0		
+36	t0	1	genSegmentation	0		
+37	t0	1	genSegmentation	0		
+38	t0	1	humanSegmentation	1	RA1	ECLIPSE
+38	t1	1	genSegmentation	0		
+39	t0	1	humanSegmentation	1	T1	PRECISION
+39	t1	1	genSegmentation	0		
+39	t2	1	genSegmentation	0		
+40	t0	1	genSegmentation	0		
+41	t0	1	genSegmentation	0		
+41	t2	1	genSegmentation	0		
+42	t0	1	genSegmentation	0		
+42	t1	1	genSegmentation	0		
+42	t2	1	genSegmentation	0		
+43	t0	1	humanSegmentation	1	RA1	ECLIPSE
+43	t1	1	genSegmentation	0		
+44	t0	1	humanSegmentation	1	T1	PRECISION
+45	t0	1	humanSegmentation	1	T2	PRECISION
+45	t1	1	genSegmentation	0		
+45	t2	1	genSegmentation	0		
+46	t0	1	genSegmentation	1	T1	PRECISION
+47	t0	1	humanSegmentation	1	RA2	ECLIPSE
+47	t1	1	genSegmentation	0		
+47	t2	1	genSegmentation	0		
+48	t0	1	humanSegmentation	1	RA2	ECLIPSE
+48	t1	1	genSegmentation	0		
+48	t2	1	genSegmentation	0		
+49	t0	1	genSegmentation	0		
+50	t0	1	genSegmentation	0		
+51	t0	1	genSegmentation	0		
+52	t0	1	genSegmentation	0		
+52	t1	1	genSegmentation	0		
+52	t2	1	genSegmentation	0		
+53	t0	1	genSegmentation	0		
+54	t0	1	humanSegmentation	1	T1	PRECISION
+55	t0	1	genSegmentation	0		
+56	t0	1	humanSegmentation	1	T2	PRECISION
+56	t1	1	genSegmentation	0		
+56	t2	1	genSegmentation	0		
+57	t0	1	humanSegmentation	1	T2	PRECISION
+57	t1	1	genSegmentation	0		
+57	t2	1	genSegmentation	0		
+58	t0	1	humanSegmentation	1	T2	PRECISION
+58	t1	1	genSegmentation	0		
+59	t0	1	humanSegmentation	1	T1	PRECISION
+59	t1	1	genSegmentation	0		
+59	t2	1	genSegmentation	0		
+60	t0	1	humanSegmentation	1	T1	PRECISION
+61	t0	1	humanSegmentation	1	T1	PRECISION
+62	t0	1	genSegmentation	0		
+63	t0	1	genSegmentation	0		
+64	t0	1	genSegmentation	0		
+65	t0	1	humanSegmentation	1	T1	PRECISION
+65	t1	1	genSegmentation	0		
+65	t2	1	genSegmentation	0		
+66	t0	1	humanSegmentation	1	RA1	ECLIPSE
+67	t0	1	genSegmentation	0		
+68	t0	1	humanSegmentation	1	RA2	ECLIPSE
+68	t1	1	genSegmentation	0		
+69	t0	1	humanSegmentation	1	T2	PRECISION
+69	t2	1	genSegmentation	0		
+70	t0	1	humanSegmentation	1	T1	PRECISION
+70	t1	1	genSegmentation	0		
+70	t2	1	genSegmentation	0		
+71	t0	1	humanSegmentation	1	T2	PRECISION
+71	t1	1	genSegmentation	0		
+71	t2	1	genSegmentation	0		
+72	t0	1	humanSegmentation	1	T2	PRECISION
+72	t1	1	genSegmentation	0		
+73	t0	1	humanSegmentation	1	RA1	ECLIPSE
+73	t1	1	genSegmentation	0		
+73	t2	1	genSegmentation	0		
+74	t0	1	humanSegmentation	1	T1	PRECISION
+75	t0	1	genSegmentation	0		
+76	t0	1	humanSegmentation	1	RA1	ECLIPSE
+76	t1	1	genSegmentation	0		
+76	t2	1	genSegmentation	0		
+78	t0	1	humanSegmentation	1	RA1	ECLIPSE
+78	t1	1	genSegmentation	0		
+78	t2	1	genSegmentation	0		
+79	t0	1	humanSegmentation	1	T1	PRECISION
+79	t1	1	genSegmentation	0		
+79	t2	1	genSegmentation	0		
+80	t0	1	genSegmentation	0		
+81	t0	1	humanSegmentation	1	T1	PRECISION
+81	t1	1	genSegmentation	0		
+82	t0	1	genSegmentation	0		
+83	t0	1	humanSegmentation	1	T2	PRECISION
+83	t1	1	genSegmentation	0		
+83	t2	1	genSegmentation	0		
+84	t0	1	humanSegmentation	1	RA1	ECLIPSE
+84	t2	1	genSegmentation	0		
+85	t0	1	humanSegmentation	1	RA1	ECLIPSE
+85	t1	1	genSegmentation	0		
+85	t2	1	genSegmentation	0		
+86	t0	1	humanSegmentation	1	T1	PRECISION
+87	t0	1	humanSegmentation	1	T1	PRECISION
+87	t1	1	genSegmentation	0		
+88	t0	0		0		
+89	t0	1	humanSegmentation	1	RA2	ECLIPSE
+90	t0	1	humanSegmentation	1	RA2	ECLIPSE
+91	t0	1	humanSegmentation	1	T1	PRECISION
+91	t1	1	genSegmentation	0		
+91	t2	1	genSegmentation	0		
+92	t0	1	humanSegmentation	1	RA2	ECLIPSE
+93	t0	1	humanSegmentation	1	T2	PRECISION
+93	t1	1	genSegmentation	0		
+93	t2	1	genSegmentation	0		
+94	t0	1	humanSegmentation	1	T2	PRECISION
+94	t1	1	genSegmentation	0		
+94	t2	1	genSegmentation	0		
+95	t0	1	humanSegmentation	1	T2	PRECISION
+95	t1	1	genSegmentation	0		
+95	t2	1	genSegmentation	0		
+96	t0	1	humanSegmentation	1	T2	PRECISION
+97	t0	1	humanSegmentation	1	RA1	ECLIPSE
+97	t1	1	genSegmentation	0		
+97	t2	1	genSegmentation	0		
+98	t0	1	genSegmentation	0		
+99	t0	1	humanSegmentation	1	RA1	ECLIPSE
+99	t1	1	genSegmentation	0		
+99	t2	1	genSegmentation	0		
+100	t0	1	humanSegmentation	1	T1	PRECISION
+101	t0	1	humanSegmentation	1	T2	PRECISION
+101	t1	1	genSegmentation	0		
+101	t2	1	genSegmentation	0		
+102	t0	1	humanSegmentation	1	T1	PRECISION
+103	t0	1	humanSegmentation	1	T2	PRECISION
+103	t1	1	genSegmentation	0		
+104	t0	1	humanSegmentation	1	T1	PRECISION
+104	t1	1	genSegmentation	0		
+105	t0	1	humanSegmentation	1	RA1	ECLIPSE
+105	t1	1	genSegmentation	0		
+105	t2	1	genSegmentation	0		
+106	t0	1	humanSegmentation	1	T1	PRECISION
+107	t0	1	humanSegmentation	1	T2	PRECISION
+107	t1	1	genSegmentation	0		
+108	t0	1	humanSegmentation	1	T1	PRECISION
+108	t1	1	genSegmentation	0		
+108	t2	1	genSegmentation	0		
+109	t0	1	humanSegmentation	1	T1	PRECISION
+109	t1	1	genSegmentation	0		
+109	t2	1	genSegmentation	0		
+110	t0	1	humanSegmentation	1	RA1	ECLIPSE
+110	t1	1	genSegmentation	0		
+110	t2	1	genSegmentation	0		
+111	t0	1	genSegmentation	0		
+111	t1	1	genSegmentation	0		
+111	t2	1	genSegmentation	0		
+112	t0	1	humanSegmentation	1	T1	PRECISION
+112	t1	1	genSegmentation	0		
+112	t2	1	genSegmentation	0		
+113	t0	1	genSegmentation	0		
+114	t0	0		0		
+115	t0	1	genSegmentation	0		
+115	t1	1	genSegmentation	0		
+115	t2	1	genSegmentation	0		
+116	t0	1	genSegmentation	0		
+117	t0	1	genSegmentation	0		
+117	t1	1	genSegmentation	0		
+117	t2	1	genSegmentation	0		
+118	t0	1	humanSegmentation	1	RA1	ECLIPSE
+118	t1	1	genSegmentation	0		
+118	t2	1	genSegmentation	0		
+119	t0	1	humanSegmentation	1	T2	PRECISION
+120	t0	1	humanSegmentation	1	RA2	ECLIPSE
+120	t1	1	genSegmentation	0		
+120	t2	1	genSegmentation	0		
+121	t0	1	humanSegmentation	1	RA1	ECLIPSE
+121	t1	1	genSegmentation	0		
+122	t0	1	humanSegmentation	1	T1	PRECISION
+123	t0	1	humanSegmentation	1	T1	PRECISION
+123	t1	1	genSegmentation	0		
+124	t0	1	humanSegmentation	1	T1	PRECISION
+124	t1	1	genSegmentation	0		
+125	t0	1	humanSegmentation	1	RA1	ECLIPSE
+125	t1	1	genSegmentation	0		
+125	t2	1	genSegmentation	0		
+126	t0	1	humanSegmentation	1	RA1	ECLIPSE
+126	t1	1	genSegmentation	0		
+126	t2	1	genSegmentation	0		
+127	t0	1	humanSegmentation	1	T2	PRECISION
+127	t1	1	genSegmentation	0		
+127	t2	1	genSegmentation	0		
+128	t0	1	humanSegmentation	1	CLI	RS
+129	t0	1	genSegmentation	0		
+130	t0	1	genSegmentation	0		
+131	t0	1	humanSegmentation	1	T2	PRECISION
+131	t1	1	genSegmentation	0		
+131	t2	1	genSegmentation	0		
+132	t0	1	humanSegmentation	1	T1	PRECISION
+132	t1	1	genSegmentation	0		
+132	t2	1	genSegmentation	0		
+133	t0	1	humanSegmentation	1	RA1	ECLIPSE
+133	t1	1	genSegmentation	0		
+133	t2	1	genSegmentation	0		
+134	t0	1	humanSegmentation	1	RA2	ECLIPSE
+134	t1	1	genSegmentation	0		
+134	t2	1	genSegmentation	0		
+135	t0	1	humanSegmentation	1	RA2	ECLIPSE
+135	t1	1	genSegmentation	0		
+135	t2	1	genSegmentation	0		
+136	t0	1	humanSegmentation	1	T1	PRECISION
+136	t1	1	genSegmentation	0		
+136	t2	1	genSegmentation	0		
+137	t0	1	humanSegmentation	1	RA2	ECLIPSE
+137	t1	1	genSegmentation	0		
+137	t2	1	genSegmentation	0		
+138	t0	1	humanSegmentation	1	T1	PRECISION
+138	t1	1	genSegmentation	0		
+139	t0	1	humanSegmentation	1	T2	PRECISION
+139	t1	1	genSegmentation	0		
+139	t2	1	genSegmentation	0		
+140	t0	1	humanSegmentation	1	T1	PRECISION
+140	t1	1	genSegmentation	0		
+140	t2	1	genSegmentation	0		
+141	t0	1	humanSegmentation	1	T1	PRECISION
+142	t0	1	humanSegmentation	1	RA1	ECLIPSE
+142	t1	1	genSegmentation	0		
+142	t2	1	genSegmentation	0		
+143	t0	1	humanSegmentation	1	RA1	ECLIPSE
+143	t1	1	genSegmentation	0		
+144	t0	1	humanSegmentation	1	RA1	ECLIPSE
+144	t1	1	genSegmentation	0		
+144	t2	1	genSegmentation	0		
+145	t0	1	humanSegmentation	1	T2	PRECISION
+145	t1	1	genSegmentation	0		
+145	t2	1	genSegmentation	0		
+146	t0	1	humanSegmentation	1	RA1	RS
+146	t1	1	genSegmentation	0		
+146	t2	1	genSegmentation	0		
+147	t0	1	humanSegmentation	1	RA1	ECLIPSE
+148	t0	1	humanSegmentation	1	RA1	ECLIPSE
+148	t1	1	genSegmentation	0		
+149	t0	1	humanSegmentation	1	RA2	ECLIPSE
+149	t1	1	genSegmentation	0		
+150	t0	1	humanSegmentation	1	RA2	ECLIPSE
+151	t0	1	humanSegmentation	1	T2	PRECISION
+151	t1	1	genSegmentation	0		
+152	t0	1	humanSegmentation	1	T1	PRECISION
+153	t0	1	humanSegmentation	1	RA1	ECLIPSE
+154	t0	1	humanSegmentation	1	T1	PRECISION
+154	t1	1	genSegmentation	0		
+155	t0	1	humanSegmentation	1	T1	PRECISION
+155	t1	1	genSegmentation	0		
+155	t2	1	genSegmentation	0		
+156	t0	1	humanSegmentation	1	T2	PRECISION
+156	t1	1	genSegmentation	0		
+156	t2	1	genSegmentation	0		
+157	t0	1	genSegmentation	0		
+157	t1	1	genSegmentation	0		
+157	t2	1	genSegmentation	0		
+158	t0	1	humanSegmentation	1	T2	PRECISION
+158	t1	1	genSegmentation	0		
+159	t0	1	genSegmentation	0		
+160	t0	1	genSegmentation	1	RA1	ECLIPSE
+160	t1	1	genSegmentation	0		
+161	t0	1	humanSegmentation	1	RA1	ECLIPSE
+161	t1	1	genSegmentation	0		
+161	t2	1	genSegmentation	0		
+162	t0	1	genSegmentation	1	T2	PRECISION
+163	t0	1	humanSegmentation	1	T1	PRECISION
+163	t1	1	genSegmentation	0		
+163	t2	1	genSegmentation	0		
+164	t0	1	humanSegmentation	1	RA1	ECLIPSE
+164	t1	1	genSegmentation	0		
+165	t0	1	humanSegmentation	1	RA2	ECLIPSE
+165	t1	1	genSegmentation	0		
+165	t2	1	genSegmentation	0		
+166	t0	1	genSegmentation	0		
+167	t0	1	humanSegmentation	1	T2	PRECISION
+167	t1	1	genSegmentation	0		
+168	t0	1	genSegmentation	0		
+168	t1	1	genSegmentation	0		
+169	t0	1	humanSegmentation	1	RA1	ECLIPSE
+169	t1	1	genSegmentation	0		
+170	t0	1	humanSegmentation	1	T1	PRECISION
+171	t0	1	genSegmentation	0		
+171	t1	1	genSegmentation	0		
+171	t2	1	genSegmentation	0		
+172	t0	1	genSegmentation	0		
+173	t0	1	humanSegmentation	1	T2	PRECISION
+173	t1	1	genSegmentation	0		
+173	t2	1	genSegmentation	0		
+174	t0	1	genSegmentation	0		
+174	t1	1	genSegmentation	0		
+175	t0	1	humanSegmentation	1	RA1	ECLIPSE
+176	t0	1	humanSegmentation	1	RA1	RS
+177	t0	1	humanSegmentation	1	CLI	RS
+178	t0	1	genSegmentation	0		
+178	t1	1	genSegmentation	0		
+179	t0	1	humanSegmentation	1	T1	PRECISION
+180	t0	1	humanSegmentation	1	T2	PRECISION
+181	t0	1	humanSegmentation	1	RA1	ECLIPSE
+181	t1	1	genSegmentation	0		
+182	t0	1	genSegmentation	0		
+183	t0	1	humanSegmentation	1	RA1	ECLIPSE
+183	t1	1	genSegmentation	0		
+183	t2	1	genSegmentation	0		
+184	t0	1	humanSegmentation	1	T2	PRECISION
+184	t1	1	genSegmentation	0		
+185	t0	1	humanSegmentation	1	T2	PRECISION
+185	t1	1	genSegmentation	0		
+185	t2	1	genSegmentation	0		
+186	t0	1	genSegmentation	0		
+186	t1	1	genSegmentation	0		
+187	t0	1	genSegmentation	0		
+188	t0	1	humanSegmentation	1	RA2	ECLIPSE
+188	t1	1	genSegmentation	0		
+188	t2	1	genSegmentation	0		
+189	t0	1	humanSegmentation	1	T2	PRECISION
+190	t0	1	humanSegmentation	1	T2	PRECISION
+190	t1	1	genSegmentation	0		
+190	t2	1	genSegmentation	0		
+191	t0	1	genSegmentation	0		
+192	t0	1	humanSegmentation	1	T1	PRECISION
+192	t1	1	genSegmentation	0		
+192	t2	1	genSegmentation	0		
+193	t0	1	humanSegmentation	1	RA1	ECLIPSE
+193	t2	1	genSegmentation	0		
+194	t0	1	humanSegmentation	1	RA1	ECLIPSE
+194	t1	1	genSegmentation	0		
+194	t2	1	genSegmentation	0		
+195	t0	1	genSegmentation	0		
+196	t0	1	humanSegmentation	1	RA1	ECLIPSE
+196	t1	1	genSegmentation	0		
+196	t2	1	genSegmentation	0		
+197	t0	1	genSegmentation	0		
+197	t1	1	genSegmentation	0		
+197	t2	1	genSegmentation	0		
+198	t0	1	humanSegmentation	1	RA1	ECLIPSE
+198	t1	1	genSegmentation	0		
+198	t2	1	genSegmentation	0		
+199	t0	1	humanSegmentation	1	RA1	ECLIPSE
+199	t1	1	genSegmentation	0		
+199	t2	1	genSegmentation	0		
+200	t0	1	humanSegmentation	1	RA1	ECLIPSE
+200	t1	1	genSegmentation	0		
+200	t2	1	genSegmentation	0		
+201	t0	1	humanSegmentation	1	RA2	ECLIPSE
+201	t1	1	genSegmentation	0		
+201	t2	1	genSegmentation	0		
+202	t0	1	humanSegmentation	1	T1	PRECISION
+202	t2	1	genSegmentation	0		
+203	t0	1	humanSegmentation	1	T1	PRECISION
+203	t1	1	genSegmentation	0		
+203	t2	1	genSegmentation	0		
+204	t0	1	genSegmentation	0		
+205	t0	1	humanSegmentation	1	T2	PRECISION
+205	t1	1	genSegmentation	0		
+205	t2	1	genSegmentation	0		
+206	t0	1	genSegmentation	0		
+207	t0	1	humanSegmentation	1	RA1	ECLIPSE
+207	t1	1	genSegmentation	0		
+208	t0	1	humanSegmentation	1	RA1	ECLIPSE
+208	t1	1	genSegmentation	0		
+209	t0	1	humanSegmentation	1	T1	PRECISION
+209	t1	1	genSegmentation	0		
+209	t2	1	genSegmentation	0		
+210	t0	1	humanSegmentation	1	T2	PRECISION
+211	t0	1	humanSegmentation	1	RA2	ECLIPSE
+211	t1	1	genSegmentation	0		
+211	t2	1	genSegmentation	0		
+212	t0	1	humanSegmentation	1	T1	PRECISION
+213	t0	1	humanSegmentation	1	T1	PRECISION
+213	t1	1	genSegmentation	0		
+213	t2	1	genSegmentation	0		
+214	t0	1	humanSegmentation	1	T2	PRECISION
+214	t1	1	genSegmentation	0		
+214	t2	1	genSegmentation	0		
+215	t0	1	humanSegmentation	1	T1	PRECISION
+215	t1	1	genSegmentation	0		
+216	t0	1	genSegmentation	0		
+216	t1	1	genSegmentation	0		
+216	t2	1	genSegmentation	0		
+217	t0	1	humanSegmentation	1	RA2	ECLIPSE
+217	t1	1	genSegmentation	0		
+218	t0	1	genSegmentation	0		
+219	t0	1	humanSegmentation	1	RA1	ECLIPSE
+220	t0	1	humanSegmentation	1	T1	PRECISION
+220	t1	1	genSegmentation	0		
+220	t2	1	genSegmentation	0		
+221	t0	1	humanSegmentation	1	T2	PRECISION
+222	t0	1	humanSegmentation	1	RA2	ECLIPSE
+222	t1	1	genSegmentation	0		
+222	t2	1	genSegmentation	0		
+223	t0	1	genSegmentation	0		
+224	t0	1	humanSegmentation	1	RA1	RS
+225	t0	1	humanSegmentation	1	T1	PRECISION
+225	t1	1	genSegmentation	0		
+226	t0	1	genSegmentation	0		
+227	t0	1	genSegmentation	0		
+227	t1	1	genSegmentation	0		
+228	t0	1	genSegmentation	0		
+229	t0	1	humanSegmentation	1	T1	PRECISION
+230	t0	1	genSegmentation	0		
+231	t0	1	humanSegmentation	1	RA1	RS
+232	t0	1	humanSegmentation	1	RA1	ECLIPSE
+232	t1	1	genSegmentation	0		
+232	t2	1	genSegmentation	0		
+233	t0	1	humanSegmentation	1	HA1	RS
+234	t0	1	humanSegmentation	1	T2	PRECISION
+234	t1	1	genSegmentation	0		
+234	t2	1	genSegmentation	0		
+235	t0	1	humanSegmentation	1	T1	PRECISION
+235	t1	1	genSegmentation	0		
+236	t0	1	humanSegmentation	1	T2	PRECISION
+236	t1	1	genSegmentation	0		
+236	t2	1	genSegmentation	0		
+237	t0	1	humanSegmentation	1	T1	PRECISION
+237	t1	1	genSegmentation	0		
+237	t2	1	genSegmentation	0		
+238	t0	1	humanSegmentation	1	T2	PRECISION
+238	t1	1	genSegmentation	0		
+239	t0	1	humanSegmentation	1	RA1	ECLIPSE
+239	t1	1	genSegmentation	0		
+240	t0	1	humanSegmentation	1	T2	PRECISION
+241	t0	1	humanSegmentation	1	RA1	RS
+241	t1	1	genSegmentation	0		
+241	t2	1	genSegmentation	0		
+242	t0	1	genSegmentation	0		
+243	t0	1	genSegmentation	0		
+244	t0	1	humanSegmentation	1	T1	PRECISION
+245	t0	1	humanSegmentation	1	T1	PRECISION
+245	t1	1	genSegmentation	0		
+245	t2	1	genSegmentation	0		
+246	t0	1	humanSegmentation	1	T1	PRECISION
+246	t1	1	genSegmentation	0		
+246	t2	1	genSegmentation	0		
+247	t0	1	humanSegmentation	1	HA1	RS
+247	t1	1	genSegmentation	0		
+247	t2	1	genSegmentation	0		
+248	t0	1	humanSegmentation	1	T2	PRECISION
+248	t1	1	genSegmentation	0		
+249	t0	1	humanSegmentation	1	HA1	RS
+249	t1	1	genSegmentation	0		
+249	t2	1	genSegmentation	0		
+250	t0	1	genSegmentation	0		
+251	t0	1	humanSegmentation	1	T1	PRECISION
+251	t1	1	genSegmentation	0		
+251	t2	1	genSegmentation	0		
+252	t0	1	humanSegmentation	1	T1	PRECISION
+252	t1	1	genSegmentation	0		
+253	t0	1	humanSegmentation	1	HA1	RS
+253	t1	1	genSegmentation	0		
+253	t2	1	genSegmentation	0		
+254	t0	1	humanSegmentation	1	HA1	RS
+254	t1	1	genSegmentation	0		
+254	t2	1	genSegmentation	0		
+255	t0	1	humanSegmentation	1	T1	PRECISION
+255	t1	1	genSegmentation	0		
+255	t2	1	genSegmentation	0		
+256	t0	1	genSegmentation	0		
+257	t0	1	humanSegmentation	1	RA2	RS
+257	t1	1	genSegmentation	0		
+257	t2	1	genSegmentation	0		
+258	t0	1	humanSegmentation	1	HA2	RS
+258	t1	1	genSegmentation	0		
+259	t0	1	humanSegmentation	1	HA1	RS
+259	t1	1	genSegmentation	0		
+259	t2	1	genSegmentation	0		
+260	t0	1	humanSegmentation	1	RA2	RS
+261	t0	1	genSegmentation	0		
+261	t1	1	genSegmentation	0		
+261	t2	1	genSegmentation	0		
+262	t0	1	genSegmentation	0		
+262	t1	1	genSegmentation	0		
+262	t2	1	genSegmentation	0		
+263	t0	1	genSegmentation	0		
+263	t1	1	genSegmentation	0		
+264	t0	1	genSegmentation	0		
+264	t1	1	genSegmentation	0		
+264	t2	1	genSegmentation	0		
+265	t0	1	genSegmentation	0		
+265	t1	1	genSegmentation	0		
+265	t2	1	genSegmentation	0		

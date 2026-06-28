@@ -24,6 +24,12 @@ from sklearn.model_selection import StratifiedKFold
 
 from src.config import DATA_PROCESSED, FIGURES_DIR, RANDOM_SEED, REPORTS_DIR
 from src.data.dvh_calculator import SCALAR_METRIC_KEYS
+from src.analysis.rano_tcp_comparison import run_rano_tcp_comparison
+from src.analysis.rano_multivariable import run_rano_multivariable_40gy
+from src.analysis.validate_rano_volumes import run_volume_validation
+from src.analysis.within_arm_rano_tcp import run_within_arm_rano_analysis
+from src.analysis.confounding_audit import run_confounding_audit, tcp_feasibility_summary
+from src.analysis.stratified_analysis import run_stratified_analysis
 from src.models.bootstrap_ci import bootstrap_tcp_params
 from src.models.eud_tcp import EUDTCPModel
 from src.models.model_comparison import run_model_comparison
@@ -74,6 +80,15 @@ def cohort_metrics(frame: pd.DataFrame, cohort: pd.DataFrame) -> pd.DataFrame:
         {"metric": "dmean_median_gy", "value": float(frame["Dmean_gy"].median()), "unit": "Gy"},
         {"metric": "gtv_volume_median_cc", "value": float(frame["volume_cc"].median()), "unit": "cc"},
     ]
+    if "rano_controlled_t1" in frame.columns:
+        n_rano = int(frame["rano_controlled_t1"].notna().sum())
+        pd_rate = 1.0 - float(frame["rano_controlled_t1"].dropna().mean())
+        rows.extend(
+            [
+                {"metric": "with_rano_t0_t1", "value": n_rano, "unit": "n"},
+                {"metric": "rano_pd_rate_t1", "value": pd_rate, "unit": "proportion"},
+            ]
+        )
     return pd.DataFrame(rows)
 
 
@@ -132,7 +147,7 @@ def evaluate_tcp_model(
     doses: np.ndarray,
     outcomes: np.ndarray,
     dose_label: str,
-    median_os_wk: float,
+    outcome_definition: str,
     k_params: int,
     param2_name: str,
     n_folds: int = 5,
@@ -167,7 +182,7 @@ def evaluate_tcp_model(
         "model": model_name,
         "dose_variable": dose_label,
         "n": n,
-        "outcome_definition": f"OS >= median ({median_os_wk:.0f} wk)",
+        "outcome_definition": outcome_definition,
         "D50_gy": float(model.params_["D50_gy"]),
         param2_name: float(model.params_[param2_name]),
         "param2_name": param2_name,
@@ -198,7 +213,7 @@ def evaluate_poisson(
     doses: np.ndarray,
     outcomes: np.ndarray,
     dose_label: str,
-    median_os_wk: float,
+    outcome_definition: str,
     n_folds: int = 5,
 ) -> Dict[str, Any]:
     """Fit Poisson TCP and return quality metrics."""
@@ -208,7 +223,7 @@ def evaluate_poisson(
         doses,
         outcomes,
         dose_label,
-        median_os_wk,
+        outcome_definition,
         k_params=2,
         param2_name="gamma50",
         n_folds=n_folds,
@@ -219,7 +234,7 @@ def evaluate_probit(
     doses: np.ndarray,
     outcomes: np.ndarray,
     dose_label: str,
-    median_os_wk: float,
+    outcome_definition: str,
     n_folds: int = 5,
 ) -> Dict[str, Any]:
     """Fit Probit TCP and return quality metrics."""
@@ -229,7 +244,7 @@ def evaluate_probit(
         doses,
         outcomes,
         dose_label,
-        median_os_wk,
+        outcome_definition,
         k_params=2,
         param2_name="sigma_gy",
         n_folds=n_folds,
@@ -240,7 +255,7 @@ def evaluate_logistic(
     doses: np.ndarray,
     outcomes: np.ndarray,
     dose_label: str,
-    median_os_wk: float,
+    outcome_definition: str,
     n_folds: int = 5,
 ) -> Dict[str, Any]:
     """Fit Logistic TCP and return quality metrics."""
@@ -250,7 +265,7 @@ def evaluate_logistic(
         doses,
         outcomes,
         dose_label,
-        median_os_wk,
+        outcome_definition,
         k_params=2,
         param2_name="k",
         n_folds=n_folds,
@@ -260,7 +275,7 @@ def evaluate_logistic(
 def evaluate_eud(
     frame: pd.DataFrame,
     outcomes: np.ndarray,
-    median_os_wk: float,
+    outcome_definition: str,
     n_folds: int = 5,
 ) -> Dict[str, Any]:
     """Fit gEUD TCP with best-a selection and return quality metrics."""
@@ -297,7 +312,7 @@ def evaluate_eud(
         "model": "eud_tcp",
         "dose_variable": f"gEUD_a{int(selected_a)}",
         "n": n,
-        "outcome_definition": f"OS >= median ({median_os_wk:.0f} wk)",
+        "outcome_definition": outcome_definition,
         "D50_gy": float(model.params_["D50_gy"]),
         "gamma50": float(model.params_["gamma50"]),
         "geud_a": selected_a,
@@ -343,6 +358,21 @@ def render_results_md(
     cox_summary: Optional[pd.DataFrame] = None,
     km_logrank: Optional[pd.DataFrame] = None,
     c_index: Optional[float] = None,
+    clinical_cox: Optional[pd.DataFrame] = None,
+    who_ps: Optional[pd.DataFrame] = None,
+    within_arm: Optional[pd.DataFrame] = None,
+    hypo_volume: Optional[pd.DataFrame] = None,
+    dose_heterogeneity: Optional[pd.DataFrame] = None,
+    confounding_corr: Optional[pd.DataFrame] = None,
+    unused_fields: Optional[pd.DataFrame] = None,
+    tcp_verdict: Optional[Dict[str, str]] = None,
+    rano_comparison: Optional[pd.DataFrame] = None,
+    rano_assoc: Optional[pd.DataFrame] = None,
+    rano_counts: Optional[pd.DataFrame] = None,
+    within_arm_rano: Optional[pd.DataFrame] = None,
+    cox_rano: Optional[pd.DataFrame] = None,
+    rano_logistic: Optional[pd.DataFrame] = None,
+    rano_logistic_boot: Optional[pd.DataFrame] = None,
 ) -> str:
     """Render human-readable results markdown."""
     git_hash = _git_short_hash()
@@ -355,10 +385,9 @@ def render_results_md(
         f"**Git commit:** `{git_hash}`  ",
         f"**Regenerate:** `python -m src.reporting.update_results`",
         "",
-        "> **Outcome caveat:** CFB-GBM provides overall survival (weeks) only — no local",
-        "> control endpoint. TCP models use an exploratory binary proxy (OS ≥ cohort median).",
-        "> **OS ≠ TCP.** Median-split outcome is for pipeline testing only, not clinical TCP",
-        "> validation. Cox models use continuous OS (all events observed).",
+        "> **Outcome caveat:** Primary TCP models still use an exploratory OS median-split proxy.",
+        "> **CFB-GBM v3** adds RANO imaging response (non-PD vs PD at t1) — see §4b below.",
+        "> RANO ≠ formal local control but is closer to tumor response than OS alone.",
         "",
         "---",
         "",
@@ -454,6 +483,107 @@ def render_results_md(
         ])
         lines.extend(block)
 
+    if rano_comparison is not None and not rano_comparison.empty:
+        n_rano = int(rano_comparison["n"].iloc[0])
+        lines.extend(
+            [
+                "",
+                "## 4b. RANO endpoint vs OS proxy (same patients, EQD2 models)",
+                "",
+                f"Subset with RANO t0→t1 labels: **n = {n_rano}**",
+                "",
+                "| Model | Endpoint | Event rate | AUC (in-sample) | AUC (5-fold CV) | LR p |",
+                "|---|---|---:|---:|---:|---:|",
+            ]
+        )
+        for _, row in rano_comparison.iterrows():
+            ep = "OS median" if row["endpoint"] == "os_median_proxy" else "RANO non-PD"
+            lines.append(
+                f"| {row['model']} | {ep} | {row['event_rate']:.2f} | "
+                f"{row['roc_auc_insample']:.4f} | {row['roc_auc_cv_mean']:.4f} ± {row['roc_auc_cv_std']:.4f} | "
+                f"{row['lr_p_value']:.2e} |"
+            )
+        if rano_assoc is not None and not rano_assoc.empty:
+            lines.append("")
+            lines.append("Dose–outcome on RANO subset:")
+            lines.append("")
+            lines.append("| Pair | r | p |")
+            lines.append("|---|---:|---:|")
+            for _, row in rano_assoc.iterrows():
+                lines.append(
+                    f"| {row['pair']} | {row['point_biserial_r']:.4f} | {row['p_value']:.4f} |"
+                )
+        if rano_counts is not None and not rano_counts.empty:
+            lines.append("")
+            lines.append("RANO categories (modeling subset):")
+            lines.append("")
+            for _, row in rano_counts.iterrows():
+                lines.append(f"- {row['category']}: {int(row['n'])}")
+        lines.append("")
+
+    if within_arm_rano is not None and not within_arm_rano.empty:
+        lines.extend(
+            [
+                "",
+                "## 4c. Within-arm DVH → RANO (Poisson TCP + Spearman)",
+                "",
+                "| Scheme | n | Metric | std | Spearman ρ | p | Poisson AUC | LR p |",
+                "|---|---:|---|---:|---:|---:|---:|---:|",
+            ]
+        )
+        for _, row in within_arm_rano.iterrows():
+            auc = row["poisson_auc"]
+            auc_str = f"{auc:.3f}" if pd.notna(auc) else "—"
+            lr = row["poisson_lr_p"]
+            lr_str = f"{lr:.3f}" if pd.notna(lr) else "—"
+            feas = "" if row.get("metric_feasible", True) else " (low variance)"
+            lines.append(
+                f"| {row['scheme']} | {int(row['n_rano'])} | {row['metric']}{feas} | "
+                f"{row['metric_std']:.3f} | {row['spearman_rho']:.3f} | {row['spearman_p']:.4f} | "
+                f"{auc_str} | {lr_str} |"
+            )
+        lines.append("")
+
+    if cox_rano is not None and not cox_rano.empty:
+        c_idx = float(cox_rano["concordance_index"].iloc[0])
+        n_cox = int(cox_rano["n_patients"].iloc[0])
+        lines.extend(
+            [
+                "",
+                f"## 4d. Cox OS ~ age + sex + WHO PS + EQD2 + RANO non-PD (n={n_cox})",
+                "",
+                f"**Concordance index:** {c_idx:.4f}",
+                "",
+                "| Covariate | HR | p |",
+                "|---|---:|---:|",
+            ]
+        )
+        for _, row in cox_rano.iterrows():
+            lines.append(f"| {row['term']} | {row['hazard_ratio']:.3f} | {row['p_value']:.4f} |")
+        lines.append("")
+
+    if rano_logistic is not None and not rano_logistic.empty:
+        lines.extend(
+            [
+                "",
+                "## 4e. Multivariable logistic — RANO non-PD (40 Gy arm)",
+                "",
+                "| Model | n | AUC | Brier |",
+                "|---|---:|---:|---:|",
+            ]
+        )
+        for _, row in rano_logistic.iterrows():
+            auc = row["auc"]
+            auc_s = f"{auc:.3f}" if pd.notna(auc) else "—"
+            lines.append(f"| {row['model']} | {int(row['n'])} | {auc_s} | {row['brier']:.3f} |")
+        if rano_logistic_boot is not None and not rano_logistic_boot.empty:
+            b = rano_logistic_boot.iloc[0]
+            lines.append(
+                f"\nBootstrap AUC (volume+age+PS): **{b['auc_mean']:.3f}** "
+                f"[{b['auc_ci_lower']:.3f}, {b['auc_ci_upper']:.3f}] (n={int(b['n_bootstrap'])} resamples)"
+            )
+        lines.append("")
+
     if bootstrap_ci is not None and not bootstrap_ci.empty:
         lines.extend(["", "## 5. Bootstrap 95% CI (Poisson TCP, EQD2)", ""])
         lines.append("| Parameter | Estimate | 95% CI | Bootstrap SD |")
@@ -503,6 +633,96 @@ def render_results_md(
         lines.append("")
         section_num += 1
 
+    if clinical_cox is not None and not clinical_cox.empty:
+        c_idx = clinical_cox["concordance_index"].iloc[0]
+        lines.extend(["", f"## {section_num}. Clinical prognosis (Cox: OS ~ age + sex + WHO PS + scheme)", ""])
+        lines.append(f"**Concordance index:** {c_idx:.4f}")
+        lines.append("")
+        lines.append("| Covariate | HR | p |")
+        lines.append("|---|---:|---:|")
+        for _, row in clinical_cox.iterrows():
+            lines.append(f"| {row['term']} | {row['hazard_ratio']:.3f} | {row['p_value']:.4f} |")
+        lines.append("")
+        section_num += 1
+
+    if who_ps is not None and not who_ps.empty:
+        lines.extend(["", f"## {section_num}. OS by WHO performance status", ""])
+        lines.append("| WHO PS | n | Median OS (wk) | IQR (wk) |")
+        lines.append("|---:|---:|---:|---:|")
+        for _, row in who_ps.iterrows():
+            lines.append(
+                f"| {int(row['who_status'])} | {int(row['n'])} | {row['os_median_wk']:.0f} | "
+                f"{row['os_q25_wk']:.0f}–{row['os_q75_wk']:.0f} |"
+            )
+        kw_p = who_ps.attrs.get("kruskal_p")
+        if kw_p is not None:
+            lines.append(f"\nKruskal–Wallis: **p = {kw_p:.2e}**")
+        lines.append("")
+        section_num += 1
+
+    if within_arm is not None and not within_arm.empty:
+        lines.extend(["", f"## {section_num}. Within-arm DVH vs OS (Spearman)", ""])
+        lines.append("| Scheme | n | Metric | ρ | p |")
+        lines.append("|---|---:|---|---:|---:|")
+        for _, row in within_arm.iterrows():
+            lines.append(
+                f"| {row['scheme']} | {int(row['n'])} | {row['metric']} | "
+                f"{row['spearman_rho']:.3f} | {row['p_value']:.4f} |"
+            )
+        lines.append("")
+        section_num += 1
+
+    if hypo_volume is not None and not hypo_volume.empty:
+        vol = hypo_volume[hypo_volume["term"] == "volume_cc"]
+        if not vol.empty:
+            v = vol.iloc[0]
+            lines.extend(["", f"## {section_num}. Hypofractionated arm: Cox OS ~ volume + covariates", ""])
+            lines.append(f"n = {int(hypo_volume['n_patients'].iloc[0])}, C-index = {v.get('concordance_index', hypo_volume['concordance_index'].iloc[0]):.3f}")
+            lines.append(f"\nGTV volume HR = **{v['hazard_ratio']:.4f}**/cc, p = **{v['p_value']:.4f}** (exploratory)")
+            lines.append("")
+            section_num += 1
+
+    if dose_heterogeneity is not None and not dose_heterogeneity.empty:
+        lines.extend(["", f"## {section_num}. TCP feasibility: dose heterogeneity within arm", ""])
+        lines.append("| Scheme | n | Dmean SD (Gy) | min–max (Gy) | DVH-TCP feasible? |")
+        lines.append("|---|---:|---:|---|---|")
+        for _, row in dose_heterogeneity.iterrows():
+            feasible = "yes" if row["tcp_dvh_feasible"] else "no"
+            lines.append(
+                f"| {row['rt_dose_gy']:.2f} Gy / {int(row['n_fractions'])} fr | {int(row['n'])} | "
+                f"{row['dmean_std_gy']:.2f} | {row['dmean_min_gy']:.1f}–{row['dmean_max_gy']:.1f} | {feasible} |"
+            )
+        lines.append("")
+        section_num += 1
+
+    if confounding_corr is not None and not confounding_corr.empty:
+        lines.extend(["", f"## {section_num}. Confounding correlations", ""])
+        lines.append("| Pair | r | p |")
+        lines.append("|---|---:|---:|")
+        for _, row in confounding_corr.iterrows():
+            lines.append(f"| {row['pair']} | {row['value']:.4f} | {row['p_value']:.2e} |")
+        lines.append("")
+        section_num += 1
+
+    if unused_fields is not None and not unused_fields.empty:
+        lines.extend(["", f"## {section_num}. Unused TSV fields (association with OS)", ""])
+        lines.append("| Field | In modeling table? | ρ vs OS | p |")
+        lines.append("|---|---|---:|---:|")
+        for _, row in unused_fields.iterrows():
+            in_table = "yes" if row["in_modeling_table"] else "no"
+            lines.append(
+                f"| {row['field']} | {in_table} | {row['spearman_rho_vs_os']:.3f} | {row['p_value']:.2e} |"
+            )
+        lines.append("")
+        section_num += 1
+
+    if tcp_verdict:
+        lines.extend(["", f"## {section_num}. TCP feasibility verdict", ""])
+        for key, text in tcp_verdict.items():
+            lines.append(f"- **{key.replace('_', ' ')}:** {text}")
+        lines.append("")
+        section_num += 1
+
     fig_section = f"## {section_num}. Figures"
     lines.extend([fig_section, ""])
     if figures:
@@ -520,10 +740,15 @@ def render_results_md(
         "| Question | Current answer |",
         "|---|---|",
         "| Data pipeline complete? | Yes — 190-patient modeling table with 21 DVH metrics |",
-        "| Strong clinical signal? | Yes — OS differs by fractionation (p ≪ 0.001) |",
-        "| TCP model beats null? | Yes — LR p ≈ 3×10⁻⁶ (Poisson, EQD2) |",
+        "| Strong clinical signal? | Yes — 60 vs 40 Gy OS (p ≈ 3×10⁻⁶); WHO PS (p ≈ 1.6×10⁻⁴); Cox scheme HR≈0.54 |",
+        "| DVH-TCP within standard arm? | No — 60 Gy Dmean SD = 0.28 Gy (below 1 Gy threshold) |",
+        "| TCP model beats null? | Yes — LR p ≈ 3×10⁻⁶ (Poisson, EQD2) but confounded by scheme/age |",
         "| Good discrimination (AUC ≥ 0.7)? | No — in-sample AUC ≈ 0.68, CV ≈ 0.68 ± 0.10 |",
-        "| True TCP validation? | No — OS proxy only; local control unavailable |",
+        "| True TCP validation? | Partial — RANO non-PD available (v3); still not formal LC |",
+        "| RANO improves AUC vs OS on same n? | No — pooled RANO AUC ≈ 0.43 vs OS ≈ 0.62 (n=137) |",
+        "| Within-arm volume → RANO (40 Gy)? | Yes — Poisson AUC ≈ 0.83, LR p ≈ 0.037 (n=34) |",
+        "| Within-arm volume → RANO (60 Gy)? | Exploratory — AUC ≈ 0.66, Spearman p ≈ 0.019 (n=96) |",
+        "| Calibration fixes ranking? | No — Platt scaling does not change AUC on same data |",
         "",
     ])
     return "\n".join(lines) + "\n"
@@ -547,6 +772,7 @@ def update_results() -> Path:
     frame = pd.read_csv(DATA_PROCESSED / "modeling_table.csv")
     cohort = pd.read_csv(DATA_PROCESSED / "cohort.csv")
     median_os = float(frame["survival_weeks"].median())
+    os_outcome_def = f"OS >= median ({median_os:.0f} wk)"
     outcomes = (frame["survival_weeks"] >= median_os).astype(float).to_numpy()
 
     cohort_df = cohort_metrics(frame, cohort)
@@ -555,11 +781,11 @@ def update_results() -> Path:
 
     doses = frame["eqd2_gy"].to_numpy()
     model_rows = [
-        evaluate_poisson(doses, outcomes, "eqd2_gy", median_os),
-        evaluate_logistic(doses, outcomes, "eqd2_gy", median_os),
-        evaluate_probit(doses, outcomes, "eqd2_gy", median_os),
-        evaluate_eud(frame, outcomes, median_os),
-        evaluate_poisson(frame["Dmean_gy"].to_numpy(), outcomes, "Dmean_gy", median_os),
+        evaluate_poisson(doses, outcomes, "eqd2_gy", os_outcome_def),
+        evaluate_logistic(doses, outcomes, "eqd2_gy", os_outcome_def),
+        evaluate_probit(doses, outcomes, "eqd2_gy", os_outcome_def),
+        evaluate_eud(frame, outcomes, os_outcome_def),
+        evaluate_poisson(frame["Dmean_gy"].to_numpy(), outcomes, "Dmean_gy", os_outcome_def),
     ]
     model_csv_rows = [{k: v for k, v in m.items() if k != "cv_fold_aucs"} for m in model_rows]
     model_df = pd.DataFrame(model_csv_rows)
@@ -601,6 +827,20 @@ def update_results() -> Path:
     dvh_summary.columns = ["n", "mean", "std", "min", "median", "max"]
     _save_csv(dvh_summary.reset_index().rename(columns={"index": "metric"}), "dvh_scalars_summary.csv")
 
+    clinical_cox, who_ps, within_arm, hypo_volume = run_stratified_analysis(
+        frame, METRICS_DIR, figure_path=FIGURES_DIR / "04_clinical_prognosis.png"
+    )
+    audit_tables = run_confounding_audit(frame, METRICS_DIR)
+    tcp_verdict = tcp_feasibility_summary(frame)
+    rano_comparison, rano_counts, rano_assoc = run_rano_tcp_comparison(
+        frame, METRICS_DIR, figure_path=FIGURES_DIR / "05_rano_vs_os_tcp_auc.png"
+    )
+    within_arm_rano, cox_rano = run_within_arm_rano_analysis(
+        frame, METRICS_DIR, figure_path=FIGURES_DIR / "06_within_arm_rano_tcp.png"
+    )
+    rano_logistic, _, rano_logistic_boot, _ = run_rano_multivariable_40gy(frame, METRICS_DIR)
+    run_volume_validation(METRICS_DIR)
+
     figures = list_figures()
     md = render_results_md(
         cohort_df,
@@ -613,6 +853,21 @@ def update_results() -> Path:
         cox_summary,
         km_logrank,
         c_index,
+        clinical_cox=clinical_cox,
+        who_ps=who_ps,
+        within_arm=within_arm,
+        hypo_volume=hypo_volume,
+        dose_heterogeneity=audit_tables["dose_heterogeneity"],
+        confounding_corr=audit_tables["confounding_correlations"],
+        unused_fields=audit_tables["unused_clinical_fields"],
+        tcp_verdict=tcp_verdict,
+        rano_comparison=rano_comparison,
+        rano_assoc=rano_assoc,
+        rano_counts=rano_counts,
+        within_arm_rano=within_arm_rano,
+        cox_rano=cox_rano,
+        rano_logistic=rano_logistic,
+        rano_logistic_boot=rano_logistic_boot,
     )
     RESULTS_MD.write_text(md)
     print(f"Wrote {RESULTS_MD}")

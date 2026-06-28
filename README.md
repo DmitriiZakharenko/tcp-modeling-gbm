@@ -10,6 +10,59 @@ The pipeline covers DICOM-free NIfTI data curation, DVH feature extraction, Pois
 
 ---
 
+## Key findings (190-patient modeling cohort, verified)
+
+![Clinical prognosis: fractionation scheme and WHO PS](figures/04_clinical_prognosis.png)
+
+| Finding | Result |
+|---------|--------|
+| **60 Gy / 30 fr vs 40.05 Gy / 15 fr** | median OS **60 vs 28 wk** (n=120 vs 61); log-rank **p ≈ 3×10⁻⁶** |
+| **WHO performance status** | PS 0 → 59 wk, PS 2 → 29 wk; Kruskal–Wallis **p ≈ 1.6×10⁻⁴** |
+| **Cox (age + sex + PS + scheme)** | scheme HR≈**0.54** (**p≈0.0007**), WHO PS HR≈**1.42** (**p≈0.001**) |
+| **40 Gy arm (n=34 RANO)** | GTV volume → RANO non-PD: Poisson AUC **0.83**, LR **p≈0.037** |
+| **60 Gy arm (n=96 RANO)** | GTV volume → RANO: Spearman **p≈0.019**, AUC **0.66** (exploratory) |
+| **Cox + RANO (n=137)** | RANO non-PD HR≈**0.48** (**p≈0.0009**); EQD2 still significant after adjustment |
+
+Full tables: [`reports/RESULTS.md`](reports/RESULTS.md) · regenerate with `make report`
+
+---
+
+## CFB-GBM v3 data + RANO endpoint (2026-06 update)
+
+Downloaded **Version 3** supplementary TSVs from TCIA (`python -m src.data.download_clinical_data`):
+
+- RANO criteria, MRI/CT availability, updated imaging metadata, PyRadiomics features
+- Merged into `cohort.csv` / `modeling_table.csv` (**58 columns**, incl. `rano_t0_t1`, `rano_controlled_t1`, `rt_delay_wk`, BMI, …)
+
+![OS vs RANO TCP AUC comparison](figures/05_rano_vs_os_tcp_auc.png)
+
+| Endpoint | n | Poisson AUC (EQD2) | LR p vs null |
+|----------|---|---------------------|--------------|
+| OS ≥ median (full cohort) | 190 | **0.68** | ≈ 3×10⁻⁶ |
+| OS ≥ median (RANO subset) | 137 | **0.62** | ≈ 0.01 |
+| **RANO non-PD at t1** | 137 | **0.43** | **1.0** (no signal) |
+
+**Verdict:** RANO data **was missing from our v02 snapshot**, not absent from the dataset — but **pooled EQD2→RANO TCP does not improve** vs OS proxy. On the same 137 patients, higher EQD2 (60 Gy arm) correlates with **more PD** at t1 (27% vs 15% in 40 Gy arm) despite better OS — scheme/confounding again. Within-arm dose spread still ≈0 → classical DVH-TCP unchanged.
+
+---
+
+## TCP modeling: what we can and cannot do with CFB-GBM
+
+**The assignment (build TCP pipeline) — yes, done:** Poisson / Logistic / Probit / EUD models, MLE, bootstrap CI, model comparison, calibration plots (`make report`).
+
+**Classical TCP validation (D50/γ50 vs true tumor control) — still limited:**
+
+| Limitation | Verified fact |
+|------------|----------------|
+| **Endpoint** | OS always available; **RANO v3** gives imaging response (137/190 with t0→t1) — closer than OS but ≠ formal LC |
+| **RANO + pooled EQD2** | AUC **0.43** on same patients where OS proxy AUC **0.62** — dose scheme confounds early imaging response |
+| **No dose spread within arm** | 60 Gy: GTV Dmean SD = **0.28 Gy** → DVH-TCP within protocol underpowered |
+| **Confounding** | r(age, EQD2) = **−0.57**; 60 Gy younger (median **65 vs 75 yr**) |
+
+Audit: `python -m src.analysis.confounding_audit`
+
+---
+
 ## Project Structure
 
 ```
@@ -22,6 +75,7 @@ tcp-modeling-gbm/
 │   ├── config.py     # Central paths and constants
 │   ├── data/         # Cohort builder, NIfTI loader, DVH calculator, downloader
 │   ├── models/       # TCP model classes, bootstrap CI, model comparison
+│   ├── analysis/     # Stratified clinical tests, TCP feasibility audit
 │   └── utils/        # Plotting helpers
 ├── figures/          # Exported figures (300 dpi PNG + PDF)
 ├── reports/          # Report sections and literature table
@@ -43,7 +97,7 @@ pip install -r requirements.txt
 | File | Description |
 |------|-------------|
 | `data/processed/cohort.csv` | 264 patients; 190 modeling-eligible after DVH QC |
-| `data/processed/modeling_table.csv` | Included cohort + clinical fields + DVH metrics (190×33) |
+| `data/processed/modeling_table.csv` | Included cohort + clinical/RANO fields + DVH metrics (190×58) |
 | `data/processed/CFB-GBM_*.tsv` | Source clinical / treatment tables from TCIA |
 
 `modeling_table.csv` columns: `patient_id`, `rt_dose_gy`, `n_fractions`, `eqd2_gy`, `survival_weeks`, `age`, `sex`, `who_status`, DVH metrics (`D2_gy` … `D98_gy`, `Vx_pct`, `gEUD_*`, `HI_gy`, `volume_cc`).

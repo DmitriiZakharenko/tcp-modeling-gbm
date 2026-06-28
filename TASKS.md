@@ -124,9 +124,12 @@ Do **not** download MRI sequences — they are not needed for this project.
 - [x] `[CODE]` Write `src/models/bootstrap_ci.py` — bootstrap resampling (n=1000, seed=42) for any `TCPModel`
 - [x] `[CODE]` Write `src/models/model_comparison.py` — AIC, BIC, log-likelihood, ROC AUC, calibration plot
 - [x] `[CODE]` Write `src/models/survival_analysis.py` — Kaplan-Meier (OS), Cox PH regression with DVH covariates
-- [ ] `[CODE]` Write `notebooks/03_tcp_models.ipynb`: fit all models, TCP curves
-- [ ] `[CODE]` Write `notebooks/04_parameter_estimation.ipynb`: bootstrap CI, model comparison table
-- [ ] `[CODE]` Write `notebooks/05_survival_analysis.ipynb`: KM curves, Cox forest plot
+- [x] `[CODE]` Write `notebooks/03_tcp_models.ipynb`: OS proxy + RANO v3, within-arm analysis
+- [x] `[CODE]` Write `notebooks/04_parameter_estimation.ipynb`: bootstrap CI, model comparison table
+- [x] `[CODE]` Write `notebooks/05_survival_analysis.ipynb`: KM curves, Cox, clinical stratification
+- [x] `[CODE]` `src/analysis/within_arm_rano_tcp.py` — per-scheme DVH → RANO TCP + Cox OS~RANO
+- [x] `[CODE]` Write `notebooks/06_rano_multivariable_40gy.ipynb`: multivariable logistic 40 Gy arm
+- [x] `[WRITE]` Draft `reports/manuscript_draft.md` + `reports/literature_table.csv`
 
 ### Literature and Writing
 
