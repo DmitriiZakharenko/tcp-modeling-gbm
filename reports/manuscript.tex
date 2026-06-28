@@ -38,16 +38,21 @@
 }{% if KOMA class
   \KOMAoptions{parskip=half}}
 \makeatother
-\usepackage{longtable,booktabs,array}
-\usepackage{calc} % for calculating minipage widths
-% Correct order of tables after \paragraph or \subparagraph
-\usepackage{etoolbox}
+\usepackage{graphicx}
 \makeatletter
-\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
 \makeatother
-% Allow footnotes in longtable head/foot
-\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
-\makesavenoteenv{longtable}
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
@@ -231,6 +236,18 @@ regenerate via \texttt{make\ report}.
 
 \subsection{3. Results}\label{results}
 
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 1. Kaplan--Meier overall survival by fractionation scheme and WHO performance status (n=190). Median OS 60 vs 28 weeks (log-rank p≈3×10⁻⁶).}]{figures/04_clinical_prognosis.png}}
+\caption{\textbf{Figure 1.} Kaplan--Meier overall survival by
+fractionation scheme and WHO performance status (n=190). Median OS 60 vs
+28 weeks (log-rank p≈3×10⁻⁶).}
+\end{figure}
+
+\textbf{Figure 1.} Kaplan--Meier overall survival by fractionation
+scheme and WHO performance status (n=190). Median OS 60 vs 28 weeks
+(log-rank p≈3×10⁻⁶).
+
 \subsubsection{3.1 Cohort and clinical
 prognosis}\label{cohort-and-clinical-prognosis}
 
@@ -241,6 +258,16 @@ scheme HR≈0.54 (p≈0.0007), WHO PS HR≈1.42 (p≈0.001) {[}14{]}.
 
 \subsubsection{3.2 Pooled TCP (OS proxy)}\label{pooled-tcp-os-proxy}
 
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 2. Fitted TCP curves (Poisson, logistic, probit, gEUD) for EQD2 vs OS median-split proxy (n=190; AUC≈0.68).}]{figures/03_tcp_curves_os_proxy.png}}
+\caption{\textbf{Figure 2.} Fitted TCP curves (Poisson, logistic,
+probit, gEUD) for EQD2 vs OS median-split proxy (n=190; AUC≈0.68).}
+\end{figure}
+
+\textbf{Figure 2.} Fitted TCP curves (Poisson, logistic, probit, gEUD)
+for EQD2 vs OS median-split proxy (n=190; AUC≈0.68).
+
 Poisson/Logistic/Probit TCP on EQD2 achieved in-sample ROC AUC≈0.68
 (5-fold CV≈0.68±0.09), significantly better than null (LR p≈3×10⁻⁶).
 Bootstrap Poisson: \(D_{50}\)≈53 Gy {[}50, 57{]}, \(\gamma_{50}\)≈3.3
@@ -250,11 +277,31 @@ largely by fractionation scheme confounding (r(age, EQD2)=−0.57)
 
 \subsubsection{3.3 RANO endpoint (pooled)}\label{rano-endpoint-pooled}
 
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 3. Poisson TCP AUC: OS proxy vs RANO non-PD on the same 137 patients (AUC≈0.62 vs 0.43).}]{figures/05_rano_vs_os_tcp_auc.png}}
+\caption{\textbf{Figure 3.} Poisson TCP AUC: OS proxy vs RANO non-PD on
+the same 137 patients (AUC≈0.62 vs 0.43).}
+\end{figure}
+
+\textbf{Figure 3.} Poisson TCP AUC: OS proxy vs RANO non-PD on the same
+137 patients (AUC≈0.62 vs 0.43).
+
 On the same 137 patients, pooled EQD2→RANO non-PD yielded AUC≈0.43 (LR
 p=1.0): higher EQD2 correlated with \emph{more} early PD at t1 (60 Gy PD
 rate 27\% vs 40 Gy 15\%) {[}12,15{]}.
 
 \subsubsection{3.4 Within-arm analysis}\label{within-arm-analysis}
+
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 4. Within-arm DVH metrics → RANO: dose flat within protocol; GTV volume significant in 40 Gy arm (n=34).}]{figures/06_within_arm_rano_tcp.png}}
+\caption{\textbf{Figure 4.} Within-arm DVH metrics → RANO: dose flat
+within protocol; GTV volume significant in 40 Gy arm (n=34).}
+\end{figure}
+
+\textbf{Figure 4.} Within-arm DVH metrics → RANO: dose flat within
+protocol; GTV volume significant in 40 Gy arm (n=34).
 
 Within 60 Gy, GTV Dmean SD=0.28 Gy --- insufficient for dose--response
 {[}7{]}. \textbf{40 Gy arm (n=34 with RANO):} GTV volume predicted RANO
@@ -264,6 +311,16 @@ logistic (volume + age + WHO PS): \textbf{AUC=0.90}, bootstrap 95\% CI
 {[}0.81, 1.00{]} {[}18{]}.
 
 \subsubsection{3.5 Volume validation}\label{volume-validation}
+
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 6. DVH GTV volume vs author RANO size\_t0\_cm3 (Spearman ρ=1.00, n=141).}]{figures/07_rano_volume_validation_40gy.png}}
+\caption{\textbf{Figure 6.} DVH GTV volume vs author RANO
+\texttt{size\_t0\_cm3} (Spearman ρ=1.00, n=141).}
+\end{figure}
+
+\textbf{Figure 6.} DVH GTV volume vs author RANO \texttt{size\_t0\_cm3}
+(Spearman ρ=1.00, n=141).
 
 DVH GTV volume at t0 agreed with RANO \texttt{size\_t0\_cm3} (Spearman
 ρ=1.00, n=141) {[}8{]}. t1 NIfTI mask validation was not performed
@@ -279,6 +336,16 @@ significant after adjustment (HR≈0.97, p≈0.009) {[}12,14{]}.
 \subsubsection{3.7 Pooled RANO models (volume + clinical +
 scheme)}\label{pooled-rano-models-volume-clinical-scheme}
 
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 7. Pooled logistic ROC for RANO non-PD (volume + clinical + scheme; AUC≈0.72; LOOCV≈0.64).}]{figures/08_pooled_rano_roc.png}}
+\caption{\textbf{Figure 7.} Pooled logistic ROC for RANO non-PD (volume
++ clinical + scheme; AUC≈0.72; LOOCV≈0.64).}
+\end{figure}
+
+\textbf{Figure 7.} Pooled logistic ROC for RANO non-PD (volume +
+clinical + scheme; AUC≈0.72; LOOCV≈0.64).
+
 On n=137 with RANO labels, EQD2 alone achieved AUC≈0.57. \textbf{GTV
 volume + age + WHO PS + scheme} improved discrimination to
 \textbf{AUC≈0.72}; adding a volume×scheme interaction yielded AUC≈0.72.
@@ -288,6 +355,16 @@ indicating moderate generalisation within this single-centre cohort.
 \subsubsection{3.8 LOOCV in the hypofractionated
 arm}\label{loocv-in-the-hypofractionated-arm}
 
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 5. Multivariable logistic ROC for RANO non-PD in 40 Gy arm (in-sample AUC=0.90; LOOCV 0.74).}]{figures/07_rano_logistic_roc_40gy.png}}
+\caption{\textbf{Figure 5.} Multivariable logistic ROC for RANO non-PD
+in 40 Gy arm (in-sample AUC=0.90; LOOCV 0.74).}
+\end{figure}
+
+\textbf{Figure 5.} Multivariable logistic ROC for RANO non-PD in 40 Gy
+arm (in-sample AUC=0.90; LOOCV 0.74).
+
 In-sample multivariable AUC in the 40 Gy arm was 0.90, but \textbf{LOOCV
 AUC was 0.74} (volume only) and 0.70 (volume + age + PS) {[}18{]},
 confirming signal beyond chance while reducing optimism bias relative to
@@ -295,6 +372,16 @@ resubstitution {[}7{]}.
 
 \subsubsection{3.9 PyRadiomics vs DVH
 volume}\label{pyradiomics-vs-dvh-volume}
+
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 8. PyRadiomics top-5 vs DVH volume for RANO (in-sample AUC 0.78 vs 0.71).}]{figures/08_pyradiomics_vs_volume_auc.png}}
+\caption{\textbf{Figure 8.} PyRadiomics top-5 vs DVH volume for RANO
+(in-sample AUC 0.78 vs 0.71).}
+\end{figure}
+
+\textbf{Figure 8.} PyRadiomics top-5 vs DVH volume for RANO (in-sample
+AUC 0.78 vs 0.71).
 
 Using the author-provided PyRadiomics TSV (t1gd, GTV t0) {[}8,9,17{]},
 the top five radiomics features achieved \textbf{in-sample AUC≈0.78} for
@@ -524,84 +611,5 @@ reporting {[}18{]}, and comparison against author radiomics baselines
 \end{enumerate}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Figure list (from
-repository)}\label{figure-list-from-repository}
-
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4706}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5294}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Figure
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Content
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Fig 1 & Cohort / fractionation KM
-(\texttt{04\_clinical\_prognosis.png}) \\
-Fig 2 & Pooled TCP curves OS proxy
-(\texttt{03\_tcp\_curves\_os\_proxy.png}) \\
-Fig 3 & OS vs RANO AUC comparison
-(\texttt{05\_rano\_vs\_os\_tcp\_auc.png}) \\
-Fig 4 & Within-arm DVH→RANO (\texttt{06\_within\_arm\_rano\_tcp.png}) \\
-Fig 5 & Multivariable ROC 40 Gy
-(\texttt{07\_rano\_logistic\_roc\_40gy.png}) \\
-Fig 6 & Volume validation scatter
-(\texttt{07\_rano\_volume\_validation\_40gy.png}) \\
-Fig 7 & Pooled RANO ROC (\texttt{08\_pooled\_rano\_roc.png}) \\
-Fig 8 & PyRadiomics vs volume AUC
-(\texttt{08\_pyradiomics\_vs\_volume\_auc.png}) \\
-Fig 9 & PyRadiomics nested CV
-(\texttt{08\_pyradiomics\_nested\_cv\_auc.png}) \\
-\end{longtable}
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Presentation outline (15
-slides)}\label{presentation-outline-15-slides}
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  Title \& motivation (TCP + open data) {[}4,8{]}
-\item
-  CFB-GBM overview (TCIA v3, RANO) {[}8--10{]}
-\item
-  Cohort flowchart (264→190)
-\item
-  Methods pipeline diagram
-\item
-  TCP model equations (1 slide) {[}4--6,11{]}
-\item
-  Clinical results: OS by scheme + WHO PS {[}2,15{]}
-\item
-  Pooled TCP OS proxy (AUC 0.68) + caveat {[}7{]}
-\item
-  RANO pooled failure (AUC 0.43) --- confounding {[}12,15{]}
-\item
-  Pooled volume+scheme models (AUC 0.72) + LOOCV 0.64
-\item
-  Within-arm 40 Gy: volume→RANO + LOOCV 0.74 {[}16{]}
-\item
-  PyRadiomics vs DVH volume (AUC 0.78 vs 0.71) {[}9,17{]}
-\item
-  Cox: RANO predicts OS {[}14{]}
-\item
-  Limitations (honest)
-\item
-  Comparison to Moreau radiomics + checklist {[}9,10{]}
-\item
-  Conclusions + DOI {[}8{]}
-\end{enumerate}
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\emph{Numbers verified against \texttt{reports/metrics/} on 2026-06-28.
-Reference DOIs verified in \texttt{reports/literature\_table.csv}.}
 
 \end{document}
