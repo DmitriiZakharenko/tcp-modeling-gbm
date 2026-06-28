@@ -1,7 +1,7 @@
 # Current Results (auto-generated)
 
 **Last updated:** 2026-06-28  
-**Git commit:** `30eff3d`  
+**Git commit:** `b7e1701`  
 **Regenerate:** `python -m src.reporting.update_results`
 
 > **Outcome caveat:** Primary TCP models still use an exploratory OS median-split proxy.
@@ -213,6 +213,45 @@ RANO categories (modeling subset):
 Bootstrap AUC (volume+age+PS): **0.927** [0.814, 1.000] (n=995 resamples)
 
 
+## 4f. Pooled logistic — RANO non-PD (n≈137, volume + clinical + scheme)
+
+| Model | n | AUC | Brier |
+|---|---:|---:|---:|
+| eqd2_only | 137 | 0.574 | 0.176 |
+| volume_only | 137 | 0.707 | 0.162 |
+| volume_age_ps | 137 | 0.710 | 0.162 |
+| volume_age_ps_scheme | 137 | 0.716 | 0.160 |
+| volume_age_ps_scheme_interaction | 137 | 0.722 | 0.160 |
+
+
+## 4g. LOOCV — 40 Gy arm (honest AUC)
+
+| Model | n | LOOCV AUC | LOOCV Brier |
+|---|---:|---:|---:|
+| volume_only | 34 | 0.745 | 0.120 |
+| volume_age_ps | 34 | 0.697 | 0.127 |
+
+
+## 4h. LOOCV — pooled RANO models
+
+| Model | n | LOOCV AUC | LOOCV Brier |
+|---|---:|---:|---:|
+| volume_age_ps_scheme | 137 | 0.642 | 0.173 |
+| volume_age_ps_scheme_interaction | 137 | 0.636 | 0.174 |
+
+
+## 4i. PyRadiomics vs DVH volume — RANO endpoint (t1gd GTV t0)
+
+| Model | n | AUC | Brier |
+|---|---:|---:|---:|
+| dvh_volume_only | 137 | 0.707 | 0.162 |
+| dvh_volume_clinical | 137 | 0.716 | 0.160 |
+| pyro_mesh_volume | 137 | 0.707 | 0.162 |
+| pyro_top5 | 137 | 0.783 | 0.143 |
+| pyro_top5_clinical | 137 | 0.788 | 0.143 |
+| dvh_volume_plus_pyro_top1 | 137 | 0.774 | 0.147 |
+
+
 ## 5. Bootstrap 95% CI (Poisson TCP, EQD2)
 
 | Parameter | Estimate | 95% CI | Bootstrap SD |
@@ -350,6 +389,8 @@ GTV volume HR = **1.0073**/cc, p = **0.0446** (exploratory)
 - [`figures/06_within_arm_rano_tcp.png`](../figures/06_within_arm_rano_tcp.png)
 - [`figures/07_rano_logistic_roc_40gy.png`](../figures/07_rano_logistic_roc_40gy.png)
 - [`figures/07_rano_volume_validation_40gy.png`](../figures/07_rano_volume_validation_40gy.png)
+- [`figures/08_pooled_rano_roc.png`](../figures/08_pooled_rano_roc.png)
+- [`figures/08_pyradiomics_vs_volume_auc.png`](../figures/08_pyradiomics_vs_volume_auc.png)
 
 ---
 
@@ -364,7 +405,9 @@ GTV volume HR = **1.0073**/cc, p = **0.0446** (exploratory)
 | Good discrimination (AUC ≥ 0.7)? | No — in-sample AUC ≈ 0.68, CV ≈ 0.68 ± 0.10 |
 | True TCP validation? | Partial — RANO non-PD available (v3); still not formal LC |
 | RANO improves AUC vs OS on same n? | No — pooled RANO AUC ≈ 0.43 vs OS ≈ 0.62 (n=137) |
-| Within-arm volume → RANO (40 Gy)? | Yes — Poisson AUC ≈ 0.83, LR p ≈ 0.037 (n=34) |
+| Within-arm volume → RANO (40 Gy)? | Yes — Poisson AUC ≈ 0.83, LR p ≈ 0.037 (n=34); LOOCV AUC ≈ 0.74 |
+| Pooled volume + scheme → RANO? | Yes — in-sample AUC ≈ 0.72 (n=137); LOOCV ≈ 0.64 |
+| PyRadiomics beats DVH volume for RANO? | Exploratory — top-5 radiomics AUC ≈ 0.78 vs volume 0.71 |
 | Within-arm volume → RANO (60 Gy)? | Exploratory — AUC ≈ 0.66, Spearman p ≈ 0.019 (n=96) |
 | Calibration fixes ranking? | No — Platt scaling does not change AUC on same data |
 

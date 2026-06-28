@@ -10,9 +10,9 @@
 
 **Methods:** We built a reproducible Python pipeline on the TCIA CFB-GBM cohort (n=190 after DVH quality control). Four TCP models (Poisson, logistic, probit, gEUD) were fit with bootstrap confidence intervals. Version 3 supplementary data (RANO imaging response, n=137 with t0→t1 labels) were integrated. We audited confounding, compared OS-based vs RANO-based endpoints, and performed within-arm analyses stratified by fractionation scheme (60 Gy/30 fr vs 40.05 Gy/15 fr).
 
-**Results:** Pooled EQD2 discriminated an OS median-split proxy (ROC AUC≈0.68) but not RANO non-progressive disease on the same patients (AUC≈0.43), reflecting confounding between fractionation and early imaging response. Within the hypofractionated arm (n=34 with RANO), pre-treatment GTV volume predicted RANO non-PD at t1 (multivariable logistic AUC=0.90, bootstrap 95% CI 0.81–1.00). GTV volume from DVH matched RANO t0 segmentation volumes (Spearman ρ=1.00, n=141).
+**Results:** Pooled EQD2 discriminated an OS median-split proxy (ROC AUC≈0.68) but not RANO non-progressive disease when used as a dose-only TCP input (AUC≈0.43). After adjusting for fractionation scheme, **pooled GTV volume + clinical covariates achieved AUC≈0.72** (n=137); LOOCV AUC≈0.64. Within the hypofractionated arm (n=34), pre-treatment GTV volume predicted RANO non-PD (multivariable in-sample AUC=0.90; **LOOCV AUC=0.74**). PyRadiomics features (t1gd GTV t0, v3 TSV) outperformed DVH volume alone for RANO (top-5 features AUC≈0.78 vs 0.71). GTV volume from DVH matched RANO t0 segmentation volumes (Spearman ρ=1.00, n=141).
 
-**Conclusions:** Classical pooled TCP validation is not supported on CFB-GBM alone; however, stratified dosimetry–RANO analysis in the hypofractionated subgroup shows exploratory promise. We provide an open pipeline and explicit feasibility checklist for TCP studies on routine RT datasets.
+**Conclusions:** Classical pooled TCP dose–response validation is not supported on CFB-GBM; however, **tumour burden models** (volume and radiomics) predict early RANO when fractionation confounding is addressed. We provide an open pipeline, LOOCV benchmarks, and a feasibility checklist for TCP studies on routine RT datasets.
 
 **Keywords:** glioblastoma; tumor control probability; DVH; RANO; open data; CFB-GBM
 
@@ -57,7 +57,7 @@ Parameters were estimated by maximum likelihood. Bootstrap 95% confidence interv
 
 ### 2.5 Statistical analysis
 
-Kaplan–Meier and log-rank tests compared fractionation schemes. Cox proportional hazards models included EQD2, Dmean, age, sex, WHO PS, and RANO non-PD [14]. Within-arm Spearman correlations and Poisson TCP AUC were computed separately for 60 Gy and 40 Gy arms. In the 40 Gy subgroup, multivariable logistic regression modeled RANO non-PD ~ GTV volume + age + WHO PS, with bootstrap AUC (1000 resamples). Analyses used Python 3.11 (lifelines, scikit-learn, scipy).
+Kaplan–Meier and log-rank tests compared fractionation schemes. Cox proportional hazards models included EQD2, Dmean, age, sex, WHO PS, and RANO non-PD [14]. Within-arm Spearman correlations and Poisson TCP AUC were computed separately for 60 Gy and 40 Gy arms. **Pooled logistic regression** modeled RANO non-PD ~ GTV volume + age + WHO PS + scheme indicator, with an optional volume×scheme interaction term. **Leave-one-out cross-validation (LOOCV)** provided out-of-sample AUC for 40 Gy and pooled models. **PyRadiomics features** (v3 TSV, t1gd sequence, GTV t0) were merged by patient ID; the top five univariate features by RANO AUC were compared against DVH volume [18]. Full equations are provided in `reports/manuscript_equations.tex`. Analyses used Python 3.11 (lifelines, scikit-learn, scipy).
 
 ### 2.6 Reproducibility
 
@@ -91,39 +91,64 @@ DVH GTV volume at t0 agreed with RANO `size_t0_cm3` (Spearman ρ=1.00, n=141). t
 
 Cox model (n=137): RANO non-PD HR≈0.48 (p≈0.0009); EQD2 remained significant after adjustment (HR≈0.97, p≈0.009).
 
+### 3.7 Pooled RANO models (volume + clinical + scheme)
+
+On n=137 with RANO labels, EQD2 alone achieved AUC≈0.57. **GTV volume + age + WHO PS + scheme** improved discrimination to **AUC≈0.72**; adding a volume×scheme interaction yielded AUC≈0.72. LOOCV AUC for the pooled clinical model was **≈0.64**, indicating moderate but honest generalisation within this single-centre cohort.
+
+### 3.8 LOOCV in the hypofractionated arm
+
+In-sample multivariable AUC in the 40 Gy arm was 0.90, but **LOOCV AUC was 0.74** (volume only) and 0.70 (volume + age + PS), confirming signal beyond chance while reducing optimism bias relative to resubstitution.
+
+### 3.9 PyRadiomics vs DVH volume
+
+Using the author-provided PyRadiomics TSV (t1gd, GTV t0), the top five radiomics features achieved **AUC≈0.78** for RANO non-PD vs **0.71** for DVH volume alone (same n=137). Combined volume + top radiomics feature: AUC≈0.77. For OS median-split on the same patients, radiomics + clinical covariates reached AUC≈0.78 vs volume-only 0.59.
+
 ---
 
 ## 4. Discussion
 
-### 4.1 Why pooled TCP fails here
+### 4.1 Why pooled dose–TCP fails here
 
-CFB-GBM reflects **routine practice**, not a dose-escalation trial: within-protocol GTV Dmean variation is <1 Gy. TCP fitting further requires a tumour-control endpoint; OS and early RANO capture different biology and are confounded by age-linked fractionation selection [7,15].
+CFB-GBM reflects **routine practice**, not a dose-escalation trial: within-protocol GTV Dmean variation is <1 Gy (60 Gy arm SD=0.28 Gy). TCP fitting further requires a tumour-control endpoint; OS and early RANO capture different biology and are confounded by age-linked fractionation selection [7,15]. Pooled EQD2→RANO AUC≈0.43 is not a failure of RANO per se but of **using dose as the sole predictor across mixed fractionation schemes** where higher EQD2 correlates with more early PD at t1 despite better OS.
 
-Our negative pooled RANO result is scientifically informative: it demonstrates that **endpoint and cohort design matter more than model sophistication** [6].
+Our negative pooled dose–TCP result is scientifically informative: it demonstrates that **endpoint and cohort design matter more than model sophistication** [4,10]. This aligns with Ohri et al.'s emphasis on adequate dose heterogeneity and appropriate endpoints for TCP validation [10].
 
-### 4.2 Exploratory signal in hypofractionated patients
+### 4.2 Tumour burden predicts RANO when confounding is addressed
 
-The 40 Gy subgroup finding (volume→RANO) aligns with tumour burden prognostic literature [16] but **n=34 limits generalisation**. External validation and mult centre data are required before clinical claims.
+When fractionation scheme is included as a covariate, **GTV volume consistently predicts RANO non-PD** (pooled AUC≈0.72; LOOCV≈0.64). This reframes the analysis from classical TCP (dose→control) to **tumour burden→imaging response**, which is clinically interpretable: larger baseline GTV may reflect more aggressive biology or reduced likelihood of early imaging stabilisation under palliative-intent hypofractionation [15,16].
 
-### 4.3 Relation to CFB-GBM authors' work
+The hypofractionated subgroup (n=34) shows the strongest in-sample effect (AUC≈0.90), but **LOOCV AUC≈0.74** is the more defensible estimate for external communication. The 60 Gy arm shows a weaker but directionally consistent association (Spearman p≈0.019, Poisson AUC≈0.66, n=96).
 
-Moreau et al. emphasise imaging AI and radiomics for treatment efficacy prediction [7,8,17]. Our work complements this by quantifying **dosimetric TCP feasibility limits** and providing stratified DVH–RANO analysis on the same open resource.
+### 4.3 PyRadiomics comparison and relation to CFB-GBM authors
 
-### 4.4 Limitations
+Moreau et al. emphasise imaging AI and radiomics for treatment efficacy prediction on this cohort [1,17]. Our head-to-head comparison on the same open resource shows that **author-provided PyRadiomics features (t1gd GTV t0) modestly outperform DVH scalar volume** for RANO (AUC 0.78 vs 0.71), while DVH volume remains competitive and fully reproducible from RTDOSE+GTV without MRI preprocessing. This positions our work as a **dosimetry-first complement** to radiomics pipelines rather than a competing TCP validation claim.
 
-- No formal local control labels
+Feature standardisation follows IBSI recommendations [18]; we did not re-extract radiomics locally, ensuring parity with the published TCIA feature table.
+
+### 4.4 Clinical prognostic context
+
+Independent of TCP framing, CFB-GBM confirms known prognostic factors: 60 vs 40 Gy OS separation (p≈10⁻⁷), WHO PS gradient, and RANO non-PD as an OS predictor (Cox HR≈0.48). These descriptive findings support data quality but are not novel; they anchor the more specific dosimetry/RANO feasibility narrative.
+
+### 4.5 Implications for open-data TCP research
+
+We propose a practical checklist for future open-cohort TCP studies: (1) report within-arm GTV Dmean IQR before fitting TCP; (2) prefer imaging response or LC over OS; (3) adjust for fractionation and age; (4) report LOOCV or nested CV alongside in-sample AUC; (5) compare against author-provided radiomics baselines when available.
+
+### 4.6 Limitations
+
+- No formal local control labels; RANO at t1 is an imaging surrogate
 - Single institution, retrospective, deceased-patients-only inclusion [7]
-- Small hypofractionated RANO subset
-- In-sample AUC and bootstrap on same data — optimism bias
-- PyRadiomics features (v3 TSV) not yet integrated
+- Small hypofractionated RANO subset (n=34); pooled LOOCV AUC≈0.64 limits clinical translation
+- t1 GTV NIfTI follow-up masks not validated locally (Aspera download required); `size_t1_cm3` TSV validation pending
+- PyRadiomics comparison uses in-sample feature selection (top-5 by univariate AUC); nested CV for feature selection would further reduce optimism
+- No external validation cohort
 
 ---
 
 ## 5. Conclusion
 
-We deliver an open, reproducible TCP modeling pipeline on CFB-GBM and show that **classical pooled TCP validation is not feasible** on this cohort, while **stratified analysis** identifies an exploratory GTV volume–RANO association in hypofractionated patients. We recommend future TCP studies prioritise single-protocol cohorts with ≥1 Gy GTV Dmean IQR and explicit tumour control endpoints.
+We deliver an open, reproducible TCP modeling pipeline on CFB-GBM and show that **classical pooled TCP dose–response validation is not feasible** on this cohort. When fractionation confounding is addressed, **GTV volume and PyRadiomics features predict early RANO** with moderate discrimination (pooled LOOCV AUC≈0.64; PyRadiomics in-sample AUC≈0.78). We recommend future TCP studies prioritise single-protocol cohorts with ≥1 Gy GTV Dmean IQR, explicit tumour control endpoints, LOOCV reporting, and comparison against author radiomics baselines.
 
----
+**LaTeX equations:** see `reports/manuscript_equations.tex` for Word/LaTeX import.
 
 ## References
 
@@ -159,7 +184,9 @@ We deliver an open, reproducible TCP modeling pipeline on CFB-GBM and show that 
 
 16. Embring A, et al. Dosimetric parameters and survival in glioblastoma treated with chemoradiation. *Radiother Oncol*. 2020;142:47-53.
 
-17. Moreau NN, et al. Early characterization and prediction of glioblastoma treatment efficacy using radiomics and AI. *Front Oncol*. 2025;15:1497195.
+17. Moreau NN, et al. Early characterization and prediction of glioblastoma treatment efficacy using radiomics and AI. *Front Oncol*. 2025;15:1497195. PMID: [39949753](https://pubmed.ncbi.nlm.nih.gov/39949753/).
+
+18. Zwanenburg A, et al. The Image Biomarker Standardisation Initiative. *Radiother Oncol*. 2020;142:169-176. PMID: [31912224](https://pubmed.ncbi.nlm.nih.gov/31912224/).
 
 ---
 
@@ -173,6 +200,8 @@ We deliver an open, reproducible TCP modeling pipeline on CFB-GBM and show that 
 | Fig 4 | Within-arm DVH→RANO (`06_within_arm_rano_tcp.png`) |
 | Fig 5 | Multivariable ROC 40 Gy (`07_rano_logistic_roc_40gy.png`) |
 | Fig 6 | Volume validation scatter (`07_rano_volume_validation_40gy.png`) |
+| Fig 7 | Pooled RANO ROC (`08_pooled_rano_roc.png`) |
+| Fig 8 | PyRadiomics vs volume AUC (`08_pyradiomics_vs_volume_auc.png`) |
 
 ---
 
@@ -186,13 +215,13 @@ We deliver an open, reproducible TCP modeling pipeline on CFB-GBM and show that 
 6. Clinical results: OS by scheme + WHO PS
 7. Pooled TCP OS proxy (AUC 0.68) + caveat
 8. RANO pooled failure (AUC 0.43) — confounding figure
-9. Within-arm 40 Gy: volume→RANO
-10. Multivariable logistic (AUC 0.90, n=34)
-11. Cox: RANO predicts OS
-12. Limitations (honest)
-13. Comparison to literature / Moreau radiomics
-14. Conclusions & checklist for TCP on open data
-15. Acknowledgements + DOI citation
+9. Pooled volume+scheme models (AUC 0.72) + LOOCV 0.64
+10. Within-arm 40 Gy: volume→RANO + LOOCV 0.74
+11. PyRadiomics vs DVH volume (AUC 0.78 vs 0.71)
+12. Cox: RANO predicts OS
+13. Limitations (honest)
+14. Comparison to Moreau radiomics + checklist
+15. Conclusions + DOI citation
 
 ---
 

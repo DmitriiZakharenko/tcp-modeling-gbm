@@ -83,10 +83,8 @@ Do **not** download MRI sequences — they are not needed for this project.
 - [ ] `[LIT]` Search PubMed for TCP modeling in GBM.
   Query: `("tumor control probability" OR "TCP model") AND ("glioblastoma" OR "brain tumor") AND "radiotherapy"`
   Filter: after 2000, peer-reviewed, English. Target ≥8 papers.
-- [ ] `[LIT]` Build `reports/literature_table.csv`:
-  columns `[authors, year, journal, n_patients, dataset, model_type, D50_Gy, gamma50, CI_method, outcome_definition, fractionation, notes]`
-- [ ] `[LIT]` Read CFB-GBM data descriptor paper (Moreau et al. 2025, Frontiers in Oncology);
-  summarize dataset limitations relevant to TCP modeling
+- [x] `[LIT]` Build `reports/literature_table.csv` (12 articles, PubMed IDs)
+- [x] `[LIT]` Read CFB-GBM data descriptor paper (Moreau et al. 2025, Frontiers in Oncology)
 - [ ] `[WRITE]` Write report section 1: Introduction and Clinical Background (~1 page)
 
 ---
@@ -129,7 +127,8 @@ Do **not** download MRI sequences — they are not needed for this project.
 - [x] `[CODE]` Write `notebooks/05_survival_analysis.ipynb`: KM curves, Cox, clinical stratification
 - [x] `[CODE]` `src/analysis/within_arm_rano_tcp.py` — per-scheme DVH → RANO TCP + Cox OS~RANO
 - [x] `[CODE]` Write `notebooks/06_rano_multivariable_40gy.ipynb`: multivariable logistic 40 Gy arm
-- [x] `[WRITE]` Draft `reports/manuscript_draft.md` + `reports/literature_table.csv`
+- [x] `[WRITE]` Draft `reports/manuscript_draft.md` + expanded Discussion + `manuscript_equations.tex`
+- [x] `[CODE]` Pooled RANO models, LOOCV, PyRadiomics comparison (`rano_prediction_suite.py`)
 
 ### Literature and Writing
 

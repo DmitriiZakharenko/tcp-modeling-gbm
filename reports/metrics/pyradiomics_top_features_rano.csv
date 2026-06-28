@@ -1,0 +1,6 @@
+rank,feature
+1,original_glcm_Idn
+2,original_gldm_GrayLevelNonUniformity
+3,original_glrlm_GrayLevelNonUniformity
+4,original_glcm_Idmn
+5,original_gldm_DependenceNonUniformityNormalized

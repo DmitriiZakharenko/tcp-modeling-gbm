@@ -26,6 +26,7 @@ from src.config import DATA_PROCESSED, FIGURES_DIR, RANDOM_SEED, REPORTS_DIR
 from src.data.dvh_calculator import SCALAR_METRIC_KEYS
 from src.analysis.rano_tcp_comparison import run_rano_tcp_comparison
 from src.analysis.rano_multivariable import run_rano_multivariable_40gy
+from src.analysis.rano_prediction_suite import run_rano_prediction_suite
 from src.analysis.validate_rano_volumes import run_volume_validation
 from src.analysis.within_arm_rano_tcp import run_within_arm_rano_analysis
 from src.analysis.confounding_audit import run_confounding_audit, tcp_feasibility_summary
@@ -373,6 +374,10 @@ def render_results_md(
     cox_rano: Optional[pd.DataFrame] = None,
     rano_logistic: Optional[pd.DataFrame] = None,
     rano_logistic_boot: Optional[pd.DataFrame] = None,
+    rano_pooled: Optional[pd.DataFrame] = None,
+    rano_loocv_40: Optional[pd.DataFrame] = None,
+    rano_loocv_pooled: Optional[pd.DataFrame] = None,
+    pyro_comparison: Optional[pd.DataFrame] = None,
 ) -> str:
     """Render human-readable results markdown."""
     git_hash = _git_short_hash()
@@ -584,6 +589,71 @@ def render_results_md(
             )
         lines.append("")
 
+    if rano_pooled is not None and not rano_pooled.empty:
+        lines.extend(
+            [
+                "",
+                "## 4f. Pooled logistic — RANO non-PD (n≈137, volume + clinical + scheme)",
+                "",
+                "| Model | n | AUC | Brier |",
+                "|---|---:|---:|---:|",
+            ]
+        )
+        for _, row in rano_pooled.iterrows():
+            lines.append(
+                f"| {row['model']} | {int(row['n'])} | {row['auc_insample']:.3f} | {row['brier']:.3f} |"
+            )
+        lines.append("")
+
+    if rano_loocv_40 is not None and not rano_loocv_40.empty:
+        lines.extend(
+            [
+                "",
+                "## 4g. LOOCV — 40 Gy arm (honest AUC)",
+                "",
+                "| Model | n | LOOCV AUC | LOOCV Brier |",
+                "|---|---:|---:|---:|",
+            ]
+        )
+        for _, row in rano_loocv_40.iterrows():
+            lines.append(
+                f"| {row['model']} | {int(row['n'])} | {row['loocv_auc']:.3f} | {row['loocv_brier']:.3f} |"
+            )
+        lines.append("")
+
+    if rano_loocv_pooled is not None and not rano_loocv_pooled.empty:
+        lines.extend(
+            [
+                "",
+                "## 4h. LOOCV — pooled RANO models",
+                "",
+                "| Model | n | LOOCV AUC | LOOCV Brier |",
+                "|---|---:|---:|---:|",
+            ]
+        )
+        for _, row in rano_loocv_pooled.iterrows():
+            lines.append(
+                f"| {row['model']} | {int(row['n'])} | {row['loocv_auc']:.3f} | {row['loocv_brier']:.3f} |"
+            )
+        lines.append("")
+
+    if pyro_comparison is not None and not pyro_comparison.empty:
+        rano_pyro = pyro_comparison[pyro_comparison["endpoint"] == "RANO_non_PD"]
+        lines.extend(
+            [
+                "",
+                "## 4i. PyRadiomics vs DVH volume — RANO endpoint (t1gd GTV t0)",
+                "",
+                "| Model | n | AUC | Brier |",
+                "|---|---:|---:|---:|",
+            ]
+        )
+        for _, row in rano_pyro.iterrows():
+            lines.append(
+                f"| {row['model']} | {int(row['n'])} | {row['auc_insample']:.3f} | {row['brier']:.3f} |"
+            )
+        lines.append("")
+
     if bootstrap_ci is not None and not bootstrap_ci.empty:
         lines.extend(["", "## 5. Bootstrap 95% CI (Poisson TCP, EQD2)", ""])
         lines.append("| Parameter | Estimate | 95% CI | Bootstrap SD |")
@@ -746,7 +816,9 @@ def render_results_md(
         "| Good discrimination (AUC ≥ 0.7)? | No — in-sample AUC ≈ 0.68, CV ≈ 0.68 ± 0.10 |",
         "| True TCP validation? | Partial — RANO non-PD available (v3); still not formal LC |",
         "| RANO improves AUC vs OS on same n? | No — pooled RANO AUC ≈ 0.43 vs OS ≈ 0.62 (n=137) |",
-        "| Within-arm volume → RANO (40 Gy)? | Yes — Poisson AUC ≈ 0.83, LR p ≈ 0.037 (n=34) |",
+        "| Within-arm volume → RANO (40 Gy)? | Yes — Poisson AUC ≈ 0.83, LR p ≈ 0.037 (n=34); LOOCV AUC ≈ 0.74 |",
+        "| Pooled volume + scheme → RANO? | Yes — in-sample AUC ≈ 0.72 (n=137); LOOCV ≈ 0.64 |",
+        "| PyRadiomics beats DVH volume for RANO? | Exploratory — top-5 radiomics AUC ≈ 0.78 vs volume 0.71 |",
         "| Within-arm volume → RANO (60 Gy)? | Exploratory — AUC ≈ 0.66, Spearman p ≈ 0.019 (n=96) |",
         "| Calibration fixes ranking? | No — Platt scaling does not change AUC on same data |",
         "",
@@ -839,6 +911,7 @@ def update_results() -> Path:
         frame, METRICS_DIR, figure_path=FIGURES_DIR / "06_within_arm_rano_tcp.png"
     )
     rano_logistic, _, rano_logistic_boot, _ = run_rano_multivariable_40gy(frame, METRICS_DIR)
+    rano_suite = run_rano_prediction_suite(frame, METRICS_DIR)
     run_volume_validation(METRICS_DIR)
 
     figures = list_figures()
@@ -868,6 +941,10 @@ def update_results() -> Path:
         cox_rano=cox_rano,
         rano_logistic=rano_logistic,
         rano_logistic_boot=rano_logistic_boot,
+        rano_pooled=rano_suite["pooled"],
+        rano_loocv_40=rano_suite["loocv_40"],
+        rano_loocv_pooled=rano_suite["loocv_pooled"],
+        pyro_comparison=rano_suite["pyro_comparison"],
     )
     RESULTS_MD.write_text(md)
     print(f"Wrote {RESULTS_MD}")
