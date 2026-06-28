@@ -32,8 +32,52 @@ from src.config import (
     TREATMENT_TSV,
     IMAGING_AVAILABILITY_TSV,
     DATA_PROCESSED,
+    COHORT_CSV,
     ALPHA_BETA_GBM,
+    CLINICAL_FILES,
 )
+
+
+def require_clinical_files() -> None:
+    """
+    Raise FileNotFoundError if any required clinical TSV is missing.
+
+    The error message lists missing files and their download URLs.
+    """
+    missing = [f for f in CLINICAL_FILES if not f.path.exists()]
+    if not missing:
+        return
+
+    lines = ["Missing clinical TSV file(s). Download with:"]
+    lines.append("  python -m src.data.download_clinical_data")
+    lines.append("")
+    for clinical_file in missing:
+        lines.append(f"  {clinical_file.path.name}")
+        lines.append(f"    {clinical_file.url}")
+    raise FileNotFoundError("\n".join(lines))
+
+
+def _build_exclusion_reasons(cohort: pd.DataFrame) -> pd.Series:
+    """Vectorized exclusion reason strings for each patient."""
+    reasons = pd.Series("", index=cohort.index, dtype="object")
+
+    if "has_rtdose" in cohort.columns:
+        mask = ~cohort["has_rtdose"].fillna(False)
+        reasons = reasons.mask(mask, reasons + "missing RTDOSE; ")
+
+    if "has_gtv" in cohort.columns:
+        mask = ~cohort["has_gtv"].fillna(False)
+        reasons = reasons.mask(mask, reasons + "missing GTV; ")
+
+    if "rt_dose_gy" in cohort.columns:
+        mask = cohort["rt_dose_gy"].isna()
+        reasons = reasons.mask(mask, reasons + "unknown RT dose; ")
+
+    if "n_fractions" in cohort.columns:
+        mask = cohort["n_fractions"].isna()
+        reasons = reasons.mask(mask, reasons + "unknown n_fractions; ")
+
+    return reasons.str.rstrip("; ").fillna("")
 
 
 def compute_eqd2(total_dose_gy: float, n_fractions: float, alpha_beta: float = ALPHA_BETA_GBM) -> float:
@@ -178,7 +222,9 @@ def build_cohort(
         `exclusion_reason` is empty string for included patients.
     """
     if output_path is None:
-        output_path = DATA_PROCESSED / "cohort.csv"
+        output_path = COHORT_CSV
+
+    require_clinical_files()
 
     clinical = load_clinical(clinical_path)
     treatment = load_treatment(treatment_path)
@@ -193,25 +239,14 @@ def build_cohort(
         else:
             cohort[col] = cohort[col].fillna(False)
 
-    reasons = []
-    for _, row in cohort.iterrows():
-        r = []
-        if not row.get("has_rtdose", False):
-            r.append("missing RTDOSE")
-        if not row.get("has_gtv", False):
-            r.append("missing GTV")
-        if pd.isna(row.get("rt_dose_gy")):
-            r.append("unknown RT dose")
-        if pd.isna(row.get("n_fractions")):
-            r.append("unknown n_fractions")
-        reasons.append("; ".join(r))
-
-    cohort["exclusion_reason"] = reasons
+    cohort["exclusion_reason"] = _build_exclusion_reasons(cohort)
     cohort["included"] = cohort["exclusion_reason"] == ""
 
-    cohort["eqd2_gy"] = cohort.apply(
-        lambda row: compute_eqd2(row["rt_dose_gy"], row["n_fractions"]) if row["included"] else np.nan,
-        axis=1,
+    d_fraction = cohort["rt_dose_gy"] / cohort["n_fractions"]
+    cohort["eqd2_gy"] = np.where(
+        cohort["included"],
+        cohort["rt_dose_gy"] * (d_fraction + ALPHA_BETA_GBM) / (2.0 + ALPHA_BETA_GBM),
+        np.nan,
     )
 
     col_order = [

@@ -38,23 +38,54 @@ pip install -r requirements.txt
 
 ## Data
 
-Clinical and treatment TSVs (~50 KB, no login required):
+### Included in the repository (no NIfTI required)
 
-```bash
-cd data/processed
-curl -O https://www.cancerimagingarchive.net/wp-content/uploads/CFB-GBM_clinical_data_v02_20260129.tsv
-curl -O https://www.cancerimagingarchive.net/wp-content/uploads/CFB-GBM_treatment_data_v02_20260129.tsv
-curl -O https://www.cancerimagingarchive.net/wp-content/uploads/CFB-GBM_treatment_imaging_availability_v02_20260129.tsv
-curl -O https://www.cancerimagingarchive.net/wp-content/uploads/CFB-GBM_columns_description_new_v02_20260129.tsv
+| File | Description |
+|------|-------------|
+| `data/processed/cohort.csv` | 264 patients; 191 included for modeling |
+| `data/processed/modeling_table.csv` | Included cohort + clinical fields + DVH metrics (191×33) |
+| `data/processed/CFB-GBM_*.tsv` | Source clinical / treatment tables from TCIA |
+
+`modeling_table.csv` columns: `patient_id`, `rt_dose_gy`, `n_fractions`, `eqd2_gy`, `survival_weeks`, `age`, `sex`, `who_status`, DVH metrics (`D2_gy` … `D98_gy`, `Vx_pct`, `gEUD_*`, `HI_gy`, `volume_cc`).
+
+```python
+import pandas as pd
+df = pd.read_csv("data/processed/modeling_table.csv")
 ```
 
-RTDOSE and GTV NIfTI files (~1.5 GB, requires IBM Aspera Connect):
+### Local-only (large; not in git)
+
+| Path | Size | Role |
+|------|------|------|
+| `data/raw/` | ~52 GB | RTDOSE + GTV NIfTI per patient |
+| `data/processed/dvh_curves/`, `dose_slices/`, `dvh_curves_all.npz` | ~130 MB | Full DVH curves and axial slices (optional; regenerate from raw) |
+
+### Regenerate processed tables from NIfTI
 
 ```bash
-python -m src.data.download_rt_files
+make process
+# verify-rt → feature_builder → export modeling_table.csv
 ```
 
-Full 208 GB archive (all MRI sequences) is **not required** for this project.
+Requires `data/raw/{patient_id}/t0/*_t0_rtdose.nii.gz` and `*_t0_gtv.nii.gz` for all 191 included patients.
+
+### Download NIfTI from TCIA
+
+When direct `ascp` (port 33001) is blocked, use IBM Aspera Connect:
+
+```bash
+python -m src.data.download_rt_connect
+python -m src.data.organize_raw_data --import-from /path/to/downloads --move  # if needed
+```
+
+Fallback: `python -m src.data.download_rt_files` or manual download from [CFB-GBM on TCIA](https://www.cancerimagingarchive.net/collection/cfb-gbm/) (RTDOSE + GTV NIfTI only, ~70–80 GB).
+
+Full pipeline:
+
+```bash
+make data              # TSVs + cohort + download + verify
+python -m src.data.setup_data --skip-rt --features --workers 4
+```
 
 ## Usage
 

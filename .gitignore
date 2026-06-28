@@ -1,5 +1,12 @@
 data/raw/
 data/processed/*.nii.gz
+data/processed/dvh_cache/
+data/processed/dvh_curves/
+data/processed/dose_slices/
+data/processed/dvh_curves_all.npz
+data/processed/features.csv
+data/processed/raw_data_manifest.csv
+data/processed/cohort_summary_table.csv
 __pycache__/
 *.pyc
 .env

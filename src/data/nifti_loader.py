@@ -1,5 +1,5 @@
 """
-NIfTI loader: load RTDOSE and GTV segmentation files for a single patient.
+NIfTI path helpers and loaders for CFB-GBM RTDOSE and GTV files.
 
 File naming convention (CFB-GBM dataset):
     data/raw/<patient_id>/t0/<patient_id>_t0_rtdose.nii.gz
@@ -20,12 +20,7 @@ import nibabel as nib
 import numpy as np
 
 from src.config import DATA_RAW
-
-
-def _patient_dir(patient_id: str, data_dir: Path) -> Path:
-    """Return the t0 subdirectory for a given patient."""
-    return data_dir / str(patient_id) / "t0"
-
+from src.data.nifti_paths import expected_nifti_paths, gtv_path, rtdose_path
 
 def _voxel_spacing(nii_img: nib.Nifti1Image) -> Tuple[float, float, float]:
     """
@@ -48,6 +43,7 @@ def _voxel_spacing(nii_img: nib.Nifti1Image) -> Tuple[float, float, float]:
 def load_rtdose(
     patient_id: str,
     data_dir: Path = DATA_RAW,
+    mmap: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray, Tuple[float, float, float]]:
     """
     Load RTDOSE NIfTI file for a patient.
@@ -58,6 +54,8 @@ def load_rtdose(
         Patient identifier (e.g. "1", "42").
     data_dir : Path
         Root raw data directory containing per-patient subdirectories.
+    mmap : bool
+        If True, memory-map the NIfTI data instead of loading entirely into RAM.
 
     Returns
     -------
@@ -73,11 +71,11 @@ def load_rtdose(
     FileNotFoundError
         If the expected NIfTI file does not exist.
     """
-    path = _patient_dir(patient_id, data_dir) / f"{patient_id}_t0_rtdose.nii.gz"
+    path = rtdose_path(patient_id, data_dir)
     if not path.exists():
         raise FileNotFoundError(f"RTDOSE not found for patient {patient_id}: {path}")
 
-    nii = nib.load(str(path))
+    nii = nib.load(str(path), mmap=mmap)
     dose = np.asarray(nii.dataobj, dtype=np.float32)
     return dose, nii.affine, _voxel_spacing(nii)
 
@@ -85,6 +83,7 @@ def load_rtdose(
 def load_gtv_mask(
     patient_id: str,
     data_dir: Path = DATA_RAW,
+    mmap: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Load GTV segmentation mask NIfTI file for a patient.
@@ -95,6 +94,8 @@ def load_gtv_mask(
         Patient identifier.
     data_dir : Path
         Root raw data directory.
+    mmap : bool
+        If True, memory-map the NIfTI data instead of loading entirely into RAM.
 
     Returns
     -------
@@ -110,22 +111,17 @@ def load_gtv_mask(
     ValueError
         If the mask contains values other than 0 and 1.
     """
-    path = _patient_dir(patient_id, data_dir) / f"{patient_id}_t0_gtv.nii.gz"
+    path = gtv_path(patient_id, data_dir)
     if not path.exists():
         raise FileNotFoundError(f"GTV mask not found for patient {patient_id}: {path}")
 
-    nii = nib.load(str(path))
+    nii = nib.load(str(path), mmap=mmap)
     raw = np.asarray(nii.dataobj, dtype=np.float32)
 
-    unique = np.unique(raw)
-    non_binary = unique[~np.isin(unique, [0.0, 1.0])]
-    if len(non_binary) > 0:
-        raise ValueError(
-            f"GTV mask for patient {patient_id} contains unexpected values: {non_binary}. "
-            "Expected binary (0/1) mask."
-        )
+    # Some CFB-GBM GTV files use integer labels (1, 2, ...) for subregions.
+    mask = raw > 0
 
-    return raw.astype(bool), nii.affine
+    return mask, nii.affine
 
 
 def check_shape_match(dose: np.ndarray, mask: np.ndarray, patient_id: str) -> None:
