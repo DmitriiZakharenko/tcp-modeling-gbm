@@ -1,0 +1,39 @@
+% Equation fragment — \input from reports/manuscript.tex
+
+\subsection*{Poisson TCP}
+\begin{equation}
+\mathrm{TCP}(D) = \exp\!\left[-\ln 2 \cdot \exp\!\left(\gamma_{50}\left(1 - \frac{D}{D_{50}}\right)\right)\right]
+\end{equation}
+
+\subsection*{Logistic TCP}
+\begin{equation}
+\mathrm{TCP}(D) = \frac{1}{1 + \exp\!\left[-k\,(D - D_{50})\right]}
+\end{equation}
+
+\subsection*{Probit TCP}
+\begin{equation}
+\mathrm{TCP}(D) = \Phi\!\left(\frac{D - D_{50}}{\sigma}\right)
+\end{equation}
+where $\Phi$ is the standard normal cumulative distribution function.
+
+\subsection*{Generalised equivalent uniform dose (gEUD)}
+\begin{equation}
+\mathrm{gEUD}_a = \left(\sum_i v_i\, D_i^{a}\right)^{1/a}
+\end{equation}
+with $v_i$ the fractional volume at dose $D_i$ and $a$ the volume-effect parameter.
+
+\subsection*{EQD2 (LQ model)}
+\begin{equation}
+\mathrm{EQD2} = D \cdot \frac{d + \alpha/\beta}{2 + \alpha/\beta}
+\end{equation}
+with $\alpha/\beta = 10$\,Gy for GBM GTV.
+
+\subsection*{Logistic regression (RANO endpoint)}
+\begin{equation}
+\log\!\left(\frac{p}{1-p}\right) = \beta_0 + \beta_1 V + \beta_2\,\mathrm{age} + \beta_3\,\mathrm{PS} + \beta_4 S + \beta_5 (V \times S)
+\end{equation}
+
+\subsection*{Cox proportional hazards}
+\begin{equation}
+h(t \mid \mathbf{x}) = h_0(t)\,\exp\!\left(\sum_j \beta_j x_j\right)
+\end{equation}

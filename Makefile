@@ -42,3 +42,6 @@ process: verify-rt features export-modeling
 
 report:
 	python -m src.reporting.update_results
+
+export-manuscript:
+	bash scripts/export_manuscript.sh
