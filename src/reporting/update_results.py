@@ -26,6 +26,7 @@ from src.config import DATA_PROCESSED, FIGURES_DIR, RANDOM_SEED, REPORTS_DIR
 from src.data.dvh_calculator import SCALAR_METRIC_KEYS
 from src.models.bootstrap_ci import bootstrap_tcp_params
 from src.models.eud_tcp import EUDTCPModel
+from src.models.model_comparison import run_model_comparison
 from src.models.logistic_tcp import LogisticTCPModel
 from src.models.poisson_tcp import PoissonTCPModel
 from src.models.probit_tcp import ProbitTCPModel
@@ -337,6 +338,7 @@ def render_results_md(
     model_rows: List[Dict[str, Any]],
     figures: List[str],
     bootstrap_ci: Optional[pd.DataFrame] = None,
+    model_comparison: Optional[pd.DataFrame] = None,
 ) -> str:
     """Render human-readable results markdown."""
     git_hash = _git_short_hash()
@@ -458,7 +460,22 @@ def render_results_md(
             )
         lines.append("")
 
-    lines.extend(["## 6. Figures", ""])
+        lines.append("")
+
+    if model_comparison is not None and not model_comparison.empty:
+        lines.extend(["", "## 6. Four-model comparison (EQD2 / gEUD, sorted by AIC)", ""])
+        lines.append("| Model | k | AIC | BIC | ROC AUC | Brier | HL p-value |")
+        lines.append("|---|---:|---:|---:|---:|---:|---:|")
+        for _, row in model_comparison.iterrows():
+            lines.append(
+                f"| {row['model']} | {int(row['k_params'])} | {row['aic']:.2f} | "
+                f"{row['bic']:.2f} | {row['roc_auc']:.4f} | {row['brier_score']:.4f} | "
+                f"{row['hl_p_value']:.4f} |"
+            )
+        lines.append("")
+
+    fig_section = "## 7. Figures" if model_comparison is not None else "## 6. Figures"
+    lines.extend([fig_section, ""])
     if figures:
         for fig in figures:
             lines.append(f"- [`figures/{fig}`](../figures/{fig})")
@@ -523,6 +540,9 @@ def update_results() -> Path:
     _save_csv(assoc_df, "dose_outcome_association.csv")
     _save_csv(model_df, "tcp_model_quality.csv")
 
+    comparison_df, _ = run_model_comparison(doses, outcomes, frame=frame)
+    _save_csv(comparison_df, "tcp_model_comparison.csv")
+
     bootstrap_ci = bootstrap_tcp_params(
         PoissonTCPModel,
         doses,
@@ -548,7 +568,9 @@ def update_results() -> Path:
     _save_csv(dvh_summary.reset_index().rename(columns={"index": "metric"}), "dvh_scalars_summary.csv")
 
     figures = list_figures()
-    md = render_results_md(cohort_df, survival_df, assoc_df, model_rows, figures, bootstrap_ci)
+    md = render_results_md(
+        cohort_df, survival_df, assoc_df, model_rows, figures, bootstrap_ci, comparison_df
+    )
     RESULTS_MD.write_text(md)
     print(f"Wrote {RESULTS_MD}")
     print(f"Metrics CSVs in {METRICS_DIR}/")

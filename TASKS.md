@@ -122,7 +122,7 @@ Do **not** download MRI sequences — they are not needed for this project.
 - [x] `[CODE]` Write `src/models/probit_tcp.py` — probit model, MLE
 - [x] `[CODE]` Write `src/models/eud_tcp.py` — gEUD-based TCP with volume effect parameter `a`
 - [x] `[CODE]` Write `src/models/bootstrap_ci.py` — bootstrap resampling (n=1000, seed=42) for any `TCPModel`
-- [ ] `[CODE]` Write `src/models/model_comparison.py` — AIC, BIC, log-likelihood, ROC AUC, calibration plot
+- [x] `[CODE]` Write `src/models/model_comparison.py` — AIC, BIC, log-likelihood, ROC AUC, calibration plot
 - [ ] `[CODE]` Write `src/models/survival_analysis.py` — Kaplan-Meier (OS), Cox PH regression with DVH covariates
 - [ ] `[CODE]` Write `notebooks/03_tcp_models.ipynb`: fit all models, TCP curves
 - [ ] `[CODE]` Write `notebooks/04_parameter_estimation.ipynb`: bootstrap CI, model comparison table

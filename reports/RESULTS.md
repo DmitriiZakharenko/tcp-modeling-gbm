@@ -1,7 +1,7 @@
 # Current Results (auto-generated)
 
 **Last updated:** 2026-06-28  
-**Git commit:** `7df9b5d`  
+**Git commit:** `f2aba20`  
 **Regenerate:** `python -m src.reporting.update_results`
 
 > **Outcome caveat:** CFB-GBM provides overall survival (weeks) only.
@@ -151,7 +151,18 @@ Outcome proxy: OS >= median (51 wk)
 | D50_gy | 53.200 | [49.540, 56.749] | 1.870 |
 | gamma50 | 3.324 | [2.058, 4.689] | 0.668 |
 
-## 6. Figures
+
+
+## 6. Four-model comparison (EQD2 / gEUD, sorted by AIC)
+
+| Model | k | AIC | BIC | ROC AUC | Brier | HL p-value |
+|---|---:|---:|---:|---:|---:|---:|
+| probit_tcp | 2 | 241.73 | 248.23 | 0.6835 | 0.2175 | 0.1009 |
+| logistic_tcp | 2 | 241.75 | 248.24 | 0.6835 | 0.2175 | 0.1008 |
+| poisson_tcp | 2 | 241.82 | 248.31 | 0.6835 | 0.2176 | 0.1003 |
+| eud_tcp | 3 | 243.69 | 253.43 | 0.6850 | 0.2176 | 0.7842 |
+
+## 7. Figures
 
 - [`figures/01_demographics.png`](../figures/01_demographics.png)
 - [`figures/01_exclusion_reasons.png`](../figures/01_exclusion_reasons.png)
@@ -163,6 +174,7 @@ Outcome proxy: OS >= median (51 wk)
 - [`figures/02_dvh_overlay_median.png`](../figures/02_dvh_overlay_median.png)
 - [`figures/02_dvh_overlay_sample.png`](../figures/02_dvh_overlay_sample.png)
 - [`figures/02_volume_hi.png`](../figures/02_volume_hi.png)
+- [`figures/03_model_calibration.png`](../figures/03_model_calibration.png)
 
 ---
 
