@@ -9,7 +9,8 @@ Checkboxes below are **clickable directly on GitHub** (no terminal needed):
 
 Roles: **[CODE]** · **[LIT]** literature & clinical review · **[WRITE]** report writing
 
-**Last synced:** 2026-06-28 · **Git:** `14e985e` · **Report:** `make report` → `reports/RESULTS.md`
+**Last synced:** 2026-06-28 · **Git:** `cd967bf` · **Report:** `make report` → `reports/RESULTS.md`  
+**Group guide:** [`reports/group_glossary_guide.md`](reports/group_glossary_guide.md) — plain-language terms and presentation FAQ
 
 ---
 
@@ -40,7 +41,7 @@ Roles: **[CODE]** · **[LIT]** literature & clinical review · **[WRITE]** repor
 | Pooled EQD2 → RANO (n=137) | AUC ≈ **0.43** (confounded) |
 | Pooled volume + clinical + scheme → RANO | AUC ≈ **0.72**; LOOCV ≈ **0.64** |
 | 40 Gy volume → RANO (n=34) | in-sample AUC ≈ **0.90**; LOOCV ≈ **0.74** |
-| PyRadiomics top-5 → RANO (t1gd GTV t0) | AUC ≈ **0.78** vs DVH volume **0.71** |
+| PyRadiomics top-5 → RANO (t1gd GTV t0) | in-sample AUC ≈ **0.78**; nested CV ≈ **0.74** vs DVH volume **0.71** / **0.70** |
 | Cox OS ~ RANO (n=137) | HR ≈ **0.48**, p ≈ 0.0009 |
 
 - Format: **NIfTI (.nii.gz)**, pre-processed (skull-stripped, co-registered) — not DICOM
@@ -158,21 +159,45 @@ _Status: blocked in CI/sandbox (TCP 33001); run locally with Aspera Connect._
 - [x] `[CODE]` Export analysis figures to `figures/` (22 PNG, 300 dpi; PDF export pending)
 - [ ] `[CODE]` Download t1 GTV NIfTI + validate `size_t1_cm3` (`make download-t1-gtv`; Aspera required)
 - [ ] `[CODE]` Final check: all notebooks 01–06 run top-to-bottom without errors
-- [ ] `[CODE]` Pin package versions: `pip freeze > requirements.txt`
+- [x] `[CODE]` Pin package versions in `requirements.txt`
 - [x] `[CODE]` Nested CV for PyRadiomics feature selection (`pyradiomics_nested_cv_rano.csv`)
 - [x] `[LIT]` Literature TCP D50 comparison table (`literature_tcp_d50_comparison.csv`)
-- [x] `[WRITE]` LaTeX/Word export (`scripts/export_manuscript.sh` → manuscript.tex/docx/pdf)
-- [ ] `[CODE]` Final check: all notebooks 01–06 run top-to-bottom without errors
+- [x] `[WRITE]` LaTeX/Word/PDF export (`scripts/export_manuscript.sh` → manuscript.tex/docx/pdf)
 
 ### Literature and Writing
 
 - [x] `[LIT]` Literature table with TCP/GBM/radiomics comparators — `reports/literature_table.csv`
 - [x] `[LIT]` Critical Discussion draft — `manuscript_draft.md` §4 (limitations, confounding, Moreau comparison)
 - [x] `[LIT]` Literature comparison in Discussion — D50 bootstrap vs literature; feasibility framing vs Ohri/Maitre
-- [ ] `[WRITE]` Merge manuscript sections into single Word/LaTeX document (10–15 pages)
-- [ ] `[WRITE]` Format references Vancouver style in final document (draft refs in `manuscript_draft.md`)
-- [ ] `[WRITE]` Export manuscript PDF
+- [x] `[WRITE]` Merge manuscript sections into exportable document (`manuscript_draft.md` → `.docx` / `.pdf`)
+- [ ] `[WRITE]` Final polish of report document (10–15 pages; layout, figures embedded)
+- [ ] `[LIT]` Format references Vancouver style in `manuscript.docx`
 - [ ] `[WRITE]` Build oral presentation slides from outline (15 min; outline in `manuscript_draft.md`)
+
+---
+
+## Remaining team deliverables
+
+Shared resources: [`reports/RESULTS.md`](reports/RESULTS.md) (verified numbers) · [`reports/group_glossary_guide.md`](reports/group_glossary_guide.md) · [`figures/`](figures/)
+
+### `[WRITE]` — report & presentation
+
+- [ ] Build 15-min slide deck from presentation outline (`manuscript_draft.md`, bottom)
+- [ ] Write figure captions for all figures used in slides and final report
+- [ ] Proofread and polish Introduction, Discussion, and Abstract in `manuscript_draft.md`
+- [ ] Assemble final report PDF: `manuscript.docx` + embedded figures + captions
+
+### `[LIT]` — literature & references
+
+- [ ] Format reference list Vancouver style in final Word document
+- [ ] Verify PubMed / DOI links in `reports/literature_table.csv` (18 entries)
+- [ ] Draft one short paragraph per key reference for slides or appendix (optional)
+
+### All members — presentation prep
+
+- [ ] Read `group_glossary_guide.md` Parts 1–3 (project story) and Part 13 (FAQ)
+- [ ] Assign presentation sections (cohort / TCP / RANO / radiomics / conclusions)
+- [ ] Rehearse using talking points in glossary Part 15
 
 ---
 
@@ -206,8 +231,9 @@ INFRA (repo, config) ✓
 
 Optional: download t1 GTV → validate_rano_volumes (t1) — pending Aspera
 
-LIT tasks ── literature_table ✓; final Word/PDF pending
-WRITE ── manuscript_draft ✓; slides + PDF export pending
+LIT tasks ── literature_table ✓; Vancouver refs + summaries pending
+WRITE ── manuscript export ✓; final report polish + slides pending
+Group ── glossary guide ✓; presentation prep pending
 ```
 
 ---
