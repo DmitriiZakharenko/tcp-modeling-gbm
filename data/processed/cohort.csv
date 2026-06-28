@@ -30,7 +30,7 @@ patient_id,rt_dose_gy,n_fractions,eqd2_gy,survival_weeks,age,sex,who_status,has_
 29,60.0,30.0,60.0,44,60,F,1.0,True,True,True,
 30,40.05,15.0,42.286125,93,80,F,1.0,True,True,True,
 31,60.0,30.0,60.0,114,35,M,0.0,True,True,True,
-32,60.0,30.0,60.0,13,60,F,1.0,True,True,True,
+32,60.0,30.0,60.0,13,60,F,1.0,True,True,False,invalid RTDOSE (zero dose in GTV)
 33,60.0,30.0,60.0,22,70,F,1.0,True,True,True,
 34,,,,3,75,M,3.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
 35,,,,30,60,M,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
@@ -41,8 +41,8 @@ patient_id,rt_dose_gy,n_fractions,eqd2_gy,survival_weeks,age,sex,who_status,has_
 40,,,,127,70,F,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
 41,,,,78,65,F,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
 42,,,,81,60,F,1.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
-43,59.4,33.0,58.410000000000004,17,65,M,2.0,True,True,True,
-44,59.4,33.0,58.410000000000004,35,65,M,2.0,True,True,True,
+43,59.4,33.0,58.41,17,65,M,2.0,True,True,True,
+44,59.4,33.0,58.41,35,65,M,2.0,True,True,True,
 45,60.0,30.0,60.0,233,60,F,1.0,True,True,True,
 46,40.05,15.0,,11,75,F,1.0,True,False,False,missing GTV
 47,60.0,30.0,60.0,36,55,M,1.0,True,True,True,
@@ -63,12 +63,12 @@ patient_id,rt_dose_gy,n_fractions,eqd2_gy,survival_weeks,age,sex,who_status,has_
 62,,,,26,85,F,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
 63,,,,60,80,M,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
 64,,,,4,70,M,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
-65,59.4,33.0,58.410000000000004,45,65,F,1.0,True,True,True,
+65,59.4,33.0,58.41,45,65,F,1.0,True,True,True,
 66,60.0,30.0,60.0,18,65,M,1.0,True,True,True,
 67,,,,17,90,M,2.0,False,False,False,missing RTDOSE; missing GTV; unknown RT dose; unknown n_fractions
 68,40.05,15.0,42.286125,31,85,F,1.0,True,True,True,
 69,40.05,15.0,42.286125,71,70,M,0.0,True,True,True,
-70,59.4,33.0,58.410000000000004,155,60,F,0.0,True,True,True,
+70,59.4,33.0,58.41,155,60,F,0.0,True,True,True,
 71,40.05,15.0,42.286125,108,60,M,1.0,True,True,True,
 72,60.0,30.0,60.0,56,35,M,0.0,True,True,True,
 73,50.4,28.0,49.56,71,65,M,2.0,True,True,True,

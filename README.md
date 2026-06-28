@@ -5,7 +5,7 @@ Reproducible Python workflow for Tumor Control Probability (TCP) modeling in gli
 The pipeline covers DICOM-free NIfTI data curation, DVH feature extraction, Poisson / Logistic / Probit / EUD-based TCP model fitting with bootstrap confidence intervals, model comparison (AIC, BIC, ROC), and survival analysis (Kaplan-Meier, Cox regression).
 
 **Dataset:** Moreau et al. 2025, *The Cancer Imaging Archive* — [doi:10.7937/V9PN-2F72](https://doi.org/10.7937/V9PN-2F72)  
-**Cohort:** 191 / 264 patients with RTDOSE + GTV segmentation and known treatment dose  
+**Cohort:** 190 / 264 patients for modeling after DVH QC (191 with RTDOSE + GTV; 1 excluded for invalid RTDOSE)  
 **Task board:** [GitHub Issues #1](https://github.com/DmitriiZakharenko/tcp-modeling-gbm/issues/1)
 
 ---
@@ -42,8 +42,8 @@ pip install -r requirements.txt
 
 | File | Description |
 |------|-------------|
-| `data/processed/cohort.csv` | 264 patients; 191 included for modeling |
-| `data/processed/modeling_table.csv` | Included cohort + clinical fields + DVH metrics (191×33) |
+| `data/processed/cohort.csv` | 264 patients; 190 modeling-eligible after DVH QC |
+| `data/processed/modeling_table.csv` | Included cohort + clinical fields + DVH metrics (190×33) |
 | `data/processed/CFB-GBM_*.tsv` | Source clinical / treatment tables from TCIA |
 
 `modeling_table.csv` columns: `patient_id`, `rt_dose_gy`, `n_fractions`, `eqd2_gy`, `survival_weeks`, `age`, `sex`, `who_status`, DVH metrics (`D2_gy` … `D98_gy`, `Vx_pct`, `gEUD_*`, `HI_gy`, `volume_cc`).
@@ -67,7 +67,7 @@ make process
 # verify-rt → feature_builder → export modeling_table.csv
 ```
 
-Requires `data/raw/{patient_id}/t0/*_t0_rtdose.nii.gz` and `*_t0_gtv.nii.gz` for all 191 included patients.
+Requires `data/raw/{patient_id}/t0/*_t0_rtdose.nii.gz` and `*_t0_gtv.nii.gz` for all modeling-eligible patients.
 
 ### Download NIfTI from TCIA
 

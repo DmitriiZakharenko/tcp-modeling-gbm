@@ -17,6 +17,7 @@ from pathlib import Path
 import pandas as pd
 
 from src.config import COHORT_CSV, DATA_PROCESSED, FEATURES_CSV
+from src.data.dvh_qc import apply_dvh_qc_to_cohort
 
 MODELING_TABLE_CSV = DATA_PROCESSED / "modeling_table.csv"
 
@@ -25,6 +26,7 @@ def export_modeling_dataset(
     cohort_path: Path = COHORT_CSV,
     features_path: Path = FEATURES_CSV,
     output_path: Path = MODELING_TABLE_CSV,
+    apply_qc: bool = True,
 ) -> pd.DataFrame:
     """Merge included cohort rows with DVH features for TCP modeling."""
     if not cohort_path.exists():
@@ -39,6 +41,12 @@ def export_modeling_dataset(
     features = pd.read_csv(features_path)
     cohort["patient_id"] = cohort["patient_id"].astype(str)
     features["patient_id"] = features["patient_id"].astype(str)
+
+    if apply_qc:
+        cohort, excluded = apply_dvh_qc_to_cohort(cohort, features)
+        if excluded:
+            cohort.to_csv(cohort_path, index=False)
+            print(f"Updated {cohort_path.name}: excluded {len(excluded)} patient(s) after DVH QC")
 
     included = cohort[cohort["included"] == True].copy()  # noqa: E712
     table = included.merge(features, on="patient_id", how="inner", validate="one_to_one")
