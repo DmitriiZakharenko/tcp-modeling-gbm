@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 from datetime import date
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -24,6 +24,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from src.config import DATA_PROCESSED, FIGURES_DIR, RANDOM_SEED, REPORTS_DIR
 from src.data.dvh_calculator import SCALAR_METRIC_KEYS
+from src.models.bootstrap_ci import bootstrap_tcp_params
 from src.models.eud_tcp import EUDTCPModel
 from src.models.logistic_tcp import LogisticTCPModel
 from src.models.poisson_tcp import PoissonTCPModel
@@ -335,6 +336,7 @@ def render_results_md(
     assoc_df: pd.DataFrame,
     model_rows: List[Dict[str, Any]],
     figures: List[str],
+    bootstrap_ci: Optional[pd.DataFrame] = None,
 ) -> str:
     """Render human-readable results markdown."""
     git_hash = _git_short_hash()
@@ -445,7 +447,18 @@ def render_results_md(
         ])
         lines.extend(block)
 
-    lines.extend(["## 5. Figures", ""])
+    if bootstrap_ci is not None and not bootstrap_ci.empty:
+        lines.extend(["", "## 5. Bootstrap 95% CI (Poisson TCP, EQD2)", ""])
+        lines.append("| Parameter | Estimate | 95% CI | Bootstrap SD |")
+        lines.append("|---|---:|---|---:|")
+        for _, row in bootstrap_ci.iterrows():
+            lines.append(
+                f"| {row['parameter']} | {row['estimate']:.3f} | "
+                f"[{row['ci_lower']:.3f}, {row['ci_upper']:.3f}] | {row['bootstrap_std']:.3f} |"
+            )
+        lines.append("")
+
+    lines.extend(["## 6. Figures", ""])
     if figures:
         for fig in figures:
             lines.append(f"- [`figures/{fig}`](../figures/{fig})")
@@ -510,6 +523,15 @@ def update_results() -> Path:
     _save_csv(assoc_df, "dose_outcome_association.csv")
     _save_csv(model_df, "tcp_model_quality.csv")
 
+    bootstrap_ci = bootstrap_tcp_params(
+        PoissonTCPModel,
+        doses,
+        outcomes,
+        n_bootstrap=1000,
+        model_factory=lambda: PoissonTCPModel(d50_init=55.0, gamma50_init=1.5),
+    )
+    _save_csv(bootstrap_ci, "poisson_tcp_bootstrap_ci.csv")
+
     manifest = {
         "generated": date.today().isoformat(),
         "git_hash": _git_short_hash(),
@@ -526,7 +548,7 @@ def update_results() -> Path:
     _save_csv(dvh_summary.reset_index().rename(columns={"index": "metric"}), "dvh_scalars_summary.csv")
 
     figures = list_figures()
-    md = render_results_md(cohort_df, survival_df, assoc_df, model_rows, figures)
+    md = render_results_md(cohort_df, survival_df, assoc_df, model_rows, figures, bootstrap_ci)
     RESULTS_MD.write_text(md)
     print(f"Wrote {RESULTS_MD}")
     print(f"Metrics CSVs in {METRICS_DIR}/")

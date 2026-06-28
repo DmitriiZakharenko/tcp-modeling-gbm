@@ -1,7 +1,7 @@
 # Current Results (auto-generated)
 
 **Last updated:** 2026-06-28  
-**Git commit:** `8793672`  
+**Git commit:** `7df9b5d`  
 **Regenerate:** `python -m src.reporting.update_results`
 
 > **Outcome caveat:** CFB-GBM provides overall survival (weeks) only.
@@ -143,7 +143,15 @@ Outcome proxy: OS >= median (51 wk)
 | Accuracy @ TCP=0.5 | 0.6684 |
 | Sensitivity / Specificity | 0.823 / 0.511 |
 
-## 5. Figures
+
+## 5. Bootstrap 95% CI (Poisson TCP, EQD2)
+
+| Parameter | Estimate | 95% CI | Bootstrap SD |
+|---|---:|---|---:|
+| D50_gy | 53.200 | [49.540, 56.749] | 1.870 |
+| gamma50 | 3.324 | [2.058, 4.689] | 0.668 |
+
+## 6. Figures
 
 - [`figures/01_demographics.png`](../figures/01_demographics.png)
 - [`figures/01_exclusion_reasons.png`](../figures/01_exclusion_reasons.png)
