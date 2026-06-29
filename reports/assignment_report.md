@@ -442,7 +442,7 @@ make check-notebooks
 make export-assignment
 ```
 
-Plain-language glossary for group presentations: `reports/group_glossary_guide.md`
+Glossary and methods reference: `reports/group_glossary_guide.md`
 
 ## Appendix B — Repository outputs
 

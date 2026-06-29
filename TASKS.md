@@ -10,7 +10,7 @@ Checkboxes below are **clickable directly on GitHub** (no terminal needed):
 Roles: **[CODE]** · **[LIT]** literature & clinical review · **[WRITE]** report writing
 
 **Last synced:** 2026-06-28 · **Git:** `cd967bf` · **Report:** `make report` → `reports/RESULTS.md`  
-**Group guide:** [`reports/group_glossary_guide.md`](reports/group_glossary_guide.md) — plain-language terms and presentation FAQ
+**Glossary:** [`reports/group_glossary_guide.md`](reports/group_glossary_guide.md) — terminology and methods reference
 
 ---
 

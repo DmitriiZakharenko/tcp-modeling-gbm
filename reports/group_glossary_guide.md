@@ -1,7 +1,5 @@
-# CFB-GBM TCP Project — Plain-Language Guide & Glossary
+# CFB-GBM TCP Project — Glossary and Methods Reference
 
-**Audience:** Group members who are not programmers or statisticians.  
-**Purpose:** Explain what we did, what every important term means, and how to talk about our results with clinicians, supervisors, or examiners.  
 **Last updated:** 2026-06-28 · Numbers from [`reports/RESULTS.md`](RESULTS.md) (n=190 modeling cohort).
 
 ---
@@ -10,13 +8,13 @@
 
 ### What is this project about?
 
-We studied **glioblastoma (GBM)** — an aggressive brain tumour — using a **public patient dataset** from a French cancer centre (CFB-GBM, shared on TCIA). The clinical question behind the assignment was:
+We studied **glioblastoma (GBM)** — an aggressive brain tumour — using a **public patient dataset** from a French cancer centre (CFB-GBM, shared on TCIA). The central clinical question:
 
 > *Can we build a mathematical model that links **radiotherapy dose** to **tumour control**?*
 
 That type of model is called **TCP — Tumour Control Probability**.
 
-### What we actually built
+### Pipeline overview
 
 1. We downloaded and cleaned patient data (clinical tables + radiation dose maps + tumour outlines).
 2. For each patient we computed **how dose was distributed inside the tumour** (DVH metrics).
@@ -25,21 +23,21 @@ That type of model is called **TCP — Tumour Control Probability**.
 5. When classical dose–response failed, we looked at **tumour size (GTV volume)** and **radiomics** (texture features from MRI).
 6. We used honest validation methods (**LOOCV**, **nested cross-validation**) so results are not inflated by overfitting.
 
-### The main conclusion (in plain words)
+### Main conclusions
 
-- **Classical TCP on pooled dose does not work well on this dataset** — not because our code is wrong, but because the data were collected in routine care, not in a dose-escalation trial. Almost everyone got the planned dose; there is almost no dose variation *within* each treatment schedule.
-- **Tumour burden (volume) and radiomics can predict early imaging response (RANO)** if we account for the fact that patients on 60 Gy and 40 Gy schedules are different (age, prognosis).
-- We deliver a **reproducible open pipeline** and a **feasibility checklist** for future TCP studies.
+- **Classical TCP on pooled dose does not work well on this dataset** — not because the implementation is incorrect, but because the data were collected in routine care, not in a dose-escalation trial. Almost everyone received the planned dose; there is almost no dose variation *within* each treatment schedule.
+- **Tumour burden (volume) and radiomics can predict early imaging response (RANO)** when patients on 60 Gy and 40 Gy schedules are analysed with appropriate adjustment (age, prognosis).
+- The repository provides a **reproducible open pipeline** and a **feasibility checklist** for future TCP studies.
 
 ---
 
-## Part 2 — Step-by-step: what we did (workflow)
+## Part 2 — Analysis workflow
 
 | Step | What happened | Why it matters |
 |------|---------------|----------------|
 | **1. Cohort selection** | Started with 264 patients in CFB-GBM; kept 190 with valid dose maps and tumour masks | Ensures every analysis uses trustworthy input |
 | **2. DVH extraction** | Combined RTDOSE (3D dose grid) + GTV mask → dose statistics per patient | Converts imaging into numbers models can use |
-| **3. TCP fitting** | Fit Poisson / Logistic / Probit / gEUD models; estimate D50, γ50; bootstrap CIs | Core assignment deliverable (Part IV–VI) |
+| **3. TCP fitting** | Fit Poisson / Logistic / Probit / gEUD models; estimate D50, γ50; bootstrap CIs | Core TCP parameter estimation and uncertainty |
 | **4. Survival analysis** | Kaplan–Meier curves, Cox regression for OS | Shows known clinical prognostic factors (scheme, WHO PS) |
 | **5. RANO integration** | Merged v3 TSV with RANO labels (137/190 patients) | Better endpoint than OS for early tumour response |
 | **6. Confounding audit** | Checked age vs dose, scheme vs outcome | Explains why pooled dose models mislead |
@@ -119,7 +117,7 @@ Dataset from Centre François Baclesse (France): MRI, radiotherapy dose, tumour 
 - **DICOM** — hospital standard format for CT/MRI/RT files (many files per patient).
 - **NIfTI (.nii.gz)** — simplified 3D image format used in research.
 
-**Important for our project:** TCIA provides **pre-processed NIfTI**, not full DICOM-RT plans. We do **not** have RTPLAN or RTSTRUCT DICOM in the public package.
+TCIA provides **pre-processed NIfTI**, not full DICOM-RT plans. RTPLAN and RTSTRUCT DICOM are **not** in the public package.
 
 ### RTDOSE
 A 3D map showing **how many Gray (Gy)** were delivered to each voxel (3D pixel) in the patient’s head/body. Think of it as a coloured heat map of radiation dose.
@@ -419,7 +417,7 @@ Version control — every analysis change is traceable. `RESULTS.md` records git
 
 ## Part 12 — Key figures (what each picture shows)
 
-| File | What to say when presenting |
+| File | Description |
 |------|----------------------------|
 | `01_demographics.png` | Who is in the cohort (age, sex, scheme) |
 | `01_survival.png` | OS differs by fractionation |
@@ -435,7 +433,7 @@ Version control — every analysis change is traceable. `RESULTS.md` records git
 
 ---
 
-## Part 13 — FAQ: how to explain to someone who asks
+## Part 13 — FAQ
 
 **Q: Did you prove that higher dose controls GBM better?**  
 A: No. In pooled data, higher EQD2 correlates with **longer OS** but also with **more early PD on RANO** because 60 Gy patients are younger and on a curative schedule. Within each arm, dose barely varies — we cannot test dose–response properly.
@@ -447,10 +445,10 @@ A: For early imaging response (RANO), **GTV volume** and **selected radiomics fe
 A: That is **in-sample**. With only 34 patients, LOOCV drops to **0.74** — still interesting, but not clinical-grade prediction.
 
 **Q: Why four TCP models if they all agree?**  
-A: Assignment requirement and best practice — show that conclusions do not depend on one arbitrary curve shape.
+A: Standard practice — show that conclusions do not depend on one arbitrary curve shape.
 
 **Q: Can we quote D50 = 53 Gy as GBM literature?**  
-A: Only with heavy caveats: endpoint is OS median-split, not local control; pooled schemes confound dose. We compare qualitatively to literature (~40–80 Gy range) in §4k / Part VI table.
+A: Only with heavy caveats: endpoint is OS median-split, not local control; pooled schemes confound dose. Compare qualitatively to published ranges (~40–80 Gy) in the literature comparison table (`reports/RESULTS.md`).
 
 **Q: What would a proper TCP study need?**  
 A: (1) Single protocol or randomised dose levels, (2) ≥1 Gy spread in GTV Dmean, (3) true LC endpoint, (4) enough events, (5) pre-specified validation cohort.
@@ -509,14 +507,14 @@ A: Processed tables in the repo allow most analyses without local NIfTI. Full NI
 
 ---
 
-## Part 15 — Suggested talking points for group presentation
+## Part 15 — Summary
 
-1. **Problem:** TCP models need dose variation + proper endpoint — routine GBM data rarely provide both.
+1. **Problem:** TCP models need dose variation and a proper endpoint — routine GBM data rarely provide both.
 2. **Data:** 190 patients, two fractionation schemes, Version 3 RANO for 137.
 3. **Methods:** DVH → four TCP models → survival → RANO logistic models → LOOCV/nested CV → radiomics benchmark.
-4. **Negative result (important):** Pooled dose–TCP fails for RANO (AUC 0.43) — publishable honesty.
+4. **Negative result:** Pooled dose–TCP fails for RANO (AUC 0.43).
 5. **Positive signal:** Tumour volume and radiomics predict RANO when scheme is adjusted (CV AUC ~0.64–0.74).
-6. **Deliverables:** Open code, auto-generated report, manuscript draft, glossary (this document).
+6. **Outputs:** Open code, auto-generated results report, manuscript draft, this glossary.
 
 ---
 
